@@ -105,7 +105,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
         messageQueue.put(message) 
 
 
-class FourchanMessageNewHandler(threading.Thread, BaseHandler, MessageMixin):
+class QueueToWaitingClients(threading.Thread, BaseHandler, MessageMixin):
     '''Takes items off the messageQueue and sends them to client'''
     def __init__(self, queue):
         self.__queue = queue
@@ -116,12 +116,12 @@ class FourchanMessageNewHandler(threading.Thread, BaseHandler, MessageMixin):
             message = {
                 # fixme - do we really need to make a new uid?    
                 'id': str(uuid.uuid4()),
-                'from': fourchanmessage['author'],
+                'author': fourchanmessage['author'],
                 'body': fourchanmessage['posttext'],
             }
             #print self.application
             #message["html"] = self.render_string("message.html", message=message)
-            message["html"] = '''<div class="message" id="m'''+message["id"]+'''"><b>'''+message["from"]+''':</b>&nbsp;'''+message["body"]+'''</div>'''
+            message["html"] = '''<div class="message" id="m'''+message["id"]+'''"><b>'''+message['author']+''':</b>&nbsp;'''+message["body"]+'''</div>'''
             self.new_messages([message])
 
 
@@ -177,7 +177,7 @@ def main():
         mycontentgetter.start()
         
         # Take content from queue and send updates to waiting clients
-        mycontentprocessor = FourchanMessageNewHandler(messageQueue)
+        mycontentprocessor = QueueToWaitingClients(messageQueue)
         mycontentprocessor.start()
         
         tornado.ioloop.IOLoop.instance().start()
