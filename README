@@ -1,0 +1,7 @@
+I'm Everyone is a realtime anonymous chat platform.
+
+Current features are:
+- Live realtime chat
+- A fourchan plugin that adds sample content from /b to the feed until I get some actual users.
+
+Start imeveryone.py and connect to localhost:8888 for example.
