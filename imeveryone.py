@@ -112,16 +112,10 @@ class QueueToWaitingClients(threading.Thread, BaseHandler, MessageMixin):
         threading.Thread.__init__(self)    
     def run(self):
         while True: 
-            fourchanmessage = self.__queue.get()   
-            message = {
-                # fixme - do we really need to make a new uid?    
-                'id': str(uuid.uuid4()),
-                'author': fourchanmessage['author'],
-                'body': fourchanmessage['posttext'],
-            }
+            message = self.__queue.get()   
             #print self.application
             #message["html"] = self.render_string("message.html", message=message)
-            message["html"] = '''<div class="message" id="m'''+message["id"]+'''"><b>'''+message['author']+''':</b>&nbsp;'''+message["body"]+'''</div>'''
+            message["html"] = '''<div class="message" id="m'''+str(message["id"])+'''"><b>'''+message['author']+''':</b>&nbsp;'''+message['posttext']+'''</div>'''
             self.new_messages([message])
 
 
