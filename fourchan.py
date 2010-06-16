@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.6
-'''4Chan provider for EnterpriseChan'''
+'''4Chan provider for I'm Everyone'''
 import httplib
 from lxml import etree
 from lxml.html.clean import clean_html
@@ -126,7 +126,7 @@ def opendatabase(database):
     return threads    
     
 def savedatabase(threads,database):
-    '''Save databae to a file'''    
+    '''Save database to a file'''    
     threadfile = open('threads.db','w')    
     pickle.dump(threads, threadfile)
 

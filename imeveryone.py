@@ -15,6 +15,7 @@ import uuid
 import fourchan
 import threading
 import Queue
+import sys
 
 from tornado.options import define, options
 
@@ -27,7 +28,7 @@ class Application(tornado.web.Application):
             (r"/", MainHandler),
             (r"/auth/login", AuthLoginHandler),
             (r"/auth/logout", AuthLogoutHandler),
-            (r"/a/message/new", MessageNewHandler),
+            (r"/a/message/new", NewPostHandler),
             (r"/a/message/updates", MessageUpdatesHandler),
         ]
         settings = dict(
@@ -64,6 +65,7 @@ class MessageMixin(object):
     cache = []
     cache_size = 200
     def wait_for_messages(self, callback, cursor=None):
+        '''Add new clients to waiters list'''
         if cursor:
             index = 0
             for i in xrange(len(MessageMixin.cache)):
@@ -75,7 +77,7 @@ class MessageMixin(object):
                 return
         MessageMixin.waiters.append(callback)
     def new_messages(self, messages):
-        # not occuring with messages sent by 4chan process
+        '''Send messages to connected clients!'''
         logging.info("Sending new message to %r listeners", len(MessageMixin.waiters))
         for callback in MessageMixin.waiters:
             try:
@@ -88,25 +90,20 @@ class MessageMixin(object):
             MessageMixin.cache = MessageMixin.cache[-self.cache_size:]
 
 
-class MessageNewHandler(BaseHandler, MessageMixin):
-    '''Handles new messages sent from clients'''
-    @tornado.web.authenticated
+class NewPostHandler(BaseHandler, MessageMixin):
+    '''Take new messages sent from clients and add them to our message queue'''
+    @tornado.web.authenticated 
     def post(self):
-        logging.info("MessageNewHandler post() running!") 
+        global messageQueue
+        logging.info("NewPostHandler post() running!") 
         # Create message based on body of PUT form data
         message = {
             'id': str(uuid.uuid4()),
-            'from': self.current_user["first_name"],
-            'body': self.get_argument("body"),
+            'author': self.current_user["first_name"],
+            'posttext': self.get_argument("body"),
         }
-        print self.application   
-        message["html"] = self.render_string("message.html", message=message)
-        # Clears for after submission
-        if self.get_argument("next", None):
-            self.redirect(self.get_argument("next"))
-        else:
-            self.write(message) 
-        self.new_messages([message])
+        messageQueue.put(message) 
+
 
 class FourchanMessageNewHandler(threading.Thread, BaseHandler, MessageMixin):
     '''Takes items off the messageQueue and sends them to client'''
@@ -115,11 +112,7 @@ class FourchanMessageNewHandler(threading.Thread, BaseHandler, MessageMixin):
         threading.Thread.__init__(self)    
     def run(self):
         while True: 
-            fourchanmessage = self.__queue.get() 
-            print fourchanmessage['author']
-            print fourchanmessage['posttext']
-            print fourchanmessage['id']
-            print '------------'    
+            fourchanmessage = self.__queue.get()   
             message = {
                 # fixme - do we really need to make a new uid?    
                 'id': str(uuid.uuid4()),
@@ -128,7 +121,7 @@ class FourchanMessageNewHandler(threading.Thread, BaseHandler, MessageMixin):
             }
             #print self.application
             #message["html"] = self.render_string("message.html", message=message)
-            message["html"] = '''<div class="message" id="m'''+message["id"]+'''"><b>'''+message["from"]+'''</b>'''+message["body"]+'''</div>'''
+            message["html"] = '''<div class="message" id="m'''+message["id"]+'''"><b>'''+message["from"]+''':</b>&nbsp;'''+message["body"]+'''</div>'''
             self.new_messages([message])
 
 
@@ -170,18 +163,27 @@ class AuthLogoutHandler(BaseHandler):
 
 
 def main():
-    tornado.options.parse_command_line()
-    http_server = tornado.httpserver.HTTPServer(Application())
-    http_server.listen(options.port)
-    #
-    messageQueue = Queue.Queue(0)
-    mycontentgetter = fourchan.ContentGetter(messageQueue)
-    mycontentgetter.start()
-    #mycontentprocessor = fourchan.ContentProcessor(messageQueue)
-    mycontentprocessor = FourchanMessageNewHandler(messageQueue)
-    mycontentprocessor.start()
-    tornado.ioloop.IOLoop.instance().start()
+    '''Separate main for unittesting and calling from other modules'''
+    global messageQueue
+    try:
+        tornado.options.parse_command_line()
+        messageQueue = Queue.Queue(0)
+        
+        http_server = tornado.httpserver.HTTPServer(Application())
+        http_server.listen(options.port)
 
+        # Keep supplying new content to queue
+        mycontentgetter = fourchan.ContentGetter(messageQueue)
+        mycontentgetter.start()
+        
+        # Take content from queue and send updates to waiting clients
+        mycontentprocessor = FourchanMessageNewHandler(messageQueue)
+        mycontentprocessor.start()
+        
+        tornado.ioloop.IOLoop.instance().start()
+    except KeyboardInterrupt:
+        print 'Server cancelled'
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
