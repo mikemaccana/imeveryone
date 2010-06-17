@@ -1,1 +1,21 @@
-<div class="message" id="m{{ message["id"] }}"><b>{{ escape(message['author']) }}: </b>{{ escape(message['posttext']) }}</div>
+<!-- This is only used for cached messages as the templating is attached to messages that arrive as Requests via RequestHandler 
+<div class="message" id="m{{ message["id"] }}"><b>{{ escape(message['author']) }}: </b>{{ escape(message['posttext']) }}HARROW</div>
+-->
+
+<div class="timestamp">
+	<h3>
+		<a href="http://www.google.com/">Time goes here</a> {{message['author']}}
+	</h3>	
+</div>
+
+<h2>{{message['posttext']}}</h2>
+
+<div class="endpost">
+	<p>
+		<cite>
+			<a href="{{message['link']}}">Read more...</a> {{message['threadid']}}
+		</cite>
+	</p>
+<hr>
+
+</div>

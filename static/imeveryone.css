@@ -392,13 +392,6 @@ div#maincontent blockquote p, div#maincontent dd blockquote {
 	font-style: italic;
 	}
 
-	/* tool ui */
-
-p.audiodownload { 
-	background: transparent url(http://www.zeldman.com/i/sound2.gif) 50% left no-repeat;
-	padding-left: 20px;
-	}
-
 	
 	/* remains of the '04 redesign */
 	
