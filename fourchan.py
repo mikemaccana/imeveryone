@@ -88,9 +88,11 @@ def updatethreadindex(channel,lastadded):
                 if author is None:
                     author = ''
                 # Time
-                ## Temporarily disabled as not jason serializable    
-                #timestring = etree.tostring(element.getparent().getprevious(),pretty_print=True).split()[-1]
-                #posttime = time.strptime(timestring,'%m/%d/%y(%a)%H:%M:%S')
+                ## Convert to both a time and a serialized able format    
+                timestring = etree.tostring(element.getparent().getprevious(),pretty_print=True).split()[-1]
+                timenative = time.strptime(timestring,'%m/%d/%y(%a)%H:%M:%S')
+                timetext = time.strftime("%a, %d %b %Y %H:%M:%S +0000", timenative)
+                
                 # Image
                 try:
                     image = element.getparent().getprevious().getprevious().getprevious().getprevious().attrib['href']
@@ -106,8 +108,7 @@ def updatethreadindex(channel,lastadded):
                 
                 # Add the thread (as long as its new)    
                 if threadid > lastadded:
-                    newthreads.append( {'author':author,'posttext':posttext,'image':image,'thumb':thumb,'threadid':threadid,'link':link})
-                    #'posttime':posttime,
+                    newthreads.append( {'author':author,'posttext':posttext,'image':image,'thumb':thumb,'threadid':threadid,'link':link,'posttime':timetext})
                     lastadded = threadid
     return newthreads,lastadded
 
