@@ -24,6 +24,7 @@ define("port", default=8888, help="run on the given port", type=int)
 
 class Application(tornado.web.Application):
     def __init__(self):
+        # These handlers always get provided with the application, request and any transforms by Tornado
         handlers = [
             (r"/", MainHandler),
             (r"/auth/login", AuthLoginHandler),
@@ -105,18 +106,28 @@ class NewPostHandler(BaseHandler, MessageMixin):
         messageQueue.put(message) 
 
 
-class QueueToWaitingClients(threading.Thread, BaseHandler, MessageMixin):
+class QueueToWaitingClients(MessageMixin, BaseHandler, threading.Thread):
     '''Takes items off the messageQueue and sends them to client'''
     def __init__(self, queue):
+        #super( QueueToWaitingClients, self ).__init__()
         self.__queue = queue
-        threading.Thread.__init__(self)    
+        threading.Thread.__init__(self)  
+        MessageMixin.__init__(self)        
     def run(self):
         while True: 
             message = self.__queue.get()   
             message['id'] = str(uuid.uuid4())
-            #print self.application
+            # Comes from BaseHandler, which inherits from tornado.web.RequestHandler, which provides
             #message["html"] = self.render_string("message.html", message=message)
-            message["html"] = '''<div class="message" id="m'''+str(message["id"])+'''"><b>'''+message['author']+''':</b>&nbsp;'''+message['posttext']+'''</div>'''
+            #message["html"] = '''<div class="message" id="m''''''"><b>'''+message['author']+''':</b>&nbsp;''''''</div>'''
+            basicpost = '''<DIV class="timestamp"><H3><A href="http://www.google.com/">'''+'Time goes here'+'''</A> '''+message['author']+'''</H3></DIV><H2>'''+message['posttext']+'''</H2><DIV class="endpost">'''
+            
+            #picture = '''<P><A href="'''+'http://www.google.com'+'''"><IMG width="490" class="lede" src="'''+message['image']+'''" alt=""></A></P>'''
+            #textybit = '''<P class="intro"><SPAN class="drop">"</SPAN>'''+'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin nec arcu a est vulputate ultrices. Donec orci orci, porttitor sed luctus id, porttitor sed dolor.'+'''</P><P>"Mauris mattis quam at arcu scelerisque fringilla. Pellentesque porta porttitor urna ac varius. Duis in sem eget enim rhoncus tincidunt a ut urna. Fusce bibendum interdum lectus id molestie. Etiam dignissim luctus magna pretium placerat. Fusce sed ornare nibh. Donec in arcu ac neque commodo ultricies. Nam et turpis in orci accumsan mattis sed ut felis."</P>'''
+            tag = '''<P><CITE><A href="'''+'http://www.google.com'+'''">Read more...</A>, '''+str(message['threadid'])+'''</CITE></P><HR>'''
+            
+            
+            message["html"] = basicpost + tag
             self.new_messages([message])
 
 

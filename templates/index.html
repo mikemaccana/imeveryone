@@ -1,11 +1,20 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
-    <title>Tornado Chat Demo</title>
-    <link rel="stylesheet" href="{{ static_url("chat.css") }}" type="text/css"/>
-  </head>
-  <body>
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
+<head profile="http://gmpg.org/xfn/11">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>I'm Everyone</title>
+	<style type="text/css" media="all">@import 'static/imeveryone.css';</style>
+	<link rel="alternate stylesheet" type="text/css" media="all" title="offwhite" href="./zeldman_files/style-alt.css" disabled="" />
+	<!--[if IE]>
+	<link rel="stylesheet" href="http://www.zeldman.com/wp-content/themes/zeldman-v2/win-ie-all.css" type="text/css" media="screen, projection, print" />
+	<![endif]-->
+
+</head>
+
+
+<body id="home">
+<div id="maincontent">
+
     <div id="nav">
       <b>{{ escape(current_user["name"]) }}</b> -
       <a href="/auth/logout">{{ _("Sign out") }}</a>
