@@ -12,6 +12,7 @@ import threading
 import Queue
 import random
 import sys
+import re
 
 debug = False
 
@@ -65,6 +66,12 @@ def gettree(data):
     tree = fromstring(cleanhtml)
     return tree
 
+def texttolinks(string):
+    '''Make clickable links from text'''
+    linkre = re.compile(r"(http://[^ ]+)")
+    linkstring = linkre.sub(r'<a href="\1">\1</a>', string)
+    return linkstring
+
 def updatethreadindex(channel,lastadded):
     '''Return list of new threads. Each thread is a dict.'''
     newthreads = []
@@ -83,6 +90,7 @@ def updatethreadindex(channel,lastadded):
                 posttext = element.getparent().getnext().text
                 if posttext is None:
                     posttext = ''
+                posttext = texttolinks(posttext)                    
                 # Author    
                 author = element.getparent().getprevious().text
                 if author is None:
