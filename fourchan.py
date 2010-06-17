@@ -69,7 +69,7 @@ def updatethreadindex(channel,lastadded):
     '''Return list of new threads. Each thread is a dict.'''
     newthreads = []
     # Connect and get content
-    data = connect('b')
+    data = connect(channel)
     # Parse content into etree
     tree = gettree(data)
     # Identify posts by the Reply link
@@ -101,9 +101,12 @@ def updatethreadindex(channel,lastadded):
                     thumb = element.getparent().getprevious().getprevious().getprevious().getprevious()[0].attrib['src']
                 except (IndexError,KeyError):
                     thumb = 'No thumb'
+                # Link
+                link = 'http://boards.4chan.org/'+channel+'/res/'+str(threadid)
+                
                 # Add the thread (as long as its new)    
                 if threadid > lastadded:
-                    newthreads.append( {'author':author,'posttext':posttext,'image':image,'thumb':thumb,'threadid':threadid})
+                    newthreads.append( {'author':author,'posttext':posttext,'image':image,'thumb':thumb,'threadid':threadid,'link':link})
                     #'posttime':posttime,
                     lastadded = threadid
     return newthreads,lastadded
