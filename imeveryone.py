@@ -113,6 +113,7 @@ class QueueToWaitingClients(threading.Thread, BaseHandler, MessageMixin):
     def run(self):
         while True: 
             message = self.__queue.get()   
+            message['id'] = str(uuid.uuid4())
             #print self.application
             #message["html"] = self.render_string("message.html", message=message)
             message["html"] = '''<div class="message" id="m'''+str(message["id"])+'''"><b>'''+message['author']+''':</b>&nbsp;'''+message['posttext']+'''</div>'''
@@ -120,7 +121,7 @@ class QueueToWaitingClients(threading.Thread, BaseHandler, MessageMixin):
 
 
 class MessageUpdatesHandler(BaseHandler, MessageMixin):
-    '''Do updates. All clients continually send posts, which we hold on on returning until there are new messges (where we run on_new_Messages() )'''
+    '''Do updates. All clients continually send posts, which we only respond to when where there are new messges (where we run on_new_Messages() )'''
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def post(self):

@@ -41,7 +41,11 @@ myheaders = {
 def connect(channel):
     '''Connect to 4Chan page 1. Return data of threads.'''
     conn = httplib.HTTPConnection('boards.4chan.org')
-    conn.request('GET', '/'+channel+'/', headers=myheaders)
+    try:
+        conn.request('GET', '/'+channel+'/', headers=myheaders)
+    except:
+        print 'Could not open 4chan. Check network connectivity.'
+        sys.exit(1)    
     try:
         response = conn.getresponse()
     except error:
@@ -99,7 +103,7 @@ def updatethreadindex(channel,lastadded):
                     thumb = 'No thumb'
                 # Add the thread (as long as its new)    
                 if threadid > lastadded:
-                    newthreads.append( {'author':author,'posttext':posttext,'image':image,'thumb':thumb,'id':threadid})
+                    newthreads.append( {'author':author,'posttext':posttext,'image':image,'thumb':thumb,'threadid':threadid})
                     #'posttime':posttime,
                     lastadded = threadid
     return newthreads,lastadded
