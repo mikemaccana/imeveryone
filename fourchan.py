@@ -76,9 +76,7 @@ def texttolinks(string):
 
 def getimage(imageurl):
     '''Save an image to disk'''
-    print imageurl
     imagefile = imageurl.split('/')[-1]
-    print imageurl
     cachelocation = 'static/cache/'+imagefile
     openurl = urllib2.urlopen(imageurl)
     savedfile = open(cachelocation,'wb')
@@ -120,16 +118,12 @@ def updatethreadindex(channel,lastadded):
                     
                 except (KeyError,IndexError):
                     image = 'No image'    
-                #http://images.4chan.org/b/src/1276801595389.jpg    
                     
                 # Thumbnail    
                 try:    
-                    thumb = element.getparent().getprevious().getprevious().getprevious().getprevious()[0].attrib['src']
-                    # Now fetch the image
-                    thumb = getimage(thumb)                    
-                    
+                    thumb = element.getparent().getprevious().getprevious().getprevious().getprevious()[0].attrib['src']                    
                 except (IndexError,KeyError):
-                    thumb = 'No thumb'
+                    thumb = None
                 # Link
                 link = 'http://boards.4chan.org/'+channel+'/res/'+str(threadid)
                 
