@@ -65,7 +65,13 @@ def gettree(data):
     badtags=['table','tr','td','noscript','style']
     cleaner = Cleaner(page_structure=False, javascript=False, annoying_tags=False, remove_tags=badtags)
     cleanhtml = cleaner.clean_html(data) 
-    tree = fromstring(cleanhtml)
+    try:
+        tree = fromstring(cleanhtml)
+    except TypeError:
+        print 'A mystery error has occured!'
+        print 'cleanhtml is: '   
+        print cleanhtml
+        sys.exit(1)
     return tree
 
 def texttolinks(string):
