@@ -105,7 +105,16 @@ class NewPostHandler(BaseHandler, MessageMixin):
         }
         messageQueue.put(message) 
 
-
+def getimageinclude(url,message):
+    '''Fetch an image from a URL and return the picture HTML include'''
+    if url:
+        logging.info('Fetching image:'+url) 
+        localthumbfile = fourchan.getimage(url)
+        picture = '''<P><A href="'''+message['link']+'''"><IMG class="lede" src="'''+localthumbfile+'''" alt=""></A></P>'''
+    else:
+        picture = ''
+    return picture    
+    
 class QueueToWaitingClients(MessageMixin, BaseHandler, threading.Thread):
     '''Takes items off the messageQueue and sends them to client'''
     def __init__(self, queue):
@@ -121,13 +130,9 @@ class QueueToWaitingClients(MessageMixin, BaseHandler, threading.Thread):
             #message["html"] = self.render_string("message.html", message=message)
             basicpost = '''<DIV class="timestamp"><H3><A href="'''+message['link']+'''">'''+message['posttime']+'''</A> '''+message['author']+'''</H3></DIV><H2>'''+message['posttext']+'''</H2><DIV class="endpost">'''
             
-            # Now fetch the image            
-            if message['thumb']:
-                logging.info('Fetching '+message['thumb']) 
-                localthumbfile = fourchan.getimage(message['thumb'])
-                picture = '''<P><A href="'''+message['link']+'''"><IMG width="490" class="lede" src="'''+localthumbfile+'''" alt=""></A></P>'''
-            else:
-                picture = ''    
+            # Now fetch the image and get the include
+            picture = getimageinclude(message['image'],message)            
+                                
             #textybit = '''<P class="intro"><SPAN class="drop">"</SPAN>'''+'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin nec arcu a est vulputate ultrices. Donec orci orci, porttitor sed luctus id, porttitor sed dolor.'+'''</P><P>"Mauris mattis quam at arcu scelerisque fringilla. Pellentesque porta porttitor urna ac varius. Duis in sem eget enim rhoncus tincidunt a ut urna. Fusce bibendum interdum lectus id molestie. Etiam dignissim luctus magna pretium placerat. Fusce sed ornare nibh. Donec in arcu ac neque commodo ultricies. Nam et turpis in orci accumsan mattis sed ut felis."</P>'''
             tag = '''<P><CITE><A href="'''+message['link']+'''">Read more...</A> '''+str(message['threadid'])+'''</CITE></P><HR>'''            
 

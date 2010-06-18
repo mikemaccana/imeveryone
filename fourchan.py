@@ -114,10 +114,9 @@ def updatethreadindex(channel,lastadded):
                 
                 # Image
                 try:
-                    imageurl = element.getparent().getprevious().getprevious().getprevious().getprevious().attrib['href']
-                    
+                    image = element.getparent().getprevious().getprevious().getprevious().getprevious().attrib['href']                    
                 except (KeyError,IndexError):
-                    image = 'No image'    
+                    image = None   
                     
                 # Thumbnail    
                 try:    
@@ -129,7 +128,7 @@ def updatethreadindex(channel,lastadded):
                 
                 # Add the thread (as long as its new)    
                 if threadid > lastadded:
-                    newthreads.append( {'author':author,'posttext':posttext,'image':imageurl,'thumb':thumb,'threadid':threadid,'link':link,'posttime':timetext})
+                    newthreads.append( {'author':author,'posttext':posttext,'image':image,'thumb':thumb,'threadid':threadid,'link':link,'posttime':timetext})
                     lastadded = threadid
     return newthreads,lastadded
 
