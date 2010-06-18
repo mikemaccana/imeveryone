@@ -122,12 +122,11 @@ class QueueToWaitingClients(MessageMixin, BaseHandler, threading.Thread):
             #message["html"] = '''<div class="message" id="m''''''"><b>'''+message['author']+''':</b>&nbsp;''''''</div>'''
             basicpost = '''<DIV class="timestamp"><H3><A href="http://www.google.com/">'''+message['posttime']+'''</A> '''+message['author']+'''</H3></DIV><H2>'''+message['posttext']+'''</H2><DIV class="endpost">'''
             
-            #picture = '''<P><A href="'''+'http://www.google.com'+'''"><IMG width="490" class="lede" src="'''+message['image']+'''" alt=""></A></P>'''
+            picture = '''<P><A href="'''+'http://www.google.com'+'''"><IMG width="490" class="lede" src="'''+message['thumb']+'''" alt=""></A></P>'''
             #textybit = '''<P class="intro"><SPAN class="drop">"</SPAN>'''+'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin nec arcu a est vulputate ultrices. Donec orci orci, porttitor sed luctus id, porttitor sed dolor.'+'''</P><P>"Mauris mattis quam at arcu scelerisque fringilla. Pellentesque porta porttitor urna ac varius. Duis in sem eget enim rhoncus tincidunt a ut urna. Fusce bibendum interdum lectus id molestie. Etiam dignissim luctus magna pretium placerat. Fusce sed ornare nibh. Donec in arcu ac neque commodo ultricies. Nam et turpis in orci accumsan mattis sed ut felis."</P>'''
-            tag = '''<P><CITE><A href="'''+message['link']+'''">Read more...</A> '''+str(message['threadid'])+'''</CITE></P><HR>'''
+            tag = '''<P><CITE><A href="'''+message['link']+'''">Read more...</A> '''+str(message['threadid'])+'''</CITE></P><HR>'''            
             
-            
-            message["html"] = basicpost + tag
+            message["html"] = basicpost + picture + tag
             self.new_messages([message])
 
 

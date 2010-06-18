@@ -13,6 +13,7 @@ import Queue
 import random
 import sys
 import re
+import urllib2
 
 debug = False
 
@@ -36,6 +37,7 @@ myheaders = {
     'Accept-Charset':'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
     'Keep-Alive':'300',
     'Connection':'keep-alive',
+    'Referer':'http://boards.4chan.org/b',
     #'If-Modified-Since':'Tue, 19 Jan 2010 19:46:10 GMT',
     }
 
@@ -72,6 +74,17 @@ def texttolinks(string):
     linkstring = linkre.sub(r'<a href="\1">\1</a>', string)
     return linkstring
 
+def getimage(imageurl):
+    '''Save an image to disk'''
+    print imageurl
+    imagefile = imageurl.split('/')[-1]
+    print imageurl
+    cachelocation = 'static/cache/'+imagefile
+    openurl = urllib2.urlopen(imageurl)
+    savedfile = open(cachelocation,'wb')
+    savedfile.write(openurl.read())    
+    return cachelocation
+
 def updatethreadindex(channel,lastadded):
     '''Return list of new threads. Each thread is a dict.'''
     newthreads = []
@@ -103,12 +116,18 @@ def updatethreadindex(channel,lastadded):
                 
                 # Image
                 try:
-                    image = element.getparent().getprevious().getprevious().getprevious().getprevious().attrib['href']
+                    imageurl = element.getparent().getprevious().getprevious().getprevious().getprevious().attrib['href']
+                    
                 except (KeyError,IndexError):
-                    image = 'No image'
+                    image = 'No image'    
+                #http://images.4chan.org/b/src/1276801595389.jpg    
+                    
                 # Thumbnail    
                 try:    
                     thumb = element.getparent().getprevious().getprevious().getprevious().getprevious()[0].attrib['src']
+                    # Now fetch the image
+                    thumb = getimage(thumb)                    
+                    
                 except (IndexError,KeyError):
                     thumb = 'No thumb'
                 # Link
@@ -116,7 +135,7 @@ def updatethreadindex(channel,lastadded):
                 
                 # Add the thread (as long as its new)    
                 if threadid > lastadded:
-                    newthreads.append( {'author':author,'posttext':posttext,'image':image,'thumb':thumb,'threadid':threadid,'link':link,'posttime':timetext})
+                    newthreads.append( {'author':author,'posttext':posttext,'image':imageurl,'thumb':thumb,'threadid':threadid,'link':link,'posttime':timetext})
                     lastadded = threadid
     return newthreads,lastadded
 
