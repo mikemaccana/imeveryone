@@ -27,11 +27,11 @@ class Application(tornado.web.Application):
     def __init__(self):
         # These handlers always get provided with the application, request and any transforms by Tornado
         handlers = [
-            (r"/", MainHandler),
+            (r"/", InitialConnectHandler),
             (r"/auth/login", AuthLoginHandler),
             (r"/auth/logout", AuthLogoutHandler),
             (r"/a/message/new", NewPostHandler),
-            (r"/a/message/updates", MessageUpdatesHandler),
+            (r"/a/message/updates", ViewerUpdateHandler),
         ]
         settings = dict(
             cookie_secret="43oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
@@ -54,7 +54,7 @@ class BaseHandler(tornado.web.RequestHandler):
             return tornado.escape.json_decode(user_json)
 
 
-class MainHandler(BaseHandler):
+class InitialConnectHandler(BaseHandler):
     '''Handle initial get request for root dir, send client HTML which gets JS to do a post and get further messages!'''
     @tornado.web.authenticated
     def get(self):
@@ -144,7 +144,7 @@ class QueueToWaitingClients(MessageMixin, BaseHandler, threading.Thread):
             self.new_messages([message])
 
 
-class MessageUpdatesHandler(BaseHandler, MessageMixin):
+class ViewerUpdateHandler(BaseHandler, MessageMixin):
     '''Do updates. All clients continually send posts, which we only respond to when where there are new messges (where we run on_new_Messages() )'''
     @tornado.web.authenticated
     @tornado.web.asynchronous
