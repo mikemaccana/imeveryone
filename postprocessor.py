@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.6
-import httplib
+'''import httplib
 from lxml import etree
 from lxml.html.clean import clean_html
 from lxml.html.clean import Cleaner
@@ -8,14 +8,15 @@ import types
 import GeoIP
 import pickle
 import fourchan
-import re
+import re'''
 from PIL import Image
-import sys
+'''import sys
 import time
 sys.path.append('/root')
-import tesseract
+import tesseract'''
+import ipdb
 
-re.IGNORECASE
+#re.IGNORECASE
 
 '''
 * Rate my / rate my /Check out my pics /b/. What do you think of me?- display rating
@@ -45,6 +46,25 @@ def expandthreads(threads,threadid):
     '''Get thread content for a given thread'''
         
     return
+
+def reducelargeimages(imagefile):
+    '''Reduce images larger than a certain size'''
+    myimage = Image.open(imagefile)
+    width,height = myimage.size
+    aspect = float(width) / float(height)
+    maxwidth = 500
+    maxheight = 500
+    maxsize = (maxwidth,maxheight)    
+    # Don't bother if image is already smaller
+    if width < maxwidth and height < maxheight:
+        return imagefile
+    # Resize, save, return preview file name    
+    else:    
+        myimage.thumbnail(maxsize,Image.ANTIALIAS)
+        newfilename = imagefile.split('.')[-2]+'_preview.'+imagefile.split('.')[-1]
+        myimage.save(newfilename)
+        return newfilename
+    
     
 def getuserpprops(ip):
     gi = GeoIP.new(GeoIP.GEOIP_MEMORY_CACHE)
