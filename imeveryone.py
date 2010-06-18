@@ -149,7 +149,7 @@ class MessageUpdatesHandler(BaseHandler, MessageMixin):
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def post(self):
-        logging.info("MessageUpdatesHandler post() running!") 
+        logging.info('Recieved request for content') 
         cursor = self.get_argument("cursor", None)
         self.wait_for_messages(self.async_callback(self.on_new_messages),cursor=cursor)
     def on_new_messages(self, messages):
