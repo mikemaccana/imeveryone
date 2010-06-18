@@ -80,7 +80,7 @@ class MessageMixin(object):
         MessageMixin.waiters.append(callback)
     def new_messages(self, messages):
         '''Send messages to connected clients!'''
-        logging.info("Sending new message to %r listeners", len(MessageMixin.waiters))
+        logging.info("Sending new message to %r viewers", len(MessageMixin.waiters))
         for callback in MessageMixin.waiters:
             try:
                 callback(messages)
@@ -97,12 +97,18 @@ class NewPostHandler(BaseHandler, MessageMixin):
     @tornado.web.authenticated 
     def post(self):
         global messageQueue
-        logging.info("NewPostHandler post() running!") 
+        logging.info("Post recieved from user!") 
         # Create message based on body of PUT form data
         message = {
             'id': str(uuid.uuid4()),
             'author': self.current_user["first_name"],
             'posttext': self.get_argument("body"),
+            # Some dummy info before I add these to local posts 
+            'link':'http://www.google.com',
+            'posttime':'Just now',
+            'threadid':'007',
+            'image':None
+            
         }
         messageQueue.put(message) 
 
