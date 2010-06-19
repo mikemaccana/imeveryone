@@ -80,14 +80,6 @@ def texttolinks(string):
     linkstring = linkre.sub(r'<a href="\1">\1</a>', string)
     return linkstring
 
-def getimage(imageurl):
-    '''Save an image to disk'''
-    imagefile = imageurl.split('/')[-1]
-    cachelocation = 'static/cache/'+imagefile
-    openurl = urllib2.urlopen(imageurl)
-    savedfile = open(cachelocation,'wb')
-    savedfile.write(openurl.read())    
-    return cachelocation
 
 def updatethreadindex(channel,lastadded):
     '''Return list of new threads. Each thread is a dict.'''

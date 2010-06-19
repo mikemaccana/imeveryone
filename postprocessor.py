@@ -15,6 +15,7 @@ import time
 sys.path.append('/root')
 import tesseract'''
 import ipdb
+import urllib2
 
 #re.IGNORECASE
 
@@ -33,10 +34,6 @@ http://www.youtube.com/watch?v=w46Dwh4TMGA
 
 <object width="425" height="344"><param name="movie" value="http://www.youtube.com/v/w46Dwh4TMGA&hl=en_US&fs=1&"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/w46Dwh4TMGA&hl=en_US&fs=1&" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="425" height="344"></embed></object>
 
-
-
-'''
-'''
 * GeoIP and match for countryfags
 NLTK collocations
 nltk relations
@@ -62,9 +59,30 @@ def reducelargeimages(imagefile):
     else:    
         myimage.thumbnail(maxsize,Image.ANTIALIAS)
         newfilename = imagefile.split('.')[-2]+'_preview.'+imagefile.split('.')[-1]
-        myimage.save(newfilename)
+        try:
+            myimage.save(newfilename)
+        except:
+            return None    
         return newfilename
-    
+
+
+def getimage(imageurl):
+    '''Save an image to disk'''
+    imagefile = imageurl.split('/')[-1]
+    cachelocation = 'static/cache/'+imagefile
+    openurl = urllib2.urlopen(imageurl)
+    savedfile = open(cachelocation,'wb')
+    savedfile.write(openurl.read())    
+    return cachelocation
+
+def makeintro(posttext):
+    postwords = posttext.split()
+    if len(postwords) < 20:
+        return posttext,None 
+    else:
+        posttext = ' '.join(postwords[0:20])+'...'
+        intro = '...'+' '.join(postwords[20:]) 
+        return (posttext, intro)    
     
 def getuserpprops(ip):
     gi = GeoIP.new(GeoIP.GEOIP_MEMORY_CACHE)

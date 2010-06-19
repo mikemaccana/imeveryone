@@ -20,20 +20,16 @@
 	    </div>
 	
 	    <div id="input">
-			<form action="/a/message/new" method="post" id="messageform">
-				<table>
-					<tr>
-						<td><input name="body" id="message" style="width:500px"/></td>
-						<td><input id="myfile" name="myfile" type="file"></td>
-						<td style="padding-left:5px">
-							<input type="submit" value="{{ _("Post") }}"/>
-							<input type="hidden" name="next" value="{{ request.path }}"/>
-							{{ xsrf_form_html() }}
-						</td>
-					</tr>
-				</table>
+			<form enctype='multipart/form-data' method='post' action='/a/message/new'>
+			File to Upload:
+			<input name='posttext' style='width:500px'/>
+			<input name='image' type='file' />
+			<input type='submit' value="{{ _("Post") }}" name="Submit"/>
+			<input type="hidden" name="next" value="{{ request.path }}"/>
+			{{ xsrf_form_html() }}
 			</form>
 	    </div>
+
 
 	    <div id="body">
 			<div id="inbox">

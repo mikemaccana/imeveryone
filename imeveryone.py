@@ -17,6 +17,7 @@ import threading
 import Queue
 import sys
 import postprocessor
+import ipdb
 
 from tornado.options import define, options
 
@@ -98,17 +99,18 @@ class NewPostHandler(BaseHandler, MessageMixin):
     def post(self):
         global messageQueue
         logging.info("Post recieved from user!") 
+        #ipdb.set_trace()
         # Create message based on body of PUT form data
         message = {
             'id': str(uuid.uuid4()),
-            'author': self.current_user["first_name"],
-            'posttext': self.get_argument("body"),
+            'author':self.current_user["first_name"],
+            'posttext':self.get_argument('posttext'), 
+            'image':self.get_argument('image'),          
             # Some dummy info before I add these to local posts 
             'link':'http://www.google.com',
             'posttime':'Just now',
             'threadid':'007',
-            'image':None
-            
+            #'image':None,   
         }
         messageQueue.put(message) 
 
@@ -125,22 +127,29 @@ class QueueToWaitingClients(MessageMixin, BaseHandler, threading.Thread):
         while True: 
             message = self.__queue.get()   
             message['id'] = str(uuid.uuid4())
+            # Add an intro for particularly large text
+            message['posttext'],message['intro'] = postprocessor.makeintro(message['posttext'])
+            
             # Comes from BaseHandler, which inherits from tornado.web.RequestHandler, which provides
             #message["html"] = self.render_string("message.html", message=message)
-            basicpost = '''<DIV class="timestamp"><H3><A href="'''+message['link']+'''">'''+message['posttime']+'''</A> '''+message['author']+'''</H3></DIV><H2>'''+message['posttext']+'''</H2><DIV class="endpost">'''
+            basicpost = '''<div class="timestamp"><h3><a href="'''+message['link']+'''">'''+message['posttime']+'''</a> '''+message['author']+'''</h3></div><h2>'''+message['posttext']+'''</h2><div class="endpost">'''
             
             # Now fetch the image and make the include  
             if message['image']:       
-                localfile = fourchan.getimage(message['image'])
-                localfile = postprocessor.reducelargeimages(localfile)
-                pictureinclude = '''<P><A href="'''+message['link']+'''"><IMG class="lede" src="'''+localfile+'''" alt=""></A></P>'''
+                localfile = postprocessor.getimage(message['image'])
+                preview = postprocessor.reducelargeimages(localfile)
+                pictureinclude = '''<P><A href="'''+localfile+'''"><IMG class="lede" src="'''+preview+'''" alt=""></A></P>'''
             else:
                 pictureinclude = ''                 
-                                
-            #textybit = '''<P class="intro"><SPAN class="drop">"</SPAN>'''+'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin nec arcu a est vulputate ultrices. Donec orci orci, porttitor sed luctus id, porttitor sed dolor.'+'''</P><P>"Mauris mattis quam at arcu scelerisque fringilla. Pellentesque porta porttitor urna ac varius. Duis in sem eget enim rhoncus tincidunt a ut urna. Fusce bibendum interdum lectus id molestie. Etiam dignissim luctus magna pretium placerat. Fusce sed ornare nibh. Donec in arcu ac neque commodo ultricies. Nam et turpis in orci accumsan mattis sed ut felis."</P>'''
-            tag = '''<P><CITE><A href="'''+message['link']+'''">Read more...</A> '''+str(message['threadid'])+'''</CITE></P><HR>'''            
+            
+            if message['intro']:            
+                intro = '''<P class="intro"><SPAN class="drop">"</SPAN>'''+message['intro']+'''"</P>'''
+            else:
+                intro = ''
+                
+            tag = '''<p><cite><a href="'''+message['link']+'''">read more...</a> '''+str(message['threadid'])+'''</cite></p><hr>'''            
 
-            message["html"] = basicpost + pictureinclude + tag
+            message["html"] = basicpost + intro + pictureinclude + tag
             self.new_messages([message])
 
 
@@ -149,7 +158,7 @@ class ViewerUpdateHandler(BaseHandler, MessageMixin):
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def post(self):
-        logging.info('Recieved request for content') 
+        logging.info('Update request') 
         cursor = self.get_argument("cursor", None)
         self.wait_for_messages(self.async_callback(self.on_new_messages),cursor=cursor)
     def on_new_messages(self, messages):
