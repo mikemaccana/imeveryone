@@ -159,8 +159,9 @@ def savedatabase(threads,database):
 
 class ContentGetter(threading.Thread): 
     '''Gets messages from 4chan and puts them on our message queue'''
-    def __init__(self, queue):
+    def __init__(self, queue, delay):
         self.__queue = queue
+        self.__delay = delay
         threading.Thread.__init__(self)
             
     def run(self):
@@ -169,7 +170,7 @@ class ContentGetter(threading.Thread):
             newthreads,lastadded = updatethreadindex('b',lastadded)
             for thread in newthreads:
                 self.__queue.put(thread) 
-                delay = random.randint(3,7)
+                delay = random.randint(self.__delay-2,self.__delay+3)
                 time.sleep(delay)  
 
 
@@ -181,18 +182,14 @@ class ContentProcessor(threading.Thread):
     def run(self):
         while True: 
             message = self.__queue.get() 
-            print message['author']
-            print message['posttext']
-            print message['id']
-            print '------------'
 
 def main():
-    '''start threads in perpetuity'''
+    '''Start threads in perpetuity'''
     messageQueue = Queue.Queue(0)
     
     mycontentgetter = ContentGetter(messageQueue)
     mycontentgetter.start()
-    mycontentprocessor = ContentProcessor(messageQueue)
+    mycontentprocessor = ContentProcessor(messageQueue,delay)
     mycontentprocessor.start()
 
 if __name__ == '__main__':

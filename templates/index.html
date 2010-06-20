@@ -18,15 +18,19 @@
 			<b>{{ escape(current_user["name"]) }}</b> -
 			<a href="/auth/logout">{{ _("Sign out") }}</a>
 	    </div>
-	
+
 	    <div id="input">
 			<form enctype='multipart/form-data' method='post' action='/a/message/new'>
-			File to Upload:
-			<input name='posttext' style='width:500px'/>
-			<input name='image' type='file' />
-			<input type='submit' value="{{ _("Post") }}" name="Submit"/>
-			<input type="hidden" name="next" value="{{ request.path }}"/>
-			{{ xsrf_form_html() }}
+				<table>
+					<tr>
+						<td>Say it: <input name='posttext' style='width:300px'/></td>
+						<td><input name='image' type='file' /></td>
+						<td><input type='submit' value="{{ _("Post") }}" name="Submit"/>			
+						<input type="hidden" name="next" value="{{ request.path }}"/>
+						{{ xsrf_form_html() }}
+						</td>
+					</tr>
+				</table>		
 			</form>
 	    </div>
 

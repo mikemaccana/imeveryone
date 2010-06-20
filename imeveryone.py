@@ -118,7 +118,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
             # Some dummy info before I add these to local posts 
             'link':'http://www.google.com',
             'posttime':'Just now',
-            'threadid':'007',
+            'threadid':postid,
         }
         messageQueue.put(message) 
 
@@ -216,7 +216,7 @@ def main():
         http_server.listen(options.port)
 
         ## Keep supplying new content to queue
-        mycontentgetter = fourchan.ContentGetter(messageQueue)
+        mycontentgetter = fourchan.ContentGetter(messageQueue,15)
         mycontentgetter.start()
         
         # Take content from queue and send updates to waiting clients
