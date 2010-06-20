@@ -3,19 +3,19 @@
 -->
 
 <div class="timestamp">
-	<h3><a href="http://www.google.com/">{{message['posttime']}}</a> {{message['author']}}</h3>	
+	<h3><a href="http://www.google.com/">{{message['posttime']}}</a> escape({{message['author']}})</h3>	
 </div>
-<h2>{{message['posttext']}}</h2>
+<h2>{{escape (message['posttext'])}}</h2>
 <div class="endpost">
 	
 	
 	{% if message['intro'] %}            
-        <p class="intro">{{message['intro']}}</p>
+        <p class="intro">{{escape (message['intro'])}}</p>
 	{% end %}	
 	
 	
 	{% if message['localfile'] %}
-		<p><a href={{message['localfile']}}><img class="lede" src={{message['preview']}} alt=""></a></p>
+		<p><a href={{ message['localfile']}}><img class="lede" src={{message['preview']}} alt=""></a></p>
 	{% end %}	
 	
 	<p>
