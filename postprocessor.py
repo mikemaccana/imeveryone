@@ -37,6 +37,7 @@ http://www.youtube.com/watch?v=w46Dwh4TMGA
 * GeoIP and match for countryfags
 NLTK collocations
 nltk relations
+
 '''
 
 def expandthreads(threads,threadid):
@@ -66,14 +67,14 @@ def reducelargeimages(imagefile):
         return newfilename
 
 
-def getimage(imageurl):
+def getimage(imageurl,cachedir):
     '''Save an image to disk'''
     imagefile = imageurl.split('/')[-1]
-    cachelocation = 'static/cache/'+imagefile
+    cachedfilename = cachedir+imagefile
     openurl = urllib2.urlopen(imageurl)
-    savedfile = open(cachelocation,'wb')
+    savedfile = open(cachedfilename,'wb')
     savedfile.write(openurl.read())    
-    return cachelocation
+    return cachedfilename
 
 def makeintro(posttext):
     postwords = posttext.split()

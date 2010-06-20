@@ -13,7 +13,6 @@ import Queue
 import random
 import sys
 import re
-import urllib2
 
 debug = False
 
@@ -112,9 +111,9 @@ def updatethreadindex(channel,lastadded):
                 
                 # Image
                 try:
-                    image = element.getparent().getprevious().getprevious().getprevious().getprevious().attrib['href']                    
+                    imageurl = element.getparent().getprevious().getprevious().getprevious().getprevious().attrib['href']                    
                 except (KeyError,IndexError):
-                    image = None   
+                    imageurl = None   
                     
                 # Thumbnail    
                 try:    
@@ -126,7 +125,7 @@ def updatethreadindex(channel,lastadded):
                 
                 # Add the thread (as long as its new)    
                 if threadid > lastadded:
-                    newthreads.append( {'author':author,'posttext':posttext,'image':image,'thumb':thumb,'threadid':threadid,'link':link,'posttime':timetext})
+                    newthreads.append( {'author':author,'posttext':posttext,'imageurl':imageurl,'thumb':thumb,'threadid':threadid,'link':link,'posttime':timetext,'localfile':None,'preview':None})
                     lastadded = threadid
     return newthreads,lastadded
 

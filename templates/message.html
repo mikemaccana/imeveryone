@@ -1,13 +1,23 @@
 <!-- This is only used for cached messages as the templating is attached to messages that arrive as Requests via RequestHandler 
+
 -->
 
 <div class="timestamp">
 	<h3><a href="http://www.google.com/">{{message['posttime']}}</a> {{message['author']}}</h3>	
 </div>
-
 <h2>{{message['posttext']}}</h2>
-
 <div class="endpost">
+	
+	
+	{% if message['intro'] %}            
+        <p class="intro">{{message['intro']}}</p>
+	{% end %}	
+	
+	
+	{% if message['localfile'] %}
+		<p><a href={{message['localfile']}}><img class="lede" src={{message['preview']}} alt=""></a></p>
+	{% end %}	
+	
 	<p>
 		<cite>
 			<a href="{{message['link']}}">Read more...</a> {{message['threadid']}}

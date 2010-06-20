@@ -23,6 +23,7 @@ from tornado.options import define, options
 
 define("port", default=8888, help="run on the given port", type=int)
 
+cachedir = 'static/cache/'
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -94,23 +95,30 @@ class MessageMixin(object):
 
 
 class NewPostHandler(BaseHandler, MessageMixin):
-    '''Take new messages sent from clients and add them to our message queue'''
+    '''Recieve new submissions from users and add them to our message queue'''
     @tornado.web.authenticated 
     def post(self):
-        global messageQueue
+        global messageQueue, cachedir
         logging.info("Post recieved from user!") 
-        #ipdb.set_trace()
+        postid = str(uuid.uuid4()) 
+        # Save image data to local file
+        imagepost = self.request.files['image'][0]
+        print 'Saving image: '+imagepost['filename']
+        localfile = cachedir+postid+'.'+imagepost['filename'].split('.')[-1]
+        localfilesave = open(localfile,'wb')
+        localfilesave.write(imagepost['body'])
+            
         # Create message based on body of PUT form data
         message = {
-            'id': str(uuid.uuid4()),
+            'id': postid,
             'author':self.current_user["first_name"],
             'posttext':self.get_argument('posttext'), 
-            'image':self.get_argument('image'),          
+            'imageurl':None,
+            'localfile':localfile,
             # Some dummy info before I add these to local posts 
             'link':'http://www.google.com',
             'posttime':'Just now',
             'threadid':'007',
-            #'image':None,   
         }
         messageQueue.put(message) 
 
@@ -133,19 +141,26 @@ class QueueToWaitingClients(MessageMixin, BaseHandler, threading.Thread):
             # Comes from BaseHandler, which inherits from tornado.web.RequestHandler, which provides
             #message["html"] = self.render_string("message.html", message=message)
             basicpost = '''<div class="timestamp"><h3><a href="'''+message['link']+'''">'''+message['posttime']+'''</a> '''+message['author']+'''</h3></div><h2>'''+message['posttext']+'''</h2><div class="endpost">'''
-            
-            # Now fetch the image and make the include  
-            if message['image']:       
-                localfile = postprocessor.getimage(message['image'])
-                preview = postprocessor.reducelargeimages(localfile)
-                pictureinclude = '''<P><A href="'''+localfile+'''"><IMG class="lede" src="'''+preview+'''" alt=""></A></P>'''
-            else:
-                pictureinclude = ''                 
-            
+
+            # Intro
             if message['intro']:            
-                intro = '''<P class="intro"><SPAN class="drop">"</SPAN>'''+message['intro']+'''"</P>'''
+                intro = '''<p class="intro">'''+message['intro']+'''</p>'''
             else:
                 intro = ''
+            
+            # Fetch the image if necessary  
+            if message['imageurl']:       
+                message['localfile'] = postprocessor.getimage(message['imageurl'],cachedir)
+            
+            # Make picture include        
+            if message['localfile']:   
+                print 'Local file is: '+message['localfile']
+                message['preview'] = postprocessor.reducelargeimages(message['localfile'])
+                print 'preview  is: '+message['preview']
+                
+                pictureinclude = '''<p><a href="'''+message['localfile']+'''"><img class="lede" src="'''+message['preview']+'''" alt=""></a></p>'''                         
+            else:
+                pictureinclude = ''
                 
             tag = '''<p><cite><a href="'''+message['link']+'''">read more...</a> '''+str(message['threadid'])+'''</cite></p><hr>'''            
 
@@ -200,7 +215,7 @@ def main():
         http_server = tornado.httpserver.HTTPServer(Application())
         http_server.listen(options.port)
 
-        # Keep supplying new content to queue
+        ## Keep supplying new content to queue
         mycontentgetter = fourchan.ContentGetter(messageQueue)
         mycontentgetter.start()
         

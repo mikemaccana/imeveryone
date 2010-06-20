@@ -31,7 +31,7 @@ body	{
 	margin: 0;
 	padding: 0;
 	border: 0;	
-   background: #c30 url(/i/ff-flash-fix.gif) top center repeat-y; /* this will fix the flashing */
+    background: #c30
 	color: #333;
 	font: 11px/18px "Helvetica Neue," Arial, Helvetica, sans-serif;
 	}
@@ -131,111 +131,6 @@ hr {
 /* Brand the selection */
 ::-moz-selection { color: #000;  background: #f60; }
 ::selection      { color: #000;  background: #f60; }
-
-
-/* Footer image highlight */
-
-#footer a img { 
-	border: none; 
-	border-bottom: 5px solid #000; 
-	border-top: 5px solid #000;}
-
-#footer	a:hover img { 
-	border-color: #cf0; 
-	}
-
-#footer	a:active img { 
-	border-color: #fff; 
-	}
-		
-
-div.avatar {
-	float: left;
-	margin: 3px 12px 0 0; 
-	}
-	
-div.avatar img {
-	border: 1px solid #ccc;
-	}
-/* .comment_text {
-float: left;
-width: 405px;
-}
-.avatar { margin-left: 10px; }
-.comment:after, .pingback:after {
-	content: "."; 
-    display: block; 
-    height: 0; 
-    clear: both; 
-    visibility: hidden;
-}*/
-
-
-
-/* blockquote callout */
-
-div#maincontent blockquote.threecol {
-	float: right;
-	width: 300px;
-	margin: 0;
-	padding: 0 10px;
-	font-size: 150%;
-	line-height: 1.3em;
-	color: #444;
-	}
-	
-div#maincontent blockquote.threecol p {
-	border: none;
-	font-size: 24px;
-	line-height: 36px;
-	margin: 0;
-	padding: 0;
-	font-family: Georgia, serif;
-	}
-
-	/* Inset image - floated left in this design */
-
-  .inset, .left, .floattenr { 
-  float: left; 
-  margin: 4px 15px 6px 0; 
-	}
-
-.right { 
-  float: right; 
-  margin: 0 0 18px 18px; 
-	}
-
-
-	/* Subnav in sidebar */	
-
-ul#depts, ul#mysites, ul#thirdparty 	{
-	margin: 5px 0 0 0;
-	padding: 0;
-	}	
-
-ul#depts li, ul#mysites li, ul#thirdparty li 	{
-	margin-left: 0;
-	padding-left: 0;
-	list-style: none;
-	line-height: 18px;
-	letter-spacing: 2px;
-	text-transform: uppercase;
-	}
-
-html ul#depts li, ul#mysites li,  html ul#thirdparty li {
-	font-size: 15px;
-	}
-
-ul#depts li#about {
-	margin-top: 5px;
-	}
-	
-div#globalnav ul#menu li a {
-	text-indent: -9999px;
-	overflow: hidden;
-	text-decoration: none;
-	}
-
 
 
 
@@ -536,23 +431,6 @@ p.button	{
 	padding: 2px 3px;
 	}
 	
-
-	/* cover one's butt */
-	
-form#buttski	{
-	text-align: center;
-	padding: 0;
-	margin: 10px auto;
-	}
-
-.butt {
-	color: #000; 
-	background: #fff; 
-	font: 13px/18px Georgia, serif;
-	}
-
-
-
 
 
 
