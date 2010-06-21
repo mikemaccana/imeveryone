@@ -77,6 +77,7 @@ def getimage(imageurl,cachedir):
     return cachedfilename
 
 def makeintro(posttext):
+    '''Reduce the headline text in very long posts if needed'''
     postwords = posttext.split()
     if len(postwords) < 20:
         return posttext,None 

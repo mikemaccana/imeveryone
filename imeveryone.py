@@ -95,7 +95,7 @@ class MessageMixin(object):
 
 
 class NewPostHandler(BaseHandler, MessageMixin):
-    '''Recieve new submissions from users and add them to our message queue'''
+    '''Recieve new content from users and add them to our message queue'''
     @tornado.web.authenticated 
     def post(self):
         global messageQueue, cachedir
@@ -121,7 +121,8 @@ class NewPostHandler(BaseHandler, MessageMixin):
             'threadid':postid,
         }
         messageQueue.put(message) 
-
+        if self.get_argument("next", None):
+            self.redirect(self.get_argument("next"))
 
     
 class QueueToWaitingClients(MessageMixin, BaseHandler, threading.Thread):
