@@ -10,11 +10,14 @@ import pickle
 import fourchan
 import re'''
 from PIL import Image
-'''import sys
+import sys
+sys.path.append('pytesser')
+import pytesser
+'''
 import time
-sys.path.append('/root')
-import tesseract'''
-import ipdb
+'''
+#import tesseract
+#import ipdb
 import urllib2
 
 #re.IGNORECASE
@@ -71,7 +74,10 @@ def getimage(imageurl,cachedir):
     '''Save an image to disk'''
     imagefile = imageurl.split('/')[-1]
     cachedfilename = cachedir+imagefile
-    openurl = urllib2.urlopen(imageurl)
+    try:
+        openurl = urllib2.urlopen(imageurl)
+    except:
+        return None    
     savedfile = open(cachedfilename,'wb')
     savedfile.write(openurl.read())    
     return cachedfilename
@@ -97,12 +103,17 @@ def getimagetext(imagefile):
     # Convert to black and white
     if image.mode != "L":
         image = image.convert("L")
-    text = tesseract.image_to_string(image)
-    return text
+    # Now let's do this shit    
+    try:
+        imagetext = pytesser.image_to_string(image)
+    except:
+        return None
+    return imagetext
     
 
 def getthreadprops(threads):
-    '''Determines posts where there is a winner, or a decider'''
+    '''Determines posts where there is a winner, or a decider
+    UNUSED'''
     for thread in threads:
         posttext = threads[thread]['posttext']
         # Determine what winning thread will be

@@ -111,7 +111,7 @@ def updatethreadindex(channel,lastadded):
                 
                 # Image
                 try:
-                    imageurl = element.getparent().getprevious().getprevious().getprevious().getprevious().attrib['href']                    
+                    imageurl = element.getparent().getprevious().getprevious().getprevious().getprevious().attrib['href']   
                 except (KeyError,IndexError):
                     imageurl = None   
                     

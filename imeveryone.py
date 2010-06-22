@@ -66,15 +66,17 @@ class InitialConnectHandler(BaseHandler):
 class MessageMixin(object):
     '''This is where the magic of tornado happens - we add clients to a waiters list, and when new messages arrive, we run new_messages() '''
     waiters = []
+    # Amount of messages to keep around for new connections
     cache = []
-    cache_size = 200
+    cache_size = 10
     def wait_for_messages(self, callback, cursor=None):
         '''Add new clients to waiters list'''
         if cursor:
             index = 0
             for i in xrange(len(MessageMixin.cache)):
                 index = len(MessageMixin.cache) - i - 1
-                if MessageMixin.cache[index]["id"] == cursor: break
+                if MessageMixin.cache[index]["id"] == cursor: 
+                    break
             recent = MessageMixin.cache[index + 1:]
             if recent:
                 callback(recent)
@@ -153,12 +155,16 @@ class QueueToWaitingClients(MessageMixin, BaseHandler, threading.Thread):
             if message['imageurl']:       
                 message['localfile'] = postprocessor.getimage(message['imageurl'],cachedir)
             
-            # Make picture include        
+            # Work on the image       
             if message['localfile']:   
-                print 'Local file is: '+message['localfile']
+                # Get image text via OCR
+                message['imagetext'] = postprocessor.getimagetext(message['localfile'])
+                if message['imagetext']:
+                    print message['imagetext']
+                # Make picture include 
+                logging.info('Local file is: '+message['localfile'])
                 message['preview'] = postprocessor.reducelargeimages(message['localfile'])
-                print 'preview  is: '+message['preview']
-                
+                logging.info('preview  is: '+message['preview'])
                 pictureinclude = '''<p><a href="'''+message['localfile']+'''"><img class="lede" src="'''+message['preview']+'''" alt=""></a></p>'''                         
             else:
                 pictureinclude = ''
@@ -217,7 +223,7 @@ def main():
         http_server.listen(options.port)
 
         ## Keep supplying new content to queue
-        mycontentgetter = fourchan.ContentGetter(messageQueue,15)
+        mycontentgetter = fourchan.ContentGetter(messageQueue,5)
         mycontentgetter.start()
         
         # Take content from queue and send updates to waiting clients
