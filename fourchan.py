@@ -13,6 +13,7 @@ import Queue
 import random
 import sys
 import re
+import recaptcha
 
 debug = False
 
@@ -50,7 +51,7 @@ def connect(channel):
         sys.exit(1)    
     try:
         response = conn.getresponse()
-    except error:
+    except Error:
         print '4chan has disconnected us'
         sys.exit(1)    
     debugprint(str(response.status)+response.reason)

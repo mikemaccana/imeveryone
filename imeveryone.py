@@ -17,6 +17,9 @@ import threading
 import Queue
 import sys
 import postprocessor
+from operator import itemgetter
+from recaptcha.client import captcha
+
 import ipdb
 
 from tornado.options import define, options
@@ -24,6 +27,8 @@ from tornado.options import define, options
 define("port", default=8888, help="run on the given port", type=int)
 
 cachedir = 'static/cache/'
+
+RECAPTCHA_PRIVKEY = '6LeDDLsSAAAAADxPCJzvLZtSLY7mKlyqvokuRGzv'
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -60,11 +65,14 @@ class InitialConnectHandler(BaseHandler):
     '''Handle initial get request for root dir, send client HTML which gets JS to do a post and get further messages!'''
     @tornado.web.authenticated
     def get(self):
-        self.render("index.html", messages=MessageMixin.cache)
+        # Ensure messages are ordered corrrectly on initial connect
+        sortedmessages = sorted(MessageMixin.cache, key=itemgetter('id'), reverse=True)
+        captchahtml = captcha.displayhtml('6LeDDLsSAAAAAEd_PN6diNQaj7PXz5Dq7AEGi_69')
+        self.render("index.html", messages=sortedmessages, captcha=captchahtml)       
 
 
 class MessageMixin(object):
-    '''This is where the magic of tornado happens - we add clients to a waiters list, and when new messages arrive, we run new_messages() '''
+    '''This is where the magic of tornado happens - we add clients to a waiters list, and when new messages arrive, we run send_messages() '''
     waiters = []
     # Amount of messages to keep around for new connections
     cache = []
@@ -82,8 +90,8 @@ class MessageMixin(object):
                 callback(recent)
                 return
         MessageMixin.waiters.append(callback)
-    def new_messages(self, messages):
-        '''Send messages to connected clients!'''
+    def send_messages(self, messages):
+        '''Send messages to connected clients!'''        
         logging.info("Sending new message to %r viewers", len(MessageMixin.waiters))
         for callback in MessageMixin.waiters:
             try:
@@ -100,9 +108,25 @@ class NewPostHandler(BaseHandler, MessageMixin):
     '''Recieve new content from users and add them to our message queue'''
     @tornado.web.authenticated 
     def post(self):
-        global messageQueue, cachedir
+        global messageQueue, cachedir, RECAPTCHA_PRIVKEY
         logging.info("Post recieved from user!") 
         postid = str(uuid.uuid4()) 
+        
+        # Recaptcha
+        remote_ip = self.request.remote_ip
+        challenge = self.get_argument('recaptcha_challenge_field')
+        response = self.get_argument('recaptcha_response_field')
+        recaptcha_response = captcha.submit(challenge, response, RECAPTCHA_PRIVKEY, remote_ip)
+        if recaptcha_response.is_valid:
+            logging.info('Yaay captcha worked!')
+        else:
+            logging.info('Failed')
+            print recaptcha_response.error_code
+        
+        # Ensure image exists
+        if not 'image' in self.request.files:
+            logging.info('You forgot to provide an image!')
+        
         # Save image data to local file
         imagepost = self.request.files['image'][0]
         print 'Saving image: '+imagepost['filename']
@@ -122,6 +146,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
             'posttime':'Just now',
             'threadid':postid,
         }
+        
         messageQueue.put(message) 
         if self.get_argument("next", None):
             self.redirect(self.get_argument("next"))
@@ -159,8 +184,8 @@ class QueueToWaitingClients(MessageMixin, BaseHandler, threading.Thread):
             if message['localfile']:   
                 # Get image text via OCR
                 message['imagetext'] = postprocessor.getimagetext(message['localfile'])
-                if message['imagetext']:
-                    print message['imagetext']
+                #if message['imagetext']:
+                #    print message['imagetext']
                 # Make picture include 
                 logging.info('Local file is: '+message['localfile'])
                 message['preview'] = postprocessor.reducelargeimages(message['localfile'])
@@ -172,18 +197,18 @@ class QueueToWaitingClients(MessageMixin, BaseHandler, threading.Thread):
             tag = '''<p><cite><a href="'''+message['link']+'''">read more...</a> '''+str(message['threadid'])+'''</cite></p><hr>'''            
 
             message["html"] = basicpost + intro + pictureinclude + tag
-            self.new_messages([message])
+            self.send_messages([message])
 
 
 class ViewerUpdateHandler(BaseHandler, MessageMixin):
-    '''Do updates. All clients continually send posts, which we only respond to when where there are new messges (where we run on_new_Messages() )'''
+    '''Do updates. All clients continually send posts, which we only respond to when where there are new messges (where we run on_send_messages() )'''
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def post(self):
         logging.info('Update request') 
         cursor = self.get_argument("cursor", None)
-        self.wait_for_messages(self.async_callback(self.on_new_messages),cursor=cursor)
-    def on_new_messages(self, messages):
+        self.wait_for_messages(self.async_callback(self.on_send_messages),cursor=cursor)
+    def on_send_messages(self, messages):
         # Closed client connection
         if self.request.connection.stream.closed():
             return

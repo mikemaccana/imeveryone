@@ -4,14 +4,15 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<title>I'm Everyone</title>
 	<style type="text/css" media="all">@import 'static/imeveryone.css';</style>
-	<link rel="alternate stylesheet" type="text/css" media="all" title="offwhite" href="./zeldman_files/style-alt.css" disabled="" />
 	<!--[if IE]>
 	<link rel="stylesheet" href="http://www.zeldman.com/wp-content/themes/zeldman-v2/win-ie-all.css" type="text/css" media="screen, projection, print" />
 	<![endif]-->
 
 </head>
 
+
 <body id="home">
+
 	<div id="maincontent">
 		
 	    <div id="nav">
@@ -25,6 +26,9 @@
 					<tr>
 						<td>Say it: <input name='posttext' style='width:300px'/></td>
 						<td><input name='image' type='file' /></td>
+						<td>
+							{{ captcha }}
+						</td>	
 						<td><input type='submit' value="{{ _("Post") }}" name="Submit"/>			
 						<input type="hidden" name="next" value="{{ request.path }}"/>
 						{{ xsrf_form_html() }}
