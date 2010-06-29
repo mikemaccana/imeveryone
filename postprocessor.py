@@ -99,17 +99,17 @@ def getuserpprops(ip):
 
 def getimagetext(imagefile):
     '''Recieve an image, return the text'''
-    image = Image.open(imagefile)
-    # Convert to black and white
-    if image.mode != "L":
-        image = image.convert("L")
-    # Now let's do this shit    
+    # PIL is flaky.
     try:
+        image = Image.open(imagefile)
+        # Convert to black and white
+        if image.mode != "L":
+            image = image.convert("L")
+        # Now let's do this shit    
         imagetext = pytesser.image_to_string(image)
+        return imagetext
     except:
-        return None
-    return imagetext
-    
+        return None    
 
 def getthreadprops(threads):
     '''Determines posts where there is a winner, or a decider
