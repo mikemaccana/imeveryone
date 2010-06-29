@@ -1,70 +1,52 @@
-/* ortions from Zeldman - licensedas 'you may copy or adapt elements of this CSS in your own projects, but the design is copyright 2009 Jeffrey Zeldman and Happy Cog Studios and may not be reproduced without permission. */
+/* Some portions from Zeldman - licensedas 'you may copy or adapt elements of this CSS in your own projects, but the design is copyright 2009 Jeffrey Zeldman and Happy Cog Studios and may not be reproduced without permission.' */
 
-	/* Remove browser styles (see http://meyerweb.com/eric/thoughts/2007/05/01/reset-reloaded/) */
+/* Reset Reloaded - thanks to http://meyerweb.com/eric/thoughts/2007/05/01/reset-reloaded/ */
 	
 	html, body, div, span, applet, object, iframe,
-h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-a, abbr, acronym, address, big, cite, code,
-del, dfn, em, font, img, ins, kbd, q, s, samp,
-small, strike, strong, sub, sup, tt, var,
-dl, dt, dd, ol, ul, li,
-fieldset, form, label, legend,
-table, caption, tbody, tfoot, thead, tr, th, td {
-	margin: 0;
-	padding: 0;
-	border: 0;
-	outline: 0;
-	font-weight: inherit;
-	font-style: inherit;
-	font-size: 100%;
-	font-family: inherit;
-	vertical-align: baseline;
-		}
-
-/* remember to define focus styles! */
-:focus {
-	outline: 0;
-	}
-
-body	{
-	text-align: center;
-	margin: 0;
-	padding: 0;
-	border: 0;	
-    background: #c30
-	color: #333;
-	font: 11px/18px "Helvetica Neue," Arial, Helvetica, sans-serif;
-	}
-
-ol, ul {
-	list-style: none;
-	}
-	
-/* 'tables still need 'cellspacing="0"' in the markup' - Eric Meyer */
-
-table {
-	border-collapse: separate;
-	border-spacing: 0;
-	}
-
-caption, th, td {
-	text-align: left;
-	font-weight: normal;
-	}
-
-blockquote:before, blockquote:after,
-q:before, q:after {
-	content: "";
-	}
-
-blockquote, q {
-	quotes: "" "";
-	}a
+    h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+    a, abbr, acronym, address, big, cite, code,
+    del, dfn, em, font, img, ins, kbd, q, s, samp,
+    small, strike, strong, sub, sup, tt, var,
+    dl, dt, dd, ol, ul, li,
+    fieldset, form, label, legend,
+    table, caption, tbody, tfoot, thead, tr, th, td {
+    	margin: 0;
+    	padding: 0;
+    	border: 0;
+    	outline: 0;
+    	font-weight: inherit;
+    	font-style: inherit;
+    	font-size: 100%;
+    	font-family: inherit;
+    	vertical-align: baseline;
+    }
+    /* RR - remember to define focus styles! */
+    :focus {
+    	outline: 0;
+    }
+    body {
+    	line-height: 1;
+    	color: black;
+    	background: white;
+    }
+    ol, ul {
+    	list-style: none;
+    }
+    /* RR - tables still need 'cellspacing="0"' in the markup */
+    table {
+    	border-collapse: separate;
+    	border-spacing: 0;
+    }
+    caption, th, td {
+    	text-align: left;
+    	font-weight: normal;
+    }
 
 
 
 
-/* Web fonts baby * /
+
+/* Fonts.  * /
 
 	/*
 	 * The fonts included are copyrighted by the vendor listed below.	 *
@@ -95,11 +77,6 @@ html {
 	background: #f9f8f3;
 	 }
 
-div#header {
-	border-top: 12px solid #f60;
-	background: #000;
-	}
-
 div#maincontent {
 	float: left;
 	margin: 0;
@@ -107,18 +84,6 @@ div#maincontent {
 	width: 490px;
 	}
 
-
-div#footer	{
-	clear: both;
-	border: 0;
-	border-top: 1px solid #666;
-	border-bottom: 12px solid #09f;
-	background: #000;
-	color: #dddcd8;
-	width: 760px;
-	padding: 36px 0 36px 10px;
-	margin: 0;
-	}
 
 hr {
 	clear: both;
@@ -128,13 +93,13 @@ hr {
 
 
 
-/* Brand the selection */
+/* Highlight color */
 ::-moz-selection { color: #000;  background: #f60; }
 ::selection      { color: #000;  background: #f60; }
 
 
 
-	/* Default links 	*/
+/* Default links 	*/
 
 a:link, a:visited {
 	font-weight : bold; 
@@ -205,20 +170,6 @@ body div#maincontent h3	{
 	font-size: 18px;
 	}
 
-body div#maincontent h4 {
-	font-size: 14px;
-	}
-
-body div#maincontent h3#comments	{
-	margin: 18px 0;
-	font-size: 13px;
-	color: #444;
-	margin-bottom: 25px;
-	}
-	
-strong, body div#maincontent strong, div#maincontent div.comment_text p strong {
-	font-weight: bold;
-	}
 	
 em, body div#maincontent em {
 	font-style: italic;
@@ -231,10 +182,6 @@ img.lede {margin: 10px 0;}
 
 /* More typography */
 
-	
-h4	{	
-	font-size: 18px;
-	}
 
 p	{
 	margin: 0 0 9px 0;
@@ -264,12 +211,6 @@ div.timestamp h3	{
 	letter-spacing: 1px;
 	}
 
-div#maincontent blockquote	{
-	padding: 0;
-	margin: 1.5em 50px;
-	border: 0;
-	color: #222;
-	}
 
 	
 
@@ -281,11 +222,7 @@ line-height: 1.4;
 }
 
 
-div#maincontent blockquote p, div#maincontent dd blockquote {
-	font-size: 14px;
-	line-height: 21px;
-	font-style: italic;
-	}
+
 
 	
 	/* remains of the '04 redesign */
@@ -324,143 +261,12 @@ div.timestamp h3 a:hover {
 	
 
 
-	/* forms follow function */
-	
-div#searchui	{
-	margin: 12px 0 0 0;
-	padding: 0;
-	}
-	
-#searchui label	{
-	text-transform: uppercase;
-	letter-spacing: 2px;
-	font-size: 13px/15px;
-	color: #444;
-	}
-
-#searchui input.butt	{
-	color: #fff;
-	background: #f60;
-	font: 13px/18px Georgia, serif;
-	text-transform: uppercase;
-	padding: 2px;
-	-moz-border-radius: 6px;
-	-webkit-border-radius: 6px;
-	}
-
-form#buttski input.butt 	{
-	color: #3f3f2e;
-	background: #f9f8f3;
-	font: 13px/18px Georgia, serif;
-	text-transform: uppercase;
-	letter-spacing: 0.2em;
-	padding: 3px 6px;
-	-moz-border-radius: 6px;
-	-webkit-border-radius: 6px;
-	}
-
-p input#submit_comment {
-	-moz-border-radius: 6px;
-	-webkit-border-radius: 6px;		
-	}
-
-
-input.hun	{
-	margin: 0 2px;
-	width: 100px;
-	font-size: x-small;
-	}
-
-
-	/*   sidebar navs and links 	*/
-	
-
-#sidebar {
-	font: 11px/18px "Helvetica Neue", Arial, Helvetica, sans-serif;;
-	}
-
-#sidebar dl {
-	margin: 0 0 0 1px;
-	padding: 0;
-	}
-
-#sidebar dt, #sidebar dd {
-	margin-left: 0;
-	padding-left: 0;
-	line-height: 18px;
-	margin-bottom: 3px;
-	margin-top: 9px;
-	font: 11px/18px "Helvetica Neue", Arial, Helvetica, sans-serif;
-	}
-
-body #sidebar dd {
-	margin-top: 6px;
-	margin-left: 0;
-	margin-bottom: 12px;
-	font-size: 10px;
-	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
-	}
-
-body #sidebar h2 	{
-	text-transform: uppercase;
-	letter-spacing: 2px;
-	margin-top: 24px;
-	margin-bottom: 6px;
-	color: #f9f8f3;
-	padding: 3px 7px;
-	background: #c30;
-	font-size: small;
-	font-weight: normal;
-	-moz-border-radius: 6px;
-	-webkit-border-radius: 6px;
-	}
-
-#sidebar dd a:link, #sidebar dd a:visited {
-	font-weight : normal; 
-	}
-
-
-
-	/* previous reports */
-	
-p.button	{
-	margin: 25px 0;
-	color: #000;
-	background: #fff;
-	font: 13px/18px Georgia, serif;
-	padding: 2px 3px;
-	}
-	
-
 
 
 		
 /* for styling a list apart write-ups.  */
 
 
-html #maincontent	dd.authorname	{
-	font-size: 11px;
-	margin-bottom: 5px;
-	}
-
-html #maincontent	dd.authorname a	{
-	text-decoration: none;
-	text-transform: uppercase;
-	letter-spacing: 1px;
-	}
-
-
-html #maincontent h3.sponsor {
-	margin-top: 3px; 
-	margin-bottom: 7px;
-	text-transform: uppercase;
-	letter-spacing: 1px;
-	}
-
-.impressum	{
-	text-transform: uppercase;
-	letter-spacing: 1px;
-	}	
 
 .endpost	{
 	padding-bottom: 9px;
@@ -468,35 +274,11 @@ html #maincontent h3.sponsor {
 	margin-bottom: 18px;
 	}
 
-dl.endpost	{
-	padding-bottom: 10px;
-	}
-	
-.caps	{
-	letter-spacing: 0.1em;
-	}
 		
 		
-/* sponsors */
-
-div#sidebar div#sponsors	{
-	margin: 15px 0;
-	padding: 0;
-	border: 0;
-	}
-	
-div#sidebar div#sponsors p 	{
-	font-size: 11px;
-	line-height: 18px;
-	margin: 0;
-	padding: 0;
-	text-transform: uppercase;
-	}
 
 	
 /* category */
-
-p.cat	{ font-size: 12px; }
 
 
 body div#maincontent p.intro {
@@ -508,74 +290,10 @@ body div#maincontent p.intro {
 
 
 
-/*	updated Oct 26, 2009 */
-
-em, cite { font-style: italic; }
-
-small {font-style: normal;}
-
-form#commentform input  {
-	background-color: #fff;
-	color: #222;
-	font: 13px/18px Georgia, serif;
-	padding: 2px;
-	}
-
-p input#submit  {
-	padding: 3px;
-	color: #222;
-	background-color: #fff;
-	}
-
-textarea#comment  {
-	width: 420px;
-	background-color: #fff;
-	color: #222;
-	font: 13px/18px Georgia, serif;
-	padding: 2px;
-	}
-	
-html body div#maincontent ol.commentlist	{
-	margin-left: 0;
-	padding-left: 0;
-	list-style: none;
-	}
-
-html body div#maincontent ol.commentlist li	{
-	margin-left: 0;
-	padding-left: 16px;
-	padding-right: 16px;
-	list-style: none;
-	padding-bottom: 15px;
-	border-top: 3px solid #e0dfda;
-	padding-top: 15px;
-	margin-bottom: 15px;
-	background: #ecebe7;
-	}
-
-ol.commentlist li p	{
-	margin-top: 6px;
-	padding-left: 0;
-	}
-
-ol.commentlist li.zeldman_speaks {
-	background-color: #fff;
-	color: #000;
-	}
-	
-ol.commentlist li.zeldman_speaks p {
-	margin-left: 0;
-	padding-left: 2px;
-	}
-
-ol.commentlist blockquote	{
-	border-left: none;
-	}
-	
 
 
 
-/* table this */
+/* tables */
 
 table { margin: 25px 0;
 	width: 490px; border: 1px dashed #ccc; border-right: none; border-bottom: none; border-top: 1px solid #aaa;}
@@ -583,8 +301,6 @@ table { margin: 25px 0;
 td	{ width: 240px; text-align: left; font: 12px/18px Helvetica, Verdana, sans-serif; 
 	border-right: 1px dashed #ccc; border-bottom: 1px dashed #ccc; padding: 12px 6px 12px 12px; margin: 3px; }
 
-th {text-align: center; font: 15px/21px Helvetica, Verdana, sans-serif;
-	text-transform: uppercase; background: #eee;
-	border-right: 1px dashed #ccc; border-bottom: 1px solid #ccc; padding: 3px; margin: 3px; }
+
 
 
