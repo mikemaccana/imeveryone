@@ -16,6 +16,10 @@
 	<div id="maincontent">
 		
 	    <div id="nav">
+			{% for alert in alerts %}
+			    {{ alert }}
+			{% end %}
+		
 			<b>{{ escape(current_user["name"]) }}</b> -
 			<a href="/auth/logout">{{ _("Sign out") }}</a>
 	    </div>

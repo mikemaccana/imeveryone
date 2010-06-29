@@ -30,11 +30,13 @@ cachedir = 'static/cache/'
 
 RECAPTCHA_PRIVKEY = '6LeDDLsSAAAAADxPCJzvLZtSLY7mKlyqvokuRGzv'
 
+useralerts = {}
+
 class Application(tornado.web.Application):
     def __init__(self):
         # These handlers always get provided with the application, request and any transforms by Tornado
         handlers = [
-            (r"/", InitialConnectHandler),
+            (r"/", RootHandler),
             (r"/auth/login", AuthLoginHandler),
             (r"/auth/logout", AuthLogoutHandler),
             (r"/a/message/new", NewPostHandler),
@@ -61,14 +63,25 @@ class BaseHandler(tornado.web.RequestHandler):
             return tornado.escape.json_decode(user_json)
 
 
-class InitialConnectHandler(BaseHandler):
+class RootHandler(BaseHandler):
     '''Handle initial get request for root dir, send client HTML which gets JS to do a post and get further messages!'''
     @tornado.web.authenticated
     def get(self):
+        global useralerts
+        # Each user has a sessionid - we use this to present success / failure messages etc when posting
+        if not self.get_cookie('sessionid'):
+            self.set_cookie('sessionid', str(uuid.uuid4()))
+        sessionid = self.get_cookie('sessionid')
+        if not sessionid in useralerts:
+            useralerts[sessionid] = []
+            
         # Ensure messages are ordered corrrectly on initial connect
         sortedmessages = sorted(MessageMixin.cache, key=itemgetter('id'), reverse=True)
         captchahtml = captcha.displayhtml('6LeDDLsSAAAAAEd_PN6diNQaj7PXz5Dq7AEGi_69')
-        self.render("index.html", messages=sortedmessages, captcha=captchahtml)       
+        
+        # Show the messages and any alerts
+        print useralerts[sessionid]
+        self.render("index.html", messages=sortedmessages, captcha=captchahtml, alerts=useralerts[sessionid])   
 
 
 class MessageMixin(object):
@@ -108,48 +121,59 @@ class NewPostHandler(BaseHandler, MessageMixin):
     '''Recieve new content from users and add them to our message queue'''
     @tornado.web.authenticated 
     def post(self):
-        global messageQueue, cachedir, RECAPTCHA_PRIVKEY
-        logging.info("Post recieved from user!") 
-        postid = str(uuid.uuid4()) 
+        global messageQueue, cachedir, RECAPTCHA_PRIVKEY, useralerts
+        logging.info("Post recieved from user!")
+        postid = str(uuid.uuid4())
+        # Clear alerts from previous posts
+        sessionid = self.get_cookie('sessionid')
+        useralerts[sessionid] = []    
         
         # Recaptcha
         remote_ip = self.request.remote_ip
         challenge = self.get_argument('recaptcha_challenge_field')
         response = self.get_argument('recaptcha_response_field')
         recaptcha_response = captcha.submit(challenge, response, RECAPTCHA_PRIVKEY, remote_ip)
-        if recaptcha_response.is_valid:
-            logging.info('Yaay captcha worked!')
-        else:
-            logging.info('Failed')
-            print recaptcha_response.error_code
+        if not recaptcha_response.is_valid:
+            useralerts[sessionid].append('''It seems you're not human.''')
+            logging.info(recaptcha_response.error_code)
         
-        # Ensure image exists
+        # Now for the image
         if not 'image' in self.request.files:
-            logging.info('You forgot to provide an image!')
-        
-        # Save image data to local file
-        imagepost = self.request.files['image'][0]
-        print 'Saving image: '+imagepost['filename']
-        localfile = cachedir+postid+'.'+imagepost['filename'].split('.')[-1]
-        localfilesave = open(localfile,'wb')
-        localfilesave.write(imagepost['body'])
+            useralerts[sessionid].append('You forgot to provide an image!')
+            localfile = None
+        else:
+            # Save image data to local file
+            imagepost = self.request.files['image'][0]
+            print 'Saving image: '+imagepost['filename']
+            localfile = cachedir+postid+'.'+imagepost['filename'].split('.')[-1]
+            localfilesave = open(localfile,'wb')
+            localfilesave.write(imagepost['body'])
+                    
+        # If there are no errors
+        if len(useralerts[sessionid]) > 0:
+            logging.info('Bad post!: '+' '.join(useralerts[sessionid]))
+        else:    
+            # Create message based on body of PUT form data
+            message = {
+                'id': postid,
+                'author':self.current_user["first_name"],
+                'posttext':self.get_argument('posttext'), 
+                'imageurl':None,
+                'localfile':localfile,
+                # Some dummy info before I add these to local posts 
+                'link':'http://www.google.com',
+                'posttime':'Just now',
+                'threadid':postid,
+            }
+            messageQueue.put(message) 
             
-        # Create message based on body of PUT form data
-        message = {
-            'id': postid,
-            'author':self.current_user["first_name"],
-            'posttext':self.get_argument('posttext'), 
-            'imageurl':None,
-            'localfile':localfile,
-            # Some dummy info before I add these to local posts 
-            'link':'http://www.google.com',
-            'posttime':'Just now',
-            'threadid':postid,
-        }
-        
-        messageQueue.put(message) 
+        # We're done - sent the user back to wherever 'next' input pointed to.  
         if self.get_argument("next", None):
-            self.redirect(self.get_argument("next"))
+            #ipdb.set_trace()
+            self.redirect(self.get_argument("next"))            
+    # Just in case someone tries to access this URL via a GET        
+    def get(self):
+        self.redirect('/')        
 
     
 class QueueToWaitingClients(MessageMixin, BaseHandler, threading.Thread):
@@ -169,7 +193,6 @@ class QueueToWaitingClients(MessageMixin, BaseHandler, threading.Thread):
             # Comes from BaseHandler, which inherits from tornado.web.RequestHandler, which provides
             #message["html"] = self.render_string("message.html", message=message)
             basicpost = '''<div class="timestamp"><h3><a href="'''+message['link']+'''">'''+message['posttime']+'''</a> '''+message['author']+'''</h3></div><h2>'''+message['posttext']+'''</h2><div class="endpost">'''
-
             # Intro
             if message['intro']:            
                 intro = '''<p class="intro">'''+message['intro']+'''</p>'''
