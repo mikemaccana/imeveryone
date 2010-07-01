@@ -33,9 +33,7 @@ import urllib2
 * srvice / usernmae / pass|pword'''
 
 '''
-http://www.youtube.com/watch?v=w46Dwh4TMGA
 
-<object width="425" height="344"><param name="movie" value="http://www.youtube.com/v/w46Dwh4TMGA&hl=en_US&fs=1&"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/w46Dwh4TMGA&hl=en_US&fs=1&" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="425" height="344"></embed></object>
 
 * GeoIP and match for countryfags
 NLTK collocations
@@ -85,11 +83,13 @@ def getimage(imageurl,cachedir):
 def makeintro(posttext):
     '''Reduce the headline text in very long posts if needed'''
     postwords = posttext.split()
-    if len(postwords) < 20:
+    longpost = 40
+    choplen = 20
+    if len(postwords) < longpost:
         return posttext,None 
     else:
-        posttext = ' '.join(postwords[0:20])+'...'
-        intro = '...'+' '.join(postwords[20:]) 
+        posttext = ' '.join(postwords[:choplen])+'...'
+        intro = '...'+' '.join(postwords[choplen:]) 
         return (posttext, intro)    
     
 def getuserpprops(ip):
