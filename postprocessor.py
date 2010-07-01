@@ -1,14 +1,8 @@
 #!/usr/bin/env python2.6
 '''import httplib
-from lxml import etree
-from lxml.html.clean import clean_html
-from lxml.html.clean import Cleaner
-from lxml.html.soupparser import fromstring
-import types
 import GeoIP
-import pickle
-import fourchan
-import re'''
+import pickle'''
+import re
 from PIL import Image
 import sys
 sys.path.append('pytesser')
@@ -16,9 +10,11 @@ import pytesser
 '''
 import time
 '''
-#import tesseract
 #import ipdb
 import urllib2
+import oembed
+
+consumer = oembed.OEmbedConsumer()
 
 #re.IGNORECASE
 
@@ -40,11 +36,11 @@ NLTK collocations
 nltk relations
 
 '''
-
-def expandthreads(threads,threadid):
-    '''Get thread content for a given thread'''
-        
-    return
+def texttolinks(string):
+    '''Make clickable links from text'''
+    linkre = re.compile(r"(http://[^ ]+)")
+    linkstring = linkre.sub(r'<a href="\1">\1</a>', string)
+    return linkstring
 
 def reducelargeimages(imagefile):
     '''Reduce images larger than a certain size'''
@@ -92,10 +88,21 @@ def makeintro(posttext):
         intro = '...'+' '.join(postwords[choplen:]) 
         return (posttext, intro)    
     
-def getuserpprops(ip):
+def getcountry(ip):
+    '''Get user country - currently unused'''
     gi = GeoIP.new(GeoIP.GEOIP_MEMORY_CACHE)
     print gi.country_code_by_addr(ip)    
 
+def checktext(text):
+    '''Check text is OK'''
+    threshhold = 0.8
+    totalwords = len(text.split())
+    uniquewords = len(set(text.split()))
+    if uniquewords / totalwords < threshhold:
+        print 'woo'
+        return False, 'Looks like you accidentally triggered our lameness filter. Sorry! Try changing a few words.'
+    else:    
+        return True, ''
 
 def getimagetext(imagefile):
     '''Recieve an image, return the text'''
@@ -111,54 +118,5 @@ def getimagetext(imagefile):
     except:
         return None    
 
-def getthreadprops(threads):
-    '''Determines posts where there is a winner, or a decider
-    UNUSED'''
-    for thread in threads:
-        posttext = threads[thread]['posttext']
-        # Determine what winning thread will be
-        threads[thread]['winner'] = None 
-        winnerre = re.compile('^[if ]*.*[ending ]*[in ]*(doubles|triples)')
-        if len(winnerre.findall(posttext)) > 0:
-            firstmatch = winnerre.findall(posttext)[0]
-            remainingtext = posttext.partition(firstmatch)[2]
-            print 'Doubles post found'
-            print posttext
-            print remainingtext
-            # Work out whether the winning post determines or wins them 
-            decidesre = re.compile('decide|tell')
-            if decidesre.search(remainingtext):
-                threads[thread]['winnerdecides'] = remainingtext
-                print 'prize'
-            # Otherwise the choice 
-            else:
-                threads[thread]['winnermeans'] = remainingtext
-                print 'means'
-            print '\n'    
-                
 
-        # Count amount of samefags in body but not subject line 
-        #oldre = re.compile('sage|saeg|samefag|saemfag')
-        #print oldre.findall(subject)
-        
-        # Identify item to be rated
-        
-    '''    winnerre = re.compile('ending in')
-    threads[thread]['evaluate'] = 'rate my | what does b think of my'
-    threads[thread]['location'] = 'britfags /b/ritains'
-    threads[thread]['return'] = 'Post ending in X | ending doubles '
-    threads[thread]['winner'] = '(wins | gets Y | tells me | decides)' '''
-    return threads
-
-if __name__ == '__main__':
-    threads = fourchan.opendatabase('threads.db')
-    threads = fourchan.updatethreadindex('b',threads)
-    threads = getthreadprops(threads)
-    #threads = expandthreads(threads,threadid)
-    
-    #threadlist = sorted(threads.keys())
-    #
-    for thread in threads:
-        timestring = time.strftime('%Y-%m-%d %H-%M-%S',threads[thread]['posttime'])
-        print str(thread)+' '+threads[thread]['author'].ljust(12)+' '+threads[thread]['posttext']+timestring+'\n'
 

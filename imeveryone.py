@@ -124,7 +124,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
         global messageQueue, cachedir, RECAPTCHA_PRIVKEY, useralerts
         logging.info("Post recieved from user!")
         postid = str(uuid.uuid4())
-        # Clear alerts from previous posts
+        # Clear previous alerts
         sessionid = self.get_cookie('sessionid')
         useralerts[sessionid] = []    
         
@@ -136,6 +136,11 @@ class NewPostHandler(BaseHandler, MessageMixin):
         if not recaptcha_response.is_valid:
             useralerts[sessionid].append('''It seems you're not human.''')
             logging.info(recaptcha_response.error_code)
+
+        # Text filter - anti troll action
+        textok,reason = postprocessor.checktext(self.get_argument('posttext'))
+        if not textok:
+            useralerts[sessionid].append('Your posts looks uninteresting!')
         
         # Now for the image
         if not 'image' in self.request.files:
@@ -148,8 +153,11 @@ class NewPostHandler(BaseHandler, MessageMixin):
             localfile = cachedir+postid+'.'+imagepost['filename'].split('.')[-1]
             localfilesave = open(localfile,'wb')
             localfilesave.write(imagepost['body'])
+            
+        posttext = self.get_argument('posttext')
+        posttext = postprocessor.texttolinks(posttext)      
                     
-        # If there are no errors
+        # If there are errors
         if len(useralerts[sessionid]) > 0:
             logging.info('Bad post!: '+' '.join(useralerts[sessionid]))
         else:    
@@ -157,7 +165,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
             message = {
                 'id': postid,
                 'author':self.current_user["first_name"],
-                'posttext':self.get_argument('posttext'), 
+                'posttext':posttext, 
                 'imageurl':None,
                 'localfile':localfile,
                 # Some dummy info before I add these to local posts 
@@ -170,7 +178,8 @@ class NewPostHandler(BaseHandler, MessageMixin):
         # We're done - sent the user back to wherever 'next' input pointed to.  
         if self.get_argument("next", None):
             #ipdb.set_trace()
-            self.redirect(self.get_argument("next"))            
+            self.redirect(self.get_argument("next"))       
+             
     # Just in case someone tries to access this URL via a GET        
     def get(self):
         self.redirect('/')        

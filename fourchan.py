@@ -74,11 +74,6 @@ def gettree(data):
         sys.exit(1)
     return tree
 
-def texttolinks(string):
-    '''Make clickable links from text'''
-    linkre = re.compile(r"(http://[^ ]+)")
-    linkstring = linkre.sub(r'<a href="\1">\1</a>', string)
-    return linkstring
 
 
 def updatethreadindex(channel,lastadded):
@@ -98,8 +93,7 @@ def updatethreadindex(channel,lastadded):
                 # Post text
                 posttext = element.getparent().getnext().text
                 if posttext is None:
-                    posttext = ''
-                posttext = texttolinks(posttext)                    
+                    posttext = ''                  
                 # Author    
                 author = element.getparent().getprevious().text
                 if author is None:
