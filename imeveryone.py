@@ -17,6 +17,7 @@ import threading
 import Queue
 import sys
 import postprocessor
+from tornado import template
 from operator import itemgetter
 from recaptcha.client import captcha
 
@@ -124,7 +125,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
         global messageQueue, cachedir, RECAPTCHA_PRIVKEY, useralerts
         logging.info("Post recieved from user!")
         postid = str(uuid.uuid4())
-        # Clear previous alerts
+        # Clear alerts from previous posts
         sessionid = self.get_cookie('sessionid')
         useralerts[sessionid] = []    
         
@@ -136,11 +137,6 @@ class NewPostHandler(BaseHandler, MessageMixin):
         if not recaptcha_response.is_valid:
             useralerts[sessionid].append('''It seems you're not human.''')
             logging.info(recaptcha_response.error_code)
-
-        # Text filter - anti troll action
-        textok,reason = postprocessor.checktext(self.get_argument('posttext'))
-        if not textok:
-            useralerts[sessionid].append('Your posts looks uninteresting!')
         
         # Now for the image
         if not 'image' in self.request.files:
@@ -153,11 +149,8 @@ class NewPostHandler(BaseHandler, MessageMixin):
             localfile = cachedir+postid+'.'+imagepost['filename'].split('.')[-1]
             localfilesave = open(localfile,'wb')
             localfilesave.write(imagepost['body'])
-            
-        posttext = self.get_argument('posttext')
-        posttext = postprocessor.texttolinks(posttext)      
                     
-        # If there are errors
+        # If there are no errors
         if len(useralerts[sessionid]) > 0:
             logging.info('Bad post!: '+' '.join(useralerts[sessionid]))
         else:    
@@ -165,7 +158,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
             message = {
                 'id': postid,
                 'author':self.current_user["first_name"],
-                'posttext':posttext, 
+                'posttext':self.get_argument('posttext'), 
                 'imageurl':None,
                 'localfile':localfile,
                 # Some dummy info before I add these to local posts 
@@ -178,12 +171,18 @@ class NewPostHandler(BaseHandler, MessageMixin):
         # We're done - sent the user back to wherever 'next' input pointed to.  
         if self.get_argument("next", None):
             #ipdb.set_trace()
-            self.redirect(self.get_argument("next"))       
-             
+            self.redirect(self.get_argument("next"))            
     # Just in case someone tries to access this URL via a GET        
     def get(self):
         self.redirect('/')        
 
+
+
+def render_template(template_name, **kwargs):
+    '''Render a template (independent of requests)'''
+    loader = template.Loader(os.path.join(os.path.dirname(__file__), "templates"))
+    t = loader.load(template_name)
+    return t.generate(**kwargs)
     
 class QueueToWaitingClients(MessageMixin, BaseHandler, threading.Thread):
     '''Takes items off the messageQueue and sends them to client'''
@@ -198,15 +197,7 @@ class QueueToWaitingClients(MessageMixin, BaseHandler, threading.Thread):
             message['id'] = str(uuid.uuid4())
             # Add an intro for particularly large text
             message['posttext'],message['intro'] = postprocessor.makeintro(message['posttext'])
-            
-            # Comes from BaseHandler, which inherits from tornado.web.RequestHandler, which provides
-            #message["html"] = self.render_string("message.html", message=message)
-            basicpost = '''<div class="timestamp"><h3><a href="'''+message['link']+'''">'''+message['posttime']+'''</a> '''+message['author']+'''</h3></div><h2>'''+message['posttext']+'''</h2><div class="endpost">'''
-            # Intro
-            if message['intro']:            
-                intro = '''<p class="intro">'''+message['intro']+'''</p>'''
-            else:
-                intro = ''
+
             
             # Fetch the image if necessary  
             if message['imageurl']:       
@@ -222,13 +213,8 @@ class QueueToWaitingClients(MessageMixin, BaseHandler, threading.Thread):
                 logging.info('Local file is: '+message['localfile'])
                 message['preview'] = postprocessor.reducelargeimages(message['localfile'])
                 logging.info('preview  is: '+message['preview'])
-                pictureinclude = '''<p><a href="'''+message['localfile']+'''"><img class="lede" src="'''+message['preview']+'''" alt=""></a></p>'''                         
-            else:
-                pictureinclude = ''
-                
-            tag = '''<p><cite><a href="'''+message['link']+'''">read more...</a> '''+str(message['threadid'])+'''</cite></p><hr>'''            
-
-            message["html"] = basicpost + intro + pictureinclude + tag
+         
+            message['html'] = render_template('message.html', message=message) 
             self.send_messages([message])
 
 
