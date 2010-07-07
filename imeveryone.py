@@ -195,9 +195,12 @@ class QueueToWaitingClients(MessageMixin, BaseHandler, threading.Thread):
         while True: 
             message = self.__queue.get()   
             message['id'] = str(uuid.uuid4())
+            
+            # Get embeds
+            message = postprocessor.processlinks(message)
+            
             # Add an intro for particularly large text
             message['posttext'],message['intro'] = postprocessor.makeintro(message['posttext'])
-
             
             # Fetch the image if necessary  
             if message['imageurl']:       

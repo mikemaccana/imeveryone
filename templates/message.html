@@ -8,6 +8,13 @@
 {% if message['intro'] %}            
     <p class="intro">{{escape (message['intro'])}}</p>
 {% end %}
+
+{% for embed in message['embeds'] %}
+	{% if 'html' in embed %}
+		{{ embed['html'] }}<br/>
+	{% end %}	
+{% end %}
+
 {% if message['preview'] %}
 	<p><a href="{{ message['localfile'] }}"><img class="lede" src="{{ message['preview'] }}" alt=""></a></p>
 {% end %}

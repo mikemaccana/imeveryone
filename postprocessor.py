@@ -14,7 +14,15 @@ import time
 import urllib2
 import oembed
 
+# Oembed + Oohembed
 consumer = oembed.OEmbedConsumer()
+consumer.addEndpoint(oembed.OEmbedEndpoint('http://oohembed.com/oohembed/', [
+    'http://*.youtube.com/watch*',
+    'http://www.vimeo.com/*',
+    'http://www.vimeo.com/groups/*/videos/*',
+    'http://*.twitpic.com/*',
+    'http://*.metacafe.com/watch/*'
+    ]))
 
 #re.IGNORECASE
 
@@ -36,11 +44,29 @@ NLTK collocations
 nltk relations
 
 '''
-def texttolinks(string):
+def getembeddata(link):
+    '''Get embed codes for links'''
+    global consumer
+    response = consumer.embed(link)
+    data = response.getData()
+    if data:
+        return data
+    else:
+        return None            
+
+def processlinks(message):
     '''Make clickable links from text'''
     linkre = re.compile(r"(http://[^ ]+)")
-    linkstring = linkre.sub(r'<a href="\1">\1</a>', string)
-    return linkstring
+    message['embeds'] = []
+    for link in linkre.findall(message['posttext']):
+        try:
+            embed = getembeddata(link)
+            if embed:
+                message['embeds'].append(embed)         
+        except:
+            pass
+    #linkstring = linkre.sub(r'<a href="\1">\1</a>', string)
+    return message
 
 def reducelargeimages(imagefile):
     '''Reduce images larger than a certain size'''
