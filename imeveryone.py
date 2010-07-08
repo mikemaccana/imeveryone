@@ -20,16 +20,14 @@ import postprocessor
 from tornado import template
 from operator import itemgetter
 from recaptcha.client import captcha
-
-import ipdb
-
+from configobj import ConfigObj
 from tornado.options import define, options
 
-define("port", default=8888, help="run on the given port", type=int)
+config = ConfigObj('imeveryone.conf')
 
-cachedir = 'static/cache/'
+define("port", default=int(config['server']['port']), help="run on the given port", type=int)
 
-RECAPTCHA_PRIVKEY = '6LeDDLsSAAAAADxPCJzvLZtSLY7mKlyqvokuRGzv'
+config['server']['cachedir'] = 'static/cache/'
 
 useralerts = {}
 
@@ -122,7 +120,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
     '''Recieve new content from users and add them to our message queue'''
     @tornado.web.authenticated 
     def post(self):
-        global messageQueue, cachedir, RECAPTCHA_PRIVKEY, useralerts
+        global messageQueue, config, useralerts
         logging.info("Post recieved from user!")
         postid = str(uuid.uuid4())
         # Clear alerts from previous posts
@@ -133,7 +131,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
         remote_ip = self.request.remote_ip
         challenge = self.get_argument('recaptcha_challenge_field')
         response = self.get_argument('recaptcha_response_field')
-        recaptcha_response = captcha.submit(challenge, response, RECAPTCHA_PRIVKEY, remote_ip)
+        recaptcha_response = captcha.submit(challenge, response, config['captcha']['privkey'], remote_ip)
         if not recaptcha_response.is_valid:
             useralerts[sessionid].append('''It seems you're not human.''')
             logging.info(recaptcha_response.error_code)
@@ -146,7 +144,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
             # Save image data to local file
             imagepost = self.request.files['image'][0]
             print 'Saving image: '+imagepost['filename']
-            localfile = cachedir+postid+'.'+imagepost['filename'].split('.')[-1]
+            localfile = config['server']['cachedir']+postid+'.'+imagepost['filename'].split('.')[-1]
             localfilesave = open(localfile,'wb')
             localfilesave.write(imagepost['body'])
                     
@@ -186,7 +184,7 @@ def render_template(template_name, **kwargs):
     
 class QueueToWaitingClients(MessageMixin, BaseHandler, threading.Thread):
     '''Takes items off the messageQueue and sends them to client'''
-    def __init__(self, queue):
+    def __init__(self, queue, config):
         #super( QueueToWaitingClients, self ).__init__()
         self.__queue = queue
         threading.Thread.__init__(self)  
@@ -204,17 +202,15 @@ class QueueToWaitingClients(MessageMixin, BaseHandler, threading.Thread):
             
             # Fetch the image if necessary  
             if message['imageurl']:       
-                message['localfile'] = postprocessor.getimage(message['imageurl'],cachedir)
+                message['localfile'] = postprocessor.getimage(message['imageurl'],config['server']['cachedir'])
             
             # Work on the image       
             if message['localfile']:   
                 # Get image text via OCR
                 message['imagetext'] = postprocessor.getimagetext(message['localfile'])
-                #if message['imagetext']:
-                #    print message['imagetext']
                 # Make picture include 
                 logging.info('Local file is: '+message['localfile'])
-                message['preview'] = postprocessor.reducelargeimages(message['localfile'])
+                message['preview'] = postprocessor.reducelargeimages(message['localfile'],config['images'])
                 logging.info('preview  is: '+message['preview'])
          
             message['html'] = render_template('message.html', message=message) 
@@ -273,7 +269,7 @@ def main():
         mycontentgetter.start()
         
         # Take content from queue and send updates to waiting clients
-        mycontentprocessor = QueueToWaitingClients(messageQueue)
+        mycontentprocessor = QueueToWaitingClients(messageQueue,config)
         mycontentprocessor.start()
         
         tornado.ioloop.IOLoop.instance().start()

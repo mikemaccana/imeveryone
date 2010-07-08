@@ -68,13 +68,13 @@ def processlinks(message):
     #linkstring = linkre.sub(r'<a href="\1">\1</a>', string)
     return message
 
-def reducelargeimages(imagefile):
+def reducelargeimages(imagefile,imageconfig):
     '''Reduce images larger than a certain size'''
     myimage = Image.open(imagefile)
     width,height = myimage.size
     aspect = float(width) / float(height)
-    maxwidth = 500
-    maxheight = 500
+    maxwidth = int(imageconfig['maxwidth'])
+    maxheight = int(imageconfig['maxheight'])
     maxsize = (maxwidth,maxheight)    
     # Don't bother if image is already smaller
     if width < maxwidth and height < maxheight:
