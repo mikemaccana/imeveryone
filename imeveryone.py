@@ -182,10 +182,9 @@ def render_template(template_name, **kwargs):
     t = loader.load(template_name)
     return t.generate(**kwargs)
     
-class QueueToWaitingClients(MessageMixin, BaseHandler, threading.Thread):
+class QueueToWaitingClients(MessageMixin, threading.Thread):
     '''Takes items off the messageQueue and sends them to client'''
     def __init__(self, queue, config):
-        #super( QueueToWaitingClients, self ).__init__()
         self.__queue = queue
         threading.Thread.__init__(self)  
         MessageMixin.__init__(self)        
