@@ -88,7 +88,7 @@ class MessageMixin(object):
     waiters = []
     # Amount of messages to keep around for new connections
     cache = []
-    cache_size = 10
+    cache_size = int(config['newclients']['cachesize'])
     def wait_for_messages(self, callback, cursor=None):
         '''Add new clients to waiters list'''
         if cursor:
