@@ -73,8 +73,8 @@ def reducelargeimages(imagefile,imageconfig):
     myimage = Image.open(imagefile)
     width,height = myimage.size
     aspect = float(width) / float(height)
-    maxwidth = int(imageconfig['maxwidth'])
-    maxheight = int(imageconfig['maxheight'])
+    maxwidth = imageconfig.as_int('maxwidth')
+    maxheight = imageconfig.as_int('maxheight')
     maxsize = (maxwidth,maxheight)    
     # Don't bother if image is already smaller
     if width < maxwidth and height < maxheight:
@@ -102,11 +102,11 @@ def getimage(imageurl,cachedir):
     savedfile.write(openurl.read())    
     return cachedfilename
 
-def makeintro(posttext):
+def makeintro(posttext,postingconfig):
     '''Reduce the headline text in very long posts if needed'''
     postwords = posttext.split()
-    longpost = 40
-    choplen = 20
+    longpost = postingconfig['longpost']
+    choplen = postingconfig['choplen']
     if len(postwords) < longpost:
         return posttext,None 
     else:
@@ -119,14 +119,12 @@ def getcountry(ip):
     gi = GeoIP.new(GeoIP.GEOIP_MEMORY_CACHE)
     print gi.country_code_by_addr(ip)    
 
-def checktext(text):
+def checktext(text,postingconfig,alerts):
     '''Check text is OK'''
-    threshhold = 0.8
     totalwords = len(text.split())
     uniquewords = len(set(text.split()))
-    if uniquewords / totalwords < threshhold:
-        print 'woo'
-        return False, 'Looks like you accidentally triggered our lameness filter. Sorry! Try changing a few words.'
+    if uniquewords / totalwords < postingconfig.as_int('threshhold'):
+        return False, alerts['lame']
     else:    
         return True, ''
 

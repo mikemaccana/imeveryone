@@ -25,7 +25,7 @@ from tornado.options import define, options
 
 config = ConfigObj('imeveryone.conf')
 
-define("port", default=int(config['server']['port']), help="run on the given port", type=int)
+define("port", default=config['server'].as_int('port'), help="run on the given port", type=int)
 
 config['server']['cachedir'] = 'static/cache/'
 
@@ -66,7 +66,7 @@ class RootHandler(BaseHandler):
     '''Handle initial get request for root dir, send client HTML which gets JS to do a post and get further messages!'''
     @tornado.web.authenticated
     def get(self):
-        global useralerts
+        global useralerts,config
         # Each user has a sessionid - we use this to present success / failure messages etc when posting
         if not self.get_cookie('sessionid'):
             self.set_cookie('sessionid', str(uuid.uuid4()))
@@ -76,11 +76,11 @@ class RootHandler(BaseHandler):
             
         # Ensure messages are ordered corrrectly on initial connect
         sortedmessages = sorted(MessageMixin.cache, key=itemgetter('id'), reverse=True)
-        captchahtml = captcha.displayhtml('6LeDDLsSAAAAAEd_PN6diNQaj7PXz5Dq7AEGi_69')
+        captchahtml = captcha.displayhtml(config['captcha']['pubkey'])
         
         # Show the messages and any alerts
         print useralerts[sessionid]
-        self.render("index.html", messages=sortedmessages, captcha=captchahtml, alerts=useralerts[sessionid])   
+        self.render("index.html", messages=sortedmessages, captcha=captchahtml, alerts=useralerts[sessionid], heading=config['presentation']['heading'])   
 
 
 class MessageMixin(object):
@@ -88,7 +88,7 @@ class MessageMixin(object):
     waiters = []
     # Amount of messages to keep around for new connections
     cache = []
-    cache_size = int(config['newclients']['cachesize'])
+    cache_size = config['newclients'].as_int('cachesize')
     def wait_for_messages(self, callback, cursor=None):
         '''Add new clients to waiters list'''
         if cursor:
@@ -136,17 +136,18 @@ class NewPostHandler(BaseHandler, MessageMixin):
             useralerts[sessionid].append('''It seems you're not human.''')
             logging.info(recaptcha_response.error_code)
         
-        # Now for the image
-        if not 'image' in self.request.files:
-            useralerts[sessionid].append('You forgot to provide an image!')
-            localfile = None
-        else:
-            # Save image data to local file
-            imagepost = self.request.files['image'][0]
-            print 'Saving image: '+imagepost['filename']
-            localfile = config['server']['cachedir']+postid+'.'+imagepost['filename'].split('.')[-1]
-            localfilesave = open(localfile,'wb')
-            localfilesave.write(imagepost['body'])
+        # Now for the image        
+        if config['images'].as_bool('enabled'):
+            if not 'image' in self.request.files:
+                useralerts[sessionid].append('You forgot to provide an image!')
+                localfile = None
+            else:
+                # Save image data to local file
+                imagepost = self.request.files['image'][0]
+                print 'Saving image: '+imagepost['filename']
+                localfile = config['server']['cachedir']+postid+'.'+imagepost['filename'].split('.')[-1]
+                localfilesave = open(localfile,'wb')
+                localfilesave.write(imagepost['body'])
                     
         # If there are no errors
         if len(useralerts[sessionid]) > 0:
@@ -157,13 +158,14 @@ class NewPostHandler(BaseHandler, MessageMixin):
                 'id': postid,
                 'author':self.current_user["first_name"],
                 'posttext':self.get_argument('posttext'), 
-                'imageurl':None,
-                'localfile':localfile,
                 # Some dummy info before I add these to local posts 
                 'link':'http://www.google.com',
                 'posttime':'Just now',
-                'threadid':postid,
+                'threadid':postid,                
             }
+            if config['images'].as_bool('enabled'):
+                message['imageurl'] = None
+                message['localfile'] = localfile
             messageQueue.put(message) 
             
         # We're done - sent the user back to wherever 'next' input pointed to.  
@@ -197,20 +199,23 @@ class QueueToWaitingClients(MessageMixin, threading.Thread):
             message = postprocessor.processlinks(message)
             
             # Add an intro for particularly large text
-            message['posttext'],message['intro'] = postprocessor.makeintro(message['posttext'])
+            message['posttext'],message['intro'] = postprocessor.makeintro(message['posttext'],config['posting'])
+
+            # Images    
+            if config['images'].as_bool('enabled'):
+                # Fetch the image if necessary  
+                if message['imageurl']:       
+                    message['localfile'] = postprocessor.getimage(message['imageurl'],config['server']['cachedir'])
             
-            # Fetch the image if necessary  
-            if message['imageurl']:       
-                message['localfile'] = postprocessor.getimage(message['imageurl'],config['server']['cachedir'])
-            
-            # Work on the image       
-            if message['localfile']:   
-                # Get image text via OCR
-                message['imagetext'] = postprocessor.getimagetext(message['localfile'])
-                # Make picture include 
-                logging.info('Local file is: '+message['localfile'])
-                message['preview'] = postprocessor.reducelargeimages(message['localfile'],config['images'])
-                logging.info('preview  is: '+message['preview'])
+                # Work on the image       
+                if message['localfile']:   
+                    # Get image text via OCR
+                    if config['images']['ocr']:
+                        message['imagetext'] = postprocessor.getimagetext(message['localfile'])
+                    # Make picture include 
+                    logging.info('Local file is: '+message['localfile'])
+                    message['preview'] = postprocessor.reducelargeimages(message['localfile'],config['images'])
+                    logging.info('preview  is: '+message['preview'])
          
             message['html'] = render_template('message.html', message=message) 
             self.send_messages([message])
@@ -264,8 +269,9 @@ def main():
         http_server.listen(options.port)
 
         ## Keep supplying new content to queue
-        mycontentgetter = fourchan.ContentGetter(messageQueue,5)
-        mycontentgetter.start()
+        if config['injectors']['fourchan'].as_bool('enabled'):
+            mycontentgetter = fourchan.ContentGetter(messageQueue,5)
+            mycontentgetter.start()
         
         # Take content from queue and send updates to waiting clients
         mycontentprocessor = QueueToWaitingClients(messageQueue,config)
