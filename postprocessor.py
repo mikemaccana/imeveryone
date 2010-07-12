@@ -105,8 +105,8 @@ def getimage(imageurl,cachedir):
 def makeintro(posttext,postingconfig):
     '''Reduce the headline text in very long posts if needed'''
     postwords = posttext.split()
-    longpost = postingconfig['longpost']
-    choplen = postingconfig['choplen']
+    longpost = postingconfig.as_int('longpost')
+    choplen = postingconfig.as_int('choplen')
     if len(postwords) < longpost:
         return posttext,None 
     else:
