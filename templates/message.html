@@ -1,24 +1,28 @@
-<div class="timestamp">
+<div class="block">
+	<em class="date"><a href="./thread/{{ message['id'] }}"> {{message['posttime']}}</a></em>
+	<h2><a href="#">{{ escape(message['posttext'])}}</a></h2>
+	{% if message['intro'] %}  
+	    <div class="text-box">
+				<a href="#">{{escape (message['intro'])}}</a>
+		</div>	    
+	{% end %}
 	
-<h3>
-	<a href="{{ escape(message['link']) }}"> {{message['posttime']}}</a> {{message['author']}}
-</h3>
-
-</div><h2>{{ escape(message['posttext'])}}</h2><div class="endpost">
-{% if message['intro'] %}            
-    <p class="intro">{{escape (message['intro'])}}</p>
-{% end %}
-
-{% for embed in message['embeds'] %}
-	{% if 'html' in embed %}
-		{{ embed['html'] }}<br/>
-	{% end %}	
-{% end %}
-
-{% if 'preview' in message %}
-	<p><a href="{{ message['localfile'] }}"><img class="lede" src="{{ message['preview'] }}" alt=""></a></p>
-{% end %}
-<p><cite><a href="{{message['link']}}">read more...</a> {{message['threadid']}}</cite></p>
-
-<hr/>
+	{% for embed in message['embeds'] %}
+		{% if 'html' in embed %}
+			{{ embed['html'] }}<br/>
+		{% end %}	
+	{% end %}
+	
+	{% if message['preview'] is not None %}
+		<div class="visual">
+			<a href="./thread/{{ message['id'] }}" target="_blank"><img src="{{ message['preview'] }}" alt="image description" /></a>
+		</div>
+	{% end %}
+	
+	<div class="read-more">
+		<a class="more" href="./thread/{{ message['id'] }}" target="_blank">Read more...</a>
+		<em><a href="#">{{message['threadid']}}</a></em>
+	</div>
 </div>
+
+

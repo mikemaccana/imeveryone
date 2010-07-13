@@ -65,7 +65,8 @@ def processlinks(message):
                 message['embeds'].append(embed)         
         except:
             pass
-    #linkstring = linkre.sub(r'<a href="\1">\1</a>', string)
+    message['original'] = message['posttext']
+    message['posttext'] = linkre.sub('', message['posttext'])
     return message
 
 def reducelargeimages(imagefile,imageconfig):

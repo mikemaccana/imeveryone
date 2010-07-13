@@ -40,6 +40,7 @@ class Application(tornado.web.Application):
             (r"/auth/logout", AuthLogoutHandler),
             (r"/a/message/new", NewPostHandler),
             (r"/a/message/updates", ViewerUpdateHandler),
+            (r"/thread/.*", ConversationHandler),
         ]
         settings = dict(
             cookie_secret="43oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
@@ -49,6 +50,7 @@ class Application(tornado.web.Application):
             xsrf_cookies=True,
         )
         tornado.web.Application.__init__(self, handlers, **settings)
+
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -61,6 +63,10 @@ class BaseHandler(tornado.web.RequestHandler):
         else:    
             return tornado.escape.json_decode(user_json)
 
+class ConversationHandler(BaseHandler):
+    '''Handle conversations'''
+    def get(self):
+        self.write('Harrow! Thread goes here!')
 
 class RootHandler(BaseHandler):
     '''Handle initial get request for root dir, send client HTML which gets JS to do a post and get further messages!'''
@@ -159,7 +165,6 @@ class NewPostHandler(BaseHandler, MessageMixin):
                 'author':self.current_user["first_name"],
                 'posttext':self.get_argument('posttext'), 
                 # Some dummy info before I add these to local posts 
-                'link':'http://www.google.com',
                 'posttime':'Just now',
                 'threadid':postid,                
             }
