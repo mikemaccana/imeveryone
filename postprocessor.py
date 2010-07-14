@@ -5,7 +5,7 @@ import pickle'''
 import re
 from PIL import Image
 import sys
-sys.path.append('pytesser')
+sys.path.append('lib/python2.6/site-packages/pytesser')
 import pytesser
 '''
 import time

@@ -1,2 +1,3 @@
 #wrapper { margin-top: expression(this.parentNode.offsetHeight > this.offsetHeight ? ((this.parentNode.offsetHeight-this.offsetHeight)/2 + "px") : "0"); }
-#nav li { background-image: expression( (this===this.parentNode.childNodes[0]) ? "none" : "auto"); }
+* html #nav li { background-image: expression( (this===this.parentNode.childNodes[0]) ? "none" : "auto"); }
+* html body{width: expression(document.documentElement.clientWidth < 960 ? "960px" : "100%");}

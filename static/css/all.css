@@ -8,10 +8,11 @@
 	font-weight: normal;
 	font-style: normal;
 }
-html,body {
+html, body {
 	display:table;
 	height:100%;
 	width:100%;
+	min-width:960px;
 }
 body {
 	margin:0;
@@ -19,14 +20,14 @@ body {
 	vertical-align:middle;
 	color:#000;
 	font:18px Georgia, "Times New Roman", Times, sans-serif;
-	background:#f9f8f3;
+	background:#000;
 }
 img {border-style:none;}
 a {
 	text-decoration:none;
 	color:#000;
 }
-a:hover{text-decoration:underline;}
+a:hover {text-decoration:underline;}
 input, textarea {
 	font:100% Georgia, "Times New Roman", Times, sans-serif;
 	vertical-align:middle;
@@ -38,38 +39,47 @@ form, fieldset {
 	border-style:none;
 }
 #wrapper {
+	width:100%;
+	overflow:hidden;
+	position:relative;
+}
+.inner {
 	width:960px;
 	margin:0 auto;
 }
 /* header */
 #header {
+	padding:7px 0 13px 20px;
+	text-align:center;
 	background:#000;
 	color:#fff;
-	text-align:center;
-	padding:7px 0 13px 20px;
 }
 #header h1 {
 	margin:0 0 -4px;
 	font:bold 72px/80px FranklinGothicFSDemiCondensed, Arial, Helvetica, sans-serif;
+	position:relative;
+	text-transform:uppercase;
 }
 #header a {color:#fff;}
 #header a:hover {text-decoration:none;}
 #header strong {
 	font:bold 14px/17px FranklinGothicFSDemiCondensed, Arial, Helvetica, sans-serif;
-	text-transform:uppercase;
 	color:#ddc;
+	text-transform:uppercase;
 }
 /* main */
 #main {
+	position:relative;
 	width:100%;
-	padding-bottom:9px;
-	border-top:6px solid #f9f8f3;
-	background:#fff url(../images/bg-main.gif) repeat-x;
+	padding:6px 9999px 9px;
+	margin:0 -9999px;
+	background:#f9f8f3;
 }
+* html #main {padding-bottom:5px;}
 .twocolumns {
 	width:100%;
-	background:url(../images/bg-main-holder.gif) repeat-y;
 	overflow:hidden;
+	position:relative;
 }
 /* content */
 #content {
@@ -77,45 +87,54 @@ form, fieldset {
 	float:left;
 	text-align:center;
 	padding-bottom:8px;
+	overflow:hidden;
 }
 /* navigation */
 #nav {
-	list-style:none;
-	margin:0;
-	padding:22px 0 24px 40px;
+	width:549px;
+	list-style:none;	margin:0 0 27px;	padding:17px 20px 21px 45px;
 	text-align:center;
 	border-bottom:2px solid #ddc;
 	font-size:14px;
-	line-height:17px;
+	line-height:25px;
+	font-weight:bold;
+	text-transform:uppercase;
 }
 #nav li {
 	display:inline;
 	padding:0 15px 0 18px;
 	background:url(../images/nav-separator.gif) no-repeat 0 3px;
 	color:#181818;
-	font-weight:bold;
 }
 #nav li:first-child {background:none;}
 #content h2 {
 	margin:0 0 14px;
 	font:bold 36px/41px FranklinGothicFSDemiCondensed, Arial, Helvetica, sans-serif;
-}
-.date,
-.date a {
-	font-style:normal;
-	font-size:14px;
-	line-height:19px;
-	color:#b9323c;
+	padding:0 0 0 18px;
+	word-spacing:3px;
+	text-transform:uppercase;
 }
 .date {
 	display:block;
-	padding:0 0 9px 0;
+	width:549px;
+	font-size:14px;
+	line-height:21px;
+	font-style:normal;
+	font-weight:bold;
+	padding:2px 0 8px 30px;
 }
-/* main-block */
-.main-block {padding:30px 0 0 23px;}
+.date,
+.date a {color:#d30011;}
+/* block post */
+.post {
+	
+	padding:0 0 22px 17px;
+	margin:0 12px 24px 6px;
+	border-bottom:1px dotted #c7c6c2;
+}
 .text-box {
 	width:420px;
-	padding:0 60px 0 35px;
+	padding:0 48px 0 35px;
 	margin:0 auto 30px;
 }
 .visual {padding:0 0 12px 0;}
@@ -123,27 +142,14 @@ form, fieldset {
 	display:block;
 	margin:0 auto;
 }
-.main-block .visual {padding-right:12px;}
-/* block */
-.block {padding:24px 0 0;}
-.block .date {padding-bottom:11px;}
-.block .visual {padding-right:2px;}
-.block h2 {padding:0 0 7px 5px; text-transform:uppercase;}
-.block .text-box {padding-left:80px;}
 .read-more {
 	width:555px;
-	padding:7px 34px 23px 25px;
+	padding:7px 34px 0 25px;
 	text-align:right;
 	font-size:14px;
 	line-height:19px;
-	background:url(../images/content-separator.gif) no-repeat 6px 100%;
 	overflow:hidden;
-}
-.main-block .read-more {margin-left:-23px;}
-.block .read-more {
-	width:559px;
-	padding:8px 30px 25px 25px;
-	background-position:0 100%
+	margin:0 0 0 -23px;
 }
 .read-more em a,
 .read-more em {color:#b8b8b4;}
@@ -157,7 +163,10 @@ form, fieldset {
 #sidebar {
 	width:328px;
 	float:right;
-	padding:21px 7px 0 4px;
+	padding:21px 0 9999px 11px;
+	margin:0 7px -9999px 0;
+	background:#ddddcc;
+	overflow:hidden;
 }
 #sidebar h3 {
 	margin:0 0 18px;
@@ -301,6 +310,6 @@ form, fieldset {
 	background:#000;
 	color:#d8d8d8;
 	font-size:13px;
-	padding:19px 0 15px 16px;
+	padding:19px 0 18px 16px;
 }
 #footer p {margin:0 0 10px;}
