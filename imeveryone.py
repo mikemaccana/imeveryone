@@ -22,8 +22,13 @@ from operator import itemgetter
 from recaptcha.client import captcha
 from configobj import ConfigObj
 from tornado.options import define, options
+from akismet import Akismet
+import ipdb
 
 config = ConfigObj('imeveryone.conf')
+
+akismetcfg = config['posting']['akismet']
+antispam = Akismet(key=akismetcfg['apikey'], agent=akismetcfg['clientname'])
 
 define("port", default=config['server'].as_int('port'), help="run on the given port", type=int)
 
@@ -127,6 +132,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
     @tornado.web.authenticated 
     def post(self):
         global messageQueue, config, useralerts
+        #ipdb.set_trace()
         logging.info("Post recieved from user!")
         postid = str(uuid.uuid4())
         # Clear alerts from previous posts
@@ -139,13 +145,28 @@ class NewPostHandler(BaseHandler, MessageMixin):
         response = self.get_argument('recaptcha_response_field')
         recaptcha_response = captcha.submit(challenge, response, config['captcha']['privkey'], remote_ip)
         if not recaptcha_response.is_valid:
-            useralerts[sessionid].append('''It seems you're not human.''')
+            useralerts[sessionid].append(config['alerts']['nothuman'])
             logging.info(recaptcha_response.error_code)
+
+        # Antispam
+        spam = antispam.comment_check(self.get_argument('posttext'), 
+            data={
+                'user_ip':remote_ip,
+                'user_agent':self.request.headers['User-Agent'],
+                'referrer':self.request.headers['Referer'],
+                'SERVER_ADDR':self.request.headers['Host'],
+                }, 
+            build_data=True, 
+            DEBUG=False)
+        if spam:
+            useralerts[sessionid].append(config['alerts']['spam'])
+        print 'Spam status is: ',
+        print spam     
         
         # Now for the image        
         if config['images'].as_bool('enabled'):
             if not 'image' in self.request.files:
-                useralerts[sessionid].append('You forgot to provide an image!')
+                useralerts[sessionid].append(config['alerts']['noimage'])
                 localfile = None
             else:
                 # Save image data to local file
@@ -154,6 +175,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
                 localfile = config['server']['cachedir']+postid+'.'+imagepost['filename'].split('.')[-1]
                 localfilesave = open(localfile,'wb')
                 localfilesave.write(imagepost['body'])
+    
                     
         # If there are no errors
         if len(useralerts[sessionid]) > 0:
@@ -190,7 +212,7 @@ def render_template(template_name, **kwargs):
     return t.generate(**kwargs)
     
 class QueueToWaitingClients(MessageMixin, threading.Thread):
-    '''Takes items off the messageQueue and sends them to client'''
+    '''Takes items off the messageQueue, and sends them to client'''
     def __init__(self, queue, config):
         self.__queue = queue
         threading.Thread.__init__(self)  
@@ -224,7 +246,6 @@ class QueueToWaitingClients(MessageMixin, threading.Thread):
          
             message['html'] = render_template('message.html', message=message) 
             self.send_messages([message])
-
 
 class ViewerUpdateHandler(BaseHandler, MessageMixin):
     '''Do updates. All clients continually send posts, which we only respond to when where there are new messges (where we run on_send_messages() )'''
