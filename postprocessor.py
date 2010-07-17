@@ -1,16 +1,9 @@
 #!/usr/bin/env python2.6
-'''import httplib
-import GeoIP
-import pickle'''
 import re
 from PIL import Image
 import sys
 sys.path.append('lib/python2.6/site-packages/pytesser')
 import pytesser
-'''
-import time
-'''
-#import ipdb
 import urllib2
 import oembed
 
@@ -24,26 +17,7 @@ consumer.addEndpoint(oembed.OEmbedEndpoint('http://oohembed.com/oohembed/', [
     'http://*.metacafe.com/watch/*'
     ]))
 
-#re.IGNORECASE
 
-'''
-* Rate my / rate my /Check out my pics /b/. What do you think of me?- display rating
-* In return
-* Timelines from nao to dead
-* Need jokes on
-* Looking for
-* identify type of site
-* ask X anything
-* srvice / usernmae / pass|pword'''
-
-'''
-
-
-* GeoIP and match for countryfags
-NLTK collocations
-nltk relations
-
-'''
 def getembeddata(link):
     '''Get embed codes for links'''
     global consumer
