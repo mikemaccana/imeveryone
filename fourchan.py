@@ -51,7 +51,7 @@ def connect(channel):
         sys.exit(1)    
     try:
         response = conn.getresponse()
-    except Error:
+    except:
         print '4chan has disconnected us'
         sys.exit(1)    
     debugprint(str(response.status)+response.reason)
@@ -68,10 +68,8 @@ def gettree(data):
     try:
         tree = fromstring(cleanhtml)
     except TypeError:
-        print 'A mystery error has occured!'
-        print 'cleanhtml is: '   
-        print cleanhtml
-        sys.exit(1)
+        print 'There was likely a unicode symbol' 
+        tree = fromstring('')
     return tree
 
 
