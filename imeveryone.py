@@ -139,33 +139,39 @@ class NewPostHandler(BaseHandler, MessageMixin):
         sessionid = self.get_cookie('sessionid')
         useralerts[sessionid] = []    
         
-        # Recaptcha
         remote_ip = self.request.remote_ip
         challenge = self.get_argument('recaptcha_challenge_field')
         response = self.get_argument('recaptcha_response_field')
+        posttext = self.get_argument('posttext')
+        useragent = self.request.headers['User-Agent']
+        referer = self.request.headers['Referer']
+        host = self.request.headers['Host']
+
+        # Recaptcha
         recaptcha_response = captcha.submit(challenge, response, config['captcha']['privkey'], remote_ip)
         if not recaptcha_response.is_valid:
             useralerts[sessionid].append(config['alerts']['nothuman'])
             logging.info(recaptcha_response.error_code)
 
         # Antispam
-        spam = antispam.comment_check(self.get_argument('posttext'), 
-            data={
-                'user_ip':remote_ip,
-                'user_agent':self.request.headers['User-Agent'],
-                'referrer':self.request.headers['Referer'],
-                'SERVER_ADDR':self.request.headers['Host'],
-                }, 
-            build_data=True, 
-            DEBUG=False)
+        foo = 'bar'
+        spam = antispam.comment_check(posttext,data={
+            'user_ip':remote_ip,
+            'user_agent':useragent,
+            'referrer':referer,
+            'SERVER_ADDR':host
+        }, build_data=True, DEBUG=False)
         if spam:
             useralerts[sessionid].append(config['alerts']['spam'])
         print 'Spam status is: ',
         print spam     
         
+        # Get embeds
+        posttext,originaltext,embeds = postprocessor.processlinks(posttext)
+        
         # Now for the image        
         if config['images'].as_bool('enabled'):
-            if not 'image' in self.request.files:
+            if not 'image' in self.request.files and len(embeds) == 0:
                 useralerts[sessionid].append(config['alerts']['noimage'])
                 localfile = None
             else:
@@ -185,7 +191,8 @@ class NewPostHandler(BaseHandler, MessageMixin):
             message = {
                 'id': postid,
                 'author':self.current_user["first_name"],
-                'posttext':self.get_argument('posttext'), 
+                'posttext':posttext, 
+                'embeds':embeds, 
                 # Some dummy info before I add these to local posts 
                 'posttime':'Just now',
                 'threadid':postid,                
@@ -222,8 +229,7 @@ class QueueToWaitingClients(MessageMixin, threading.Thread):
             message = self.__queue.get()   
             message['id'] = str(uuid.uuid4())
             
-            # Get embeds
-            message = postprocessor.processlinks(message)
+            
             
             # Add an intro for particularly large text
             message['posttext'],message['intro'] = postprocessor.makeintro(message['posttext'],config['posting'])

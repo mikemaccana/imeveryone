@@ -28,20 +28,20 @@ def getembeddata(link):
     else:
         return None            
 
-def processlinks(message):
-    '''Make clickable links from text'''
+def processlinks(posttext):
+    '''Remove links from text'''
     linkre = re.compile(r"(http://[^ ]+)")
-    message['embeds'] = []
-    for link in linkre.findall(message['posttext']):
+    embeds = []
+    for link in linkre.findall(posttext):
         try:
             embed = getembeddata(link)
             if embed:
-                message['embeds'].append(embed)         
+                embeds.append(embed)         
         except:
             pass
-    message['original'] = message['posttext']
-    message['posttext'] = linkre.sub('', message['posttext'])
-    return message
+    originaltext = posttext
+    posttext = linkre.sub('', posttext)
+    return posttext,originaltext,embeds
 
 def reducelargeimages(imagefile,imageconfig):
     '''Reduce images larger than a certain size'''

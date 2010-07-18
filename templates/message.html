@@ -7,16 +7,20 @@
 		</div>	    
 	{% end %}
 	
-	{% for embed in message['embeds'] %}
-		{% if 'html' in embed %}
-			{{ embed['html'] }}<br/>
-		{% end %}	
+	{% if 'embeds' in message %}
+		{% for embed in message['embeds'] %}
+			{% if 'html' in embed %}
+				{{ embed['html'] }}<br/>
+			{% end %}	
+		{% end %}
 	{% end %}
 	
-	{% if message['preview'] is not None %}
-		<div class="visual">
-			<a href="./thread/{{ message['id'] }}" target="_blank"><img src="{{ message['preview'] }}" alt="image description" /></a>
-		</div>
+	{% if 'preview' in message %}
+		{% if message['preview'] is not None %}
+			<div class="visual">
+				<a href="./thread/{{ message['id'] }}" target="_blank"><img src="{{ message['preview'] }}" alt="image description" /></a>
+			</div>
+		{% end %}
 	{% end %}
 	
 	<div class="read-more">
