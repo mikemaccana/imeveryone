@@ -19,20 +19,15 @@ import sys
 import postprocessor
 from tornado import template
 from operator import itemgetter
-from recaptcha.client import captcha
 from configobj import ConfigObj
 from tornado.options import define, options
-from akismet import Akismet
 import ipdb
 
 config = ConfigObj('imeveryone.conf')
 
-akismetcfg = config['posting']['akismet']
-antispam = Akismet(key=akismetcfg['apikey'], agent=akismetcfg['clientname'])
+antispam = postprocessor.startakismet(config['posting']['akismet'])
 
 define("port", default=config['server'].as_int('port'), help="run on the given port", type=int)
-
-config['server']['cachedir'] = 'static/cache/'
 
 useralerts = {}
 
@@ -87,7 +82,7 @@ class RootHandler(BaseHandler):
             
         # Ensure messages are ordered corrrectly on initial connect
         sortedmessages = sorted(MessageMixin.cache, key=itemgetter('id'), reverse=True)
-        captchahtml = captcha.displayhtml(config['captcha']['pubkey'])
+        captchahtml = postprocessor.captcha.displayhtml(config['captcha']['pubkey'])
         
         # Show the messages and any alerts
         print useralerts[sessionid]
@@ -132,79 +127,46 @@ class NewPostHandler(BaseHandler, MessageMixin):
     @tornado.web.authenticated 
     def post(self):
         global messageQueue, config, useralerts
-        #ipdb.set_trace()
         logging.info("Post recieved from user!")
         postid = str(uuid.uuid4())
         # Clear alerts from previous posts
         sessionid = self.get_cookie('sessionid')
         useralerts[sessionid] = []    
-        
-        remote_ip = self.request.remote_ip
-        challenge = self.get_argument('recaptcha_challenge_field')
-        response = self.get_argument('recaptcha_response_field')
-        posttext = self.get_argument('posttext')
-        useragent = self.request.headers['User-Agent']
-        referer = self.request.headers['Referer']
-        host = self.request.headers['Host']
 
-        # Recaptcha
-        recaptcha_response = captcha.submit(challenge, response, config['captcha']['privkey'], remote_ip)
-        if not recaptcha_response.is_valid:
-            useralerts[sessionid].append(config['alerts']['nothuman'])
-            logging.info(recaptcha_response.error_code)
+        # Create message based on body of PUT form data
+        message = {
+            'id': postid,
+            'author':self.current_user["first_name"],
+            'posttext':self.get_argument('posttext'), 
+            'ip':self.request.remote_ip,
+            # Add sting time 
+            'posttime':'Just now',
+            'threadid':postid,                
+            'challenge':self.get_argument('recaptcha_challenge_field'),
+            'response':self.get_argument('recaptcha_response_field'),
+            'useragent':self.request.headers['User-Agent'],
+            'referer':self.request.headers['Referer'],
+            'images':self.request.files['image'],
+            'host':self.request.headers['Host'],
+            'useralerts':[]
+        }
 
-        # Antispam
-        foo = 'bar'
-        spam = antispam.comment_check(posttext,data={
-            'user_ip':remote_ip,
-            'user_agent':useragent,
-            'referrer':referer,
-            'SERVER_ADDR':host
-        }, build_data=True, DEBUG=False)
-        if spam:
-            useralerts[sessionid].append(config['alerts']['spam'])
-        print 'Spam status is: ',
-        print spam     
+        # Lets check our messages
+        message = postprocessor.checkcaptcha(message,config)
+        message = postprocessor.checkspam(message,antispam)
+        message = postprocessor.checklinksandembeds(message)
         
-        # Get embeds
-        posttext,originaltext,embeds = postprocessor.processlinks(posttext)
-        
-        # Now for the image        
-        if config['images'].as_bool('enabled'):
-            if not 'image' in self.request.files and len(embeds) == 0:
-                useralerts[sessionid].append(config['alerts']['noimage'])
-                localfile = None
-            else:
-                # Save image data to local file
-                imagepost = self.request.files['image'][0]
-                print 'Saving image: '+imagepost['filename']
-                localfile = config['server']['cachedir']+postid+'.'+imagepost['filename'].split('.')[-1]
-                localfilesave = open(localfile,'wb')
-                localfilesave.write(imagepost['body'])
-    
+        # Now for the image
+        message = postprocessor.getimages(message,config['images'])    
                     
         # If there are no errors
-        if len(useralerts[sessionid]) > 0:
-            logging.info('Bad post!: '+' '.join(useralerts[sessionid]))
+        if len(message['useralerts']) > 0:
+            logging.info('Bad post!: '+' '.join(message['useralerts']))
         else:    
-            # Create message based on body of PUT form data
-            message = {
-                'id': postid,
-                'author':self.current_user["first_name"],
-                'posttext':posttext, 
-                'embeds':embeds, 
-                # Some dummy info before I add these to local posts 
-                'posttime':'Just now',
-                'threadid':postid,                
-            }
-            if config['images'].as_bool('enabled'):
-                message['imageurl'] = None
-                message['localfile'] = localfile
             messageQueue.put(message) 
             
         # We're done - sent the user back to wherever 'next' input pointed to.  
         if self.get_argument("next", None):
-            #ipdb.set_trace()
             self.redirect(self.get_argument("next"))            
     # Just in case someone tries to access this URL via a GET        
     def get(self):
@@ -237,8 +199,8 @@ class QueueToWaitingClients(MessageMixin, threading.Thread):
             # Images    
             if config['images'].as_bool('enabled'):
                 # Fetch the image if necessary  
-                if message['imageurl']:       
-                    message['localfile'] = postprocessor.getimage(message['imageurl'],config['server']['cachedir'])
+                if 'imageurl' in message:       
+                    message['localfile'] = postprocessor.getimage(message['imageurl'],config['images']['cachedir'])
             
                 # Work on the image       
                 if message['localfile']:   

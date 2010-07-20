@@ -69,7 +69,6 @@ def gettree(data):
         tree = fromstring(cleanhtml)
     except TypeError:
         print 'There was likely a unicode symbol' 
-        tree = fromstring('')
     return tree
 
 
