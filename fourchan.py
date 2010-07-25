@@ -13,12 +13,14 @@ import Queue
 import random
 import sys
 import re
-import recaptcha
+import postprocessor
 
 debug = False
 
 # Last thread added to our queue
 lastadded = 0
+
+
 
 def debugprint(text):
     if debug:
@@ -73,7 +75,7 @@ def gettree(data):
 
 
 
-def updatethreadindex(channel,lastadded):
+def getnewposts(channel,lastadded):
     '''Return list of new threads. Each thread is a dict.'''
     newthreads = []
     # Connect and get content
@@ -151,17 +153,26 @@ def savedatabase(threads,database):
 
 class ContentGetter(threading.Thread): 
     '''Gets messages from 4chan and puts them on our message queue'''
-    def __init__(self, queue, delay):
+    def __init__(self, queue, config):
         self.__queue = queue
-        self.__delay = delay
+        self.__delay = config['injectors']['fourchan'].as_int('delay')
+        self.__config = config
+        self.__antispam = postprocessor.startakismet(config['posting']['akismet'])
         threading.Thread.__init__(self)
             
     def run(self):
         lastadded = 0
         while True:
-            newthreads,lastadded = updatethreadindex('b',lastadded)
-            for thread in newthreads:
-                self.__queue.put(thread) 
+            newposts,lastadded = getnewposts('b',lastadded)
+            for message in newposts:
+                message['ip'] = '10.0.0.1'
+                message['useragent'] = 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1.7) Gecko/20091221 Firefox/3.5.7'
+                message['referer'] = None
+                message['host'] = 'www.imeveryone.com'
+                message['useralerts'] = []
+                message = postprocessor.checkspam(message,self.__antispam)
+                message = postprocessor.checklinksandembeds(message,self.__config)
+                self.__queue.put(message) 
                 delay = random.randint(self.__delay-2,self.__delay+3)
                 time.sleep(delay)  
 
