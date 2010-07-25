@@ -80,26 +80,45 @@ def checkcaptcha(message,config):
         message['nothuman'] = True   
     return message    
 
-def checkspam(message,antispam):
-    spam = antispam.comment_check(message['posttext'],data={
+def checkspam(message,config,antispam):
+    try:
+        spam = antispam.comment_check(message['posttext'],data={
         'user_ip':message['ip'],
         'user_agent':message['useragent'],
         'referrer':message['referer'],
         'SERVER_ADDR':message['host']
     }, build_data=True, DEBUG=False)
+    # Python Akismet library can fail on some types of unicode
+    except UnicodeEncodeError:
+        spam = True
     if spam:
         message['useralerts'].append(config['alerts']['spam'])
         message['spam'] = True     
     return message
-    
 
-def checklinksandembeds(message):
+def checkporn(message,config):  
+    '''Check images for porn'''
+    logging.info('Checking for porn...')
+    try:
+        response = pifilter.checkimage(
+            message['localfile'],
+            config['posting']['pifilter']['customerid'],
+            aggressive=config['posting']['pifilter'].as_bool('aggressive')
+            )
+    except:
+        logging.error('Could not open pifilter URL')   
+        return message        
+    if response['result']:    
+        message['useralerts'].append(config['alerts']['porn'])  
+    return message      
+
+def checklinksandembeds(message,config):
     '''Remove links from text'''
     linkre = re.compile(r"(http://[^ ]+)")
     message['embeds'] = []
     for link in linkre.findall(message['posttext']):
         try:
-            embed = getembeddata(link)
+            embed = getembeddata(link,config)
             if embed:
                 message['embeds'].append(embed)         
         except:
