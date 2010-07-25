@@ -8,25 +8,64 @@ import urllib2
 import oembed
 from recaptcha.client import captcha
 from akismet import Akismet
+import pifilter
+import logging
 
 def startakismet(akismetcfg):
     return Akismet(key=akismetcfg['apikey'], agent=akismetcfg['clientname'])
 
 # Oembed + Oohembed
 consumer = oembed.OEmbedConsumer()
-consumer.addEndpoint(oembed.OEmbedEndpoint('http://oohembed.com/oohembed/', [
+consumer.addEndpoint(oembed.OEmbedEndpoint('http://api.embed.ly/oembed/api/v1', [
+'http://www.5min.com/Video/*',
+    'http://*.viddler.com/explore/*/videos/*',
+    'http://qik.(ly|com)/video/*',
+    'http://qik.(ly|com)/*',
+    'http://www.hulu.com/watch/*',
+    'http://*.revision3.com/*',
+    'http://*nfb.ca/film/*',
+    'http://*.dailymotion.com/video/*',
+    'http://blip.tv/file/*',
+    'http://*.scribd.com/doc/*',
+    'http://*.movieclips.com/watch/*',
+    'http://screenr.com/.+',
+    'http://twitpic.com/*',
     'http://*.youtube.com/watch*',
-    'http://www.vimeo.com/*',
+    'http://yfrog.*/*',
+    'http://*amazon.*/gp/product/*',
+    'http://*amazon.*/*/dp/*',
+    'http://*flickr.com/*',
     'http://www.vimeo.com/groups/*/videos/*',
-    'http://*.twitpic.com/*',
-    'http://*.metacafe.com/watch/*'
+    'http://www.vimeo.com/*',
+    'http://tweetphoto.com/*',
+    'http://www.collegehumor.com/video:*',
+    'http://www.funnyordie.com/videos/*',
+    'http://video.google.com/videoplay?*',
+    'http://www.break.com/*/*',
+    'http://www.slideshare.net/*/*',
+    'http://www.ustream.tv/recorded/*',
+    'http://www.ustream.tv/channel/*',
+    'http://www.twitvid.com/*',
+    'http://www.justin.tv/clip/*',
+    'http://www.justin.tv/*',
+    'http://vids.myspace.com/index.cfm\?fuseaction=vids.individual&videoid*',
+    'http://www.metacafe.com/watch/*',
+    'http://*crackle.com/c/*',
+    'http://www.veoh.com/*/watch/*',
+    'http://www.fancast.com/(tv|movies)/*/videos',
+    'http://*imgur.com/*',
+    'http://*.posterous.com/*',
     ]))
 
 
-def getembeddata(link):
+def getembeddata(link,config):
     '''Get embed codes for links'''
     global consumer
-    response = consumer.embed(link)
+    options = {
+        'maxwidth':config['images'].as_int('maxwidth'),
+        'maxheight':config['images'].as_int('maxheight'),
+    }
+    response = consumer.embed(link, format='json', )
     data = response.getData()
     if data:
         return data
