@@ -1,6 +1,7 @@
 fourchan.pyc
 bin
 cleanmeout
-lib
+lib.*
 share
 mongodb
+.*\.pyc
