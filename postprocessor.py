@@ -127,7 +127,7 @@ def checklinksandembeds(message,config):
     message['posttext'] = linkre.sub('', message['posttext'])
     return message
 
-def getimages(message,imageconfig):
+def saveimages(message,imageconfig):
     '''Fetch images if needed'''                
     if imageconfig.as_bool('enabled'):
         if len(message['images']) < 1 and len(embeds) < 1:
