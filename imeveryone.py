@@ -21,7 +21,7 @@ from tornado import template
 from operator import itemgetter
 from configobj import ConfigObj
 from tornado.options import define, options
-import ipdb
+from time import gmtime, strftime
 
 config = ConfigObj('imeveryone.conf')
 
@@ -41,6 +41,8 @@ class Application(tornado.web.Application):
             (r"/a/message/new", NewPostHandler),
             (r"/a/message/updates", ViewerUpdateHandler),
             (r"/thread/.*", ConversationHandler),
+            (r"/about/.*", AboutHandler),
+            (r"/contact/.*", ContactHandler),
         ]
         settings = dict(
             cookie_secret="43oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
@@ -68,8 +70,20 @@ class ConversationHandler(BaseHandler):
     def get(self):
         self.write('Harrow! Thread goes here!')
 
+class AboutHandler(BaseHandler):
+    '''Handle conversations'''
+    def get(self):
+        self.write('Harrow! About page goes here!')
+
+
+class ContactHandler(BaseHandler):
+    '''Handle conversations'''
+    def get(self):
+        self.write('Harrow! Contact page goes here!')
+
+
 class RootHandler(BaseHandler):
-    '''Handle initial get request for root dir, send client HTML which gets JS to do a post and get further messages!'''
+    '''Handle request for our front page'''
     @tornado.web.authenticated
     def get(self):
         global useralerts,config
@@ -86,7 +100,15 @@ class RootHandler(BaseHandler):
         
         # Show the messages and any alerts
         print useralerts[sessionid]
-        self.render("index.html", messages=sortedmessages, captcha=captchahtml, alerts=useralerts[sessionid], heading=config['presentation']['heading'])   
+        self.render(
+            "index.html", 
+            messages=sortedmessages, 
+            captcha=captchahtml, 
+            alerts=useralerts[sessionid], 
+            heading=config['presentation']['heading'],
+            prompt1 = config['presentation']['prompt'].split()[0],
+            prompt2 = ' '.join(config['presentation']['prompt'].split()[1:]),
+            )   
 
 
 class MessageMixin(object):
@@ -140,7 +162,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
             'posttext':self.get_argument('posttext'), 
             'ip':self.request.remote_ip,
             # Add sting time 
-            'posttime':'Just now',
+            'posttime':strftime("%Y-%m-%d %H:%M:%S", gmtime()),
             'threadid':postid,                
             'challenge':self.get_argument('recaptcha_challenge_field'),
             'response':self.get_argument('recaptcha_response_field'),
@@ -151,18 +173,22 @@ class NewPostHandler(BaseHandler, MessageMixin):
             'useralerts':[]
         }
 
-        # Lets check our messages
-        message = postprocessor.checkcaptcha(message,config)
-        message = postprocessor.checkspam(message,antispam)
-        message = postprocessor.checklinksandembeds(message)
-        
         # Now for the image
-        message = postprocessor.getimages(message,config['images'])    
+        message = postprocessor.saveimages(message,config['images'])
+
+        # Lets check our messages
+        if len(message['posttext'].strip()) == 0:
+            message['useralerts'].append('Cat got your tongue?')
+        message = postprocessor.checkcaptcha(message,config)
+        message = postprocessor.checkspam(message,config,antispam)
+        message = postprocessor.checklinksandembeds(message,config)
+        #message = postprocessor.checkporn(message,config)
                     
         # If there are no errors
         if len(message['useralerts']) > 0:
             logging.info('Bad post!: '+' '.join(message['useralerts']))
         else:    
+            logging.info('Good post.')
             messageQueue.put(message) 
             
         # We're done - sent the user back to wherever 'next' input pointed to.  
@@ -190,17 +216,16 @@ class QueueToWaitingClients(MessageMixin, threading.Thread):
         while True: 
             message = self.__queue.get()   
             message['id'] = str(uuid.uuid4())
-            
-            
-            
+
             # Add an intro for particularly large text
             message['posttext'],message['intro'] = postprocessor.makeintro(message['posttext'],config['posting'])
 
             # Images    
             if config['images'].as_bool('enabled'):
                 # Fetch the image if necessary  
-                if 'imageurl' in message:       
-                    message['localfile'] = postprocessor.getimage(message['imageurl'],config['images']['cachedir'])
+                if 'imageurl' in message:
+                    if message['imageurl']:       
+                        message['localfile'] = postprocessor.getimage(message['imageurl'],config['images']['cachedir'])
             
                 # Work on the image       
                 if message['localfile']:   
@@ -264,7 +289,7 @@ def main():
 
         ## Keep supplying new content to queue
         if config['injectors']['fourchan'].as_bool('enabled'):
-            mycontentgetter = fourchan.ContentGetter(messageQueue,5)
+            mycontentgetter = fourchan.ContentGetter(messageQueue,config)
             mycontentgetter.start()
         
         # Take content from queue and send updates to waiting clients
