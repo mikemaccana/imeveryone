@@ -4,5 +4,6 @@ lib
 share
 mongodb
 .*\.pyc
-static/cache/.*
+static/cache/.*\..*
 db
+temp/tesseract.log
