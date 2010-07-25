@@ -30,9 +30,9 @@
 					<div id="content">
 						<!-- navigation -->
 						<ul id="nav">
-							<li><a href="#">Latest</a></li>
-							<li><a href="#">What is this?</a></li>
-							<li><a href="#">Contact</a></li>
+							<li><a href="./">Latest</a></li>
+							<li><a href="./about/">What is this?</a></li>
+							<li><a href="./contact/">Contact</a></li>
 						</ul>
 						<!-- main-block -->
 						<div id="inbox">
@@ -44,7 +44,7 @@
 					</div>
 					<!-- sidebar -->
 					<div id="sidebar">
-						<h3>Something <span>To Say?</span></h3>
+						<h3>{{ prompt1 }}<span>{{ prompt2 }}</span></h3>
 						<!-- form form-write-us -->
 						<form enctype='multipart/form-data' method='post' action='/a/message/new' class="form-write-us">
 							<fieldset>
@@ -70,8 +70,10 @@
 									</li>
 									<li>
 										<label for="input-text">3. Type these words</label>
-										<div class="captcha">
-											{{ captcha }}
+										<div class="text">
+											<div class="captcha">
+												{{ captcha }}
+											</div>
 										</div>
 									</li>
 								</ul>
