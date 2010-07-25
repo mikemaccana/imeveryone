@@ -5,3 +5,4 @@ share
 mongodb
 .*\.pyc
 static/cache/.*
+db
