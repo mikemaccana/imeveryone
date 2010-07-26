@@ -3,7 +3,7 @@ cleanmeout
 lib
 share
 mongodb
-.*\.pyc
-static/cache/.*\..*
+.*pyc
+static/cache/.*
 db
 temp/tesseract.log

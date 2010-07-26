@@ -70,7 +70,8 @@ def checkimage(imagefilename,customerid,aggressive=True):
     # Create the Request 
     request = urllib2.Request('http://service.pifilter.com/Image.ashx', datagen, headers)
     # Send the request and get response
-    responsecode = urllib2.urlopen(request).read()
+    # Note sometimes pifilter response include the ',<reason>', sometimes not.
+    responsecode = urllib2.urlopen(request).read().split(',')[0]
     response = responsecodes[int(responsecode)]
     return response
 
