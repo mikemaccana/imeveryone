@@ -1,5 +1,5 @@
 <div class="post">
-	<em class="date"><a href="./thread/{{ message['id'] }}"> {{message['posttime']}}</a></em>
+	<em class="date"><a href="./discuss/{{ message['id'] }}"> {{message['posttime']}}</a></em>
 	<h2><a href="#">{{ escape(message['posttext'])}}</a></h2>
 	{% if message['intro'] %}  
 	    <div class="text-box">
@@ -18,13 +18,13 @@
 	{% if 'preview' in message %}
 		{% if message['preview'] is not None %}
 			<div class="visual">
-				<a href="./thread/{{ message['id'] }}" target="_blank"><img src="{{ message['preview'] }}" alt="image description" /></a>
+				<a href="./discuss/{{ message['id'] }}" target="_blank"><img src="{{ message['preview'] }}" alt="image description" /></a>
 			</div>
 		{% end %}
 	{% end %}
 	
 	<div class="read-more">
-		<a class="more" href="./thread/{{ message['id'] }}" target="_blank">Read more...</a>
+		<a class="more" href="./discuss/{{ message['id'] }}" target="_blank">Read more...</a>
 		<em><a href="#">{{message['threadid']}}</a></em>
 	</div>
 </div>

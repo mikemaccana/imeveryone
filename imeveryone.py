@@ -40,9 +40,10 @@ class Application(tornado.web.Application):
             (r"/auth/logout", AuthLogoutHandler),
             (r"/a/message/new", NewPostHandler),
             (r"/a/message/updates", ViewerUpdateHandler),
-            (r"/thread/.*", ConversationHandler),
-            (r"/about/.*", AboutHandler),
-            (r"/contact/.*", ContactHandler),
+            (r"/discuss/([a-z0-9\-]+)", DiscussHandler),
+            (r"/about", AboutHandler),
+            (r"/admin", AdminHandler),
+            (r"/contact", ContactHandler),
         ]
         settings = dict(
             cookie_secret="43oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
@@ -65,10 +66,18 @@ class BaseHandler(tornado.web.RequestHandler):
         else:    
             return tornado.escape.json_decode(user_json)
 
-class ConversationHandler(BaseHandler):
-    '''Handle conversations'''
+
+
+class AdminHandler(BaseHandler):
+    '''Handle admin'''
+    @tornado.web.authenticated
     def get(self):
-        self.write('Harrow! Thread goes here!')
+        self.write('Harrow! Admin goes here!')
+
+class DiscussHandler(BaseHandler):
+    '''Handle conversations'''
+    def get(self,discuss):
+        self.write('Harrow! Discussion goes here!'+discuss)
 
 class AboutHandler(BaseHandler):
     '''Handle conversations'''
@@ -84,7 +93,6 @@ class ContactHandler(BaseHandler):
 
 class RootHandler(BaseHandler):
     '''Handle request for our front page'''
-    @tornado.web.authenticated
     def get(self):
         global useralerts,config
         # Each user has a sessionid - we use this to present success / failure messages etc when posting
@@ -146,7 +154,6 @@ class MessageMixin(object):
 
 class NewPostHandler(BaseHandler, MessageMixin):
     '''Recieve new content from users and add them to our message queue'''
-    @tornado.web.authenticated 
     def post(self):
         global messageQueue, config, useralerts
         logging.info("Post recieved from user!")
@@ -182,7 +189,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
         message = postprocessor.checkcaptcha(message,config)
         message = postprocessor.checkspam(message,config,antispam)
         message = postprocessor.checklinksandembeds(message,config)
-        #message = postprocessor.checkporn(message,config)
+        message = postprocessor.checkporn(message,config)
                     
         # If there are no errors
         if len(message['useralerts']) > 0:
@@ -242,7 +249,6 @@ class QueueToWaitingClients(MessageMixin, threading.Thread):
 
 class ViewerUpdateHandler(BaseHandler, MessageMixin):
     '''Do updates. All clients continually send posts, which we only respond to when where there are new messges (where we run on_send_messages() )'''
-    @tornado.web.authenticated
     @tornado.web.asynchronous
     def post(self):
         logging.info('Update request') 
@@ -287,7 +293,7 @@ def main():
         http_server = tornado.httpserver.HTTPServer(Application())
         http_server.listen(options.port)
 
-        ## Keep supplying new content to queue
+        # Keep supplying new content to queue
         if config['injectors']['fourchan'].as_bool('enabled'):
             mycontentgetter = fourchan.ContentGetter(messageQueue,config)
             mycontentgetter.start()
