@@ -229,10 +229,6 @@ class QueueToWaitingClients(MessageMixin, threading.Thread):
 
             # Images    
             if config['images'].as_bool('enabled'):
-                # Fetch the image if necessary  
-                if 'imageurl' in message:
-                    if message['imageurl']:       
-                        message['localfile'] = postprocessor.getimage(message['imageurl'],config['images']['cachedir'])
             
                 # Work on the image       
                 if message['localfile']:   

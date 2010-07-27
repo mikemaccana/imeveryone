@@ -10,6 +10,7 @@ from recaptcha.client import captcha
 from akismet import Akismet
 import pifilter
 import logging
+import time
 
 def startakismet(akismetcfg):
     return Akismet(key=akismetcfg['apikey'], agent=akismetcfg['clientname'])
@@ -98,18 +99,26 @@ def checkspam(message,config,antispam):
 
 def checkporn(message,config):  
     '''Check images for porn'''
-    logging.info('Checking for porn...')
-    try:
+    print message['localfile']
+    print message
+    print '------------------------------------'
+    if message['localfile'] and config['images'].as_bool('enabled'):            
+        #try:
+        logging.info('Checking for porn...')
+        time.sleep(1)
         response = pifilter.checkimage(
             message['localfile'],
             config['posting']['pifilter']['customerid'],
             aggressive=config['posting']['pifilter'].as_bool('aggressive')
             )
-    except:
-        logging.error('Could not open pifilter URL')   
-        return message        
-    if response['result']:    
-        message['useralerts'].append(config['alerts']['porn'])  
+        #except:
+        #    logging.error('Could not open pifilter URL')   
+        #    return message        
+        if response['result']:    
+            logging.warn('image is porn.')
+            message['useralerts'].append(config['alerts']['porn'])  
+        else:
+            logging.info('image is clean')        
     return message      
 
 def checklinksandembeds(message,config):
@@ -128,7 +137,7 @@ def checklinksandembeds(message,config):
     return message
 
 def saveimages(message,imageconfig):
-    '''Fetch images if needed'''                
+    '''Save images for original posts'''                
     if imageconfig.as_bool('enabled'):
         if len(message['images']) < 1 and len(embeds) < 1:
             message['useralerts'].append(config['alerts']['noimage'])

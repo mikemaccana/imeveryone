@@ -75,7 +75,7 @@ def gettree(data):
 
 
 
-def getnewposts(channel,lastadded):
+def getnewposts(channel,lastadded,config):
     '''Return list of new threads. Each thread is a dict.'''
     newthreads = []
     # Connect and get content
@@ -109,6 +109,12 @@ def getnewposts(channel,lastadded):
                 except (KeyError,IndexError):
                     imageurl = None   
                     
+                # Fetch the image if necessary  
+                if imageurl:
+                    localfile = postprocessor.getimage(imageurl,config['images']['cachedir'])
+                else:
+                    localfile = None        
+                    
                 # Thumbnail    
                 try:    
                     thumb = element.getparent().getprevious().getprevious().getprevious().getprevious()[0].attrib['src']                    
@@ -119,7 +125,7 @@ def getnewposts(channel,lastadded):
                 
                 # Add the thread (as long as its new)    
                 if threadid > lastadded:
-                    newthreads.append( {'author':author,'posttext':posttext,'imageurl':imageurl,'thumb':thumb,'threadid':threadid,'link':link,'posttime':timetext,'localfile':None,'preview':None})
+                    newthreads.append( {'author':author,'posttext':posttext,'imageurl':imageurl,'thumb':thumb,'threadid':threadid,'link':link,'posttime':timetext,'localfile':localfile,'preview':None})
                     lastadded = threadid
     return newthreads,lastadded
 
@@ -163,15 +169,16 @@ class ContentGetter(threading.Thread):
     def run(self):
         lastadded = 0
         while True:
-            newposts,lastadded = getnewposts('b',lastadded)
+            newposts,lastadded = getnewposts('b',lastadded,self.__config)
             for message in newposts:
                 message['ip'] = '10.0.0.1'
                 message['useragent'] = 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1.7) Gecko/20091221 Firefox/3.5.7'
                 message['referer'] = None
                 message['host'] = 'www.imeveryone.com'
                 message['useralerts'] = []
-                message = postprocessor.checkspam(message,self.__antispam)
+                #message = postprocessor.checkspam(message,self.__antispam)
                 message = postprocessor.checklinksandembeds(message,self.__config)
+                message = postprocessor.checkporn(message,self.__config)
                 self.__queue.put(message) 
                 delay = random.randint(self.__delay-2,self.__delay+3)
                 time.sleep(delay)  
