@@ -102,18 +102,22 @@ def checkporn(message,config):
     print message['localfile']
     print message
     print '------------------------------------'
-    if message['localfile'] and config['images'].as_bool('enabled'):            
-        #try:
-        logging.info('Checking for porn...')
-        time.sleep(1)
-        response = pifilter.checkimage(
-            message['localfile'],
-            config['posting']['pifilter']['customerid'],
-            aggressive=config['posting']['pifilter'].as_bool('aggressive')
-            )
-        #except:
-        #    logging.error('Could not open pifilter URL')   
-        #    return message        
+    if message['localfile'] and config['images'].as_bool('enabled'):         
+        count = 0   
+        while count < 2:
+            try:
+                logging.info('Checking for porn...')
+                time.sleep(1)
+                response = pifilter.checkimage(
+                    message['localfile'],
+                    config['posting']['pifilter']['customerid'],
+                    aggressive=config['posting']['pifilter'].as_bool('aggressive')
+                    )
+                break        
+            except:
+                logging.error('Could not open pifilter URL')   
+                return message
+            count = count+1            
         if response['result']:    
             logging.warn('image is porn.')
             message['useralerts'].append(config['alerts']['porn'])  
