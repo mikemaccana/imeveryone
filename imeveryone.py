@@ -12,6 +12,7 @@ import tornado.options
 import tornado.web
 import os.path
 import uuid
+import advertising
 import fourchan
 import threading
 import Queue
@@ -289,10 +290,14 @@ def main():
         http_server = tornado.httpserver.HTTPServer(Application())
         http_server.listen(options.port)
 
-        # Keep supplying new content to queue
-        if config['injectors']['fourchan'].as_bool('enabled'):
-            mycontentgetter = fourchan.ContentGetter(messageQueue,config)
-            mycontentgetter.start()
+        # Advertising content getter
+        if config['injectors']['advertising'].as_bool('enabled'):            
+            advertising.ContentGetter(messageQueue,config).start()
+
+        # Test 4chan content getter to queue
+        if config['injectors']['fourchan'].as_bool('enabled'):            
+            fourchan.ContentGetter(messageQueue,config).start()
+
         
         # Take content from queue and send updates to waiting clients
         mycontentprocessor = QueueToWaitingClients(messageQueue,config)
