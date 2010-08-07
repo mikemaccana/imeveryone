@@ -99,9 +99,6 @@ def checkspam(message,config,antispam):
 
 def checkporn(message,config):  
     '''Check images for porn'''
-    print message['localfile']
-    print message
-    print '------------------------------------'
     if message['localfile'] and config['images'].as_bool('enabled'):         
         count = 0   
         while count < 2:

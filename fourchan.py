@@ -14,6 +14,7 @@ import random
 import sys
 import re
 import postprocessor
+import uuid
 
 debug = False
 
@@ -174,6 +175,7 @@ class ContentGetter(threading.Thread):
                 message['ip'] = '10.0.0.1'
                 message['useragent'] = 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1.7) Gecko/20091221 Firefox/3.5.7'
                 message['referer'] = None
+                message['submitid'] = str(uuid.uuid4())
                 message['host'] = 'www.imeveryone.com'
                 message['useralerts'] = []
                 #message = postprocessor.checkspam(message,self.__antispam)

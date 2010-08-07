@@ -158,14 +158,14 @@ class NewPostHandler(BaseHandler, MessageMixin):
     def post(self):
         global messageQueue, config, useralerts
         logging.info("Post recieved from user!")
-        postid = str(uuid.uuid4())
+
         # Clear alerts from previous posts
         sessionid = self.get_cookie('sessionid')
         useralerts[sessionid] = []    
 
         # Create message based on body of PUT form data
         message = {
-            'id': postid,
+            'submitid':str(uuid.uuid4()),
             'author':self.current_user["first_name"],
             'posttext':self.get_argument('posttext'), 
             'ip':self.request.remote_ip,
@@ -218,12 +218,15 @@ class QueueToWaitingClients(MessageMixin, threading.Thread):
     '''Takes items off the messageQueue, and sends them to client'''
     def __init__(self, queue, config):
         self.__queue = queue
+        self.__startid = config['posting'].as_int('startid')
         threading.Thread.__init__(self)  
         MessageMixin.__init__(self)        
     def run(self):
         while True: 
             message = self.__queue.get()   
-            message['id'] = str(uuid.uuid4())
+            message['id'] = str(self.__startid)
+            logging.info('message id is: '+message['id'])
+            self.__startid = self.__startid+1
 
             # Add an intro for particularly large text
             message['posttext'],message['intro'] = postprocessor.makeintro(message['posttext'],config['posting'])
@@ -245,7 +248,7 @@ class QueueToWaitingClients(MessageMixin, threading.Thread):
             self.send_messages([message])
 
 class ViewerUpdateHandler(BaseHandler, MessageMixin):
-    '''Do updates. All clients continually send posts, which we only respond to when where there are new messges (where we run on_send_messages() )'''
+    '''Do updates. All clients continually send posts, which we only respond to when where there are new messages (where we run on_send_messages() )'''
     @tornado.web.asynchronous
     def post(self):
         logging.info('Update request') 
