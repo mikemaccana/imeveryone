@@ -29,6 +29,7 @@ class ContentGetter(threading.Thread):
                 'ad':True,
                 'referer': None, 
                 'ip': '10.0.0.1', 
+                'submitid':None,
                 'imageurl': None, 
                 'host': 'www.imeveryone.com', 
                 'link': ad['link'], 
