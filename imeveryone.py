@@ -79,6 +79,7 @@ class DiscussHandler(BaseHandler):
     '''Handle conversations'''
     def get(self,discuss):
         self.write('Harrow! Discussion goes here!'+discuss)
+        # Expand graph here.
 
 class AboutHandler(BaseHandler):
     '''Handle conversations'''
@@ -132,7 +133,10 @@ class MessageMixin(object):
             index = 0
             for i in xrange(len(MessageMixin.cache)):
                 index = len(MessageMixin.cache) - i - 1
-                if MessageMixin.cache[index]["id"] == cursor: 
+                # Note cursor is unicode not int
+                # Converting unicode to int seems to mysteriously break comparison!
+                if str(MessageMixin.cache[index]["id"]) == str(cursor): 
+                    # Client is up to date now    
                     break
             recent = MessageMixin.cache[index + 1:]
             if recent:
@@ -224,8 +228,9 @@ class QueueToWaitingClients(MessageMixin, threading.Thread):
     def run(self):
         while True: 
             message = self.__queue.get()   
-            message['id'] = str(self.__startid)
-            logging.info('message id is: '+message['id'])
+            message['id'] = self.__startid
+            #message['id'] = str(self.__startid)
+            logging.info('message id is: '+str(message['id']))
             self.__startid = self.__startid+1
 
             # Add an intro for particularly large text

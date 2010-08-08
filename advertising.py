@@ -17,7 +17,7 @@ class ContentGetter(threading.Thread):
         while True:
             ads = [
                     {
-                    'link':'www.google.com',
+                    'link':'http://www.google.com',
                     'copy':'Buy stuff!',
                     'image':'static/cache/ad1.jpg'
                     },
