@@ -121,6 +121,7 @@ var updater = {
         	updater.cursor = response.cursor;
         	var messages = response.messages;
         	updater.cursor = messages[messages.length - 1].id;
+        	
         	console.log(messages.length, "new messages, cursor:", updater.cursor);
         	for (var i = 0; i < messages.length; i++) {
         	    updater.showMessage(messages[i]);

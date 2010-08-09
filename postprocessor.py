@@ -168,7 +168,7 @@ def reducelargeimages(imagefile,imageconfig):
     # Resize, save, return preview file name    
     else:    
         myimage.thumbnail(maxsize,Image.ANTIALIAS)
-        newfilename = imagefile.split('.')[-2]+'_preview.'+imagefile.split('.')[-1]
+        newfilename = imagefile.replace('cache','thumbs').split('.')[-2]+'_preview.'+imagefile.split('.')[-1]
         try:
             myimage.save(newfilename)
         except:

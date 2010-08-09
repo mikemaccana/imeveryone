@@ -80,6 +80,7 @@ class DiscussHandler(BaseHandler):
     def get(self,discuss):
         self.write('Harrow! Discussion goes here!'+discuss)
         # Expand graph here.
+        
 
 class AboutHandler(BaseHandler):
     '''Handle conversations'''
@@ -173,9 +174,8 @@ class NewPostHandler(BaseHandler, MessageMixin):
             'author':self.current_user["first_name"],
             'posttext':self.get_argument('posttext'), 
             'ip':self.request.remote_ip,
-            # Add sting time 
             'posttime':strftime("%Y-%m-%d %H:%M:%S", gmtime()),
-            'threadid':postid,                
+            'threadid':None,                
             'challenge':self.get_argument('recaptcha_challenge_field'),
             'response':self.get_argument('recaptcha_response_field'),
             'useragent':self.request.headers['User-Agent'],
@@ -229,12 +229,14 @@ class QueueToWaitingClients(MessageMixin, threading.Thread):
         while True: 
             message = self.__queue.get()   
             message['id'] = self.__startid
-            #message['id'] = str(self.__startid)
             logging.info('message id is: '+str(message['id']))
             self.__startid = self.__startid+1
 
             # Add an intro for particularly large text
             message['posttext'],message['intro'] = postprocessor.makeintro(message['posttext'],config['posting'])
+
+            # Override existing links    
+            message['link'] = '/discuss/'+str(message['id'])
 
             # Images    
             if config['images'].as_bool('enabled'):
@@ -244,7 +246,7 @@ class QueueToWaitingClients(MessageMixin, threading.Thread):
                     # Get image text via OCR
                     if config['images']['ocr']:
                         message['imagetext'] = postprocessor.getimagetext(message['localfile'])
-                    # Make picture include 
+                    # Make picture preview 
                     logging.info('Local file is: '+message['localfile'])
                     message['preview'] = postprocessor.reducelargeimages(message['localfile'],config['images'])
                     logging.info('preview  is: '+message['preview'])
