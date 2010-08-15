@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.6
 import re
-from PIL import Image
+from PIL import Image, ImageOps
 import sys
 sys.path.append('lib/python2.6/site-packages/pytesser')
 import pytesser
@@ -99,7 +99,14 @@ def checkspam(message,config,antispam):
 
 def checkporn(message,config):  
     '''Check images for porn'''
-    if message['localfile'] and config['images'].as_bool('enabled'):         
+    def savegrayscale(imagefile):
+        ################
+        adultimage = Image.open(imagefile)
+        adultimage = ImageOps.grayscale(adultimage)
+        adultimage.save(imagefile)
+        return
+        
+    if message['localfile'] and config['images'].as_bool('enabled') and config['images'].as_bool('adult'):         
         count = 0   
         while count < 2:
             try:
@@ -116,8 +123,15 @@ def checkporn(message,config):
                 return message
             count = count+1            
         if response['result']:    
-            logging.warn('image is porn.')
-            message['useralerts'].append(config['alerts']['porn'])  
+            logging.warn('message submission '+message['submitid']+' with image '+message['localfile']+' is porn.')
+            # Make a greyscale version and use that instead
+            if config['images']['adultaction'] == 'gray' or config['images']['adultaction'] == 'grey':
+                savegrayscale(message['localfile'])
+                logging.info('Saving greyscale version...')
+                logging.info('ZZZZZ')
+            else:               
+                message['useralerts'].append(config['alerts']['porn'])  
+                logging.info('AAAAAAA')
         else:
             logging.info('image is clean')        
     return message      

@@ -219,7 +219,7 @@ def render_template(template_name, **kwargs):
     return t.generate(**kwargs)
     
 class QueueToWaitingClients(MessageMixin, threading.Thread):
-    '''Takes items off the messageQueue, and sends them to client'''
+    '''Take messages off the messageQueue, and send them to client'''
     def __init__(self, queue, config):
         self.__queue = queue
         self.__startid = config['posting'].as_int('startid')
@@ -229,7 +229,7 @@ class QueueToWaitingClients(MessageMixin, threading.Thread):
         while True: 
             message = self.__queue.get()   
             message['id'] = self.__startid
-            logging.info('message id is: '+str(message['id']))
+            logging.info('Preparing to send message ID: '+str(message['id'])+' with submit id '+str(message['submitid'])+' to clients.')
             self.__startid = self.__startid+1
 
             # Add an intro for particularly large text
