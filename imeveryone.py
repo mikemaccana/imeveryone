@@ -23,6 +23,7 @@ from operator import itemgetter
 from configobj import ConfigObj
 from tornado.options import define, options
 from time import gmtime, strftime
+from subprocess import Popen
 
 config = ConfigObj('imeveryone.conf')
 
@@ -157,6 +158,11 @@ class MessageMixin(object):
         if len(MessageMixin.cache) > self.cache_size:
             MessageMixin.cache = MessageMixin.cache[-self.cache_size:]
 
+def dbclient(dbconfig):
+    dbconnection = Connection(dbconfig['host'],dbconfig.as_int('port'))
+    messagesdb = dbconnection[dbconfig['messagesdb']]
+    messagesdb.insert(post)
+    
 
 class NewPostHandler(BaseHandler, MessageMixin):
     '''Recieve new content from users and add them to our message queue'''
@@ -195,6 +201,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
         message = postprocessor.checkspam(message,config,antispam)
         message = postprocessor.checklinksandembeds(message,config)
         message = postprocessor.checkporn(message,config)
+        logging.warn('---------------')
                     
         # If there are no errors
         if len(message['useralerts']) > 0:
@@ -299,6 +306,9 @@ def main():
         
         http_server = tornado.httpserver.HTTPServer(Application())
         http_server.listen(options.port)
+        
+        # Start MongoDB
+        startdb(config['database'])
 
         # Advertising content getter
         if config['injectors']['advertising'].as_bool('enabled'):            
@@ -307,7 +317,6 @@ def main():
         # Test 4chan content getter to queue
         if config['injectors']['fourchan'].as_bool('enabled'):            
             fourchan.ContentGetter(messageQueue,config).start()
-
         
         # Take content from queue and send updates to waiting clients
         mycontentprocessor = QueueToWaitingClients(messageQueue,config)
@@ -317,6 +326,13 @@ def main():
     except KeyboardInterrupt:
         print 'Server cancelled'
         sys.exit(1)
+
+def startdb(dbconfig):
+    '''Start Database'''
+    logging.info('Starting DB...')
+    process = Popen([dbconfig['mongod'],'--dbpath',dbconfig['dbpath']])
+    logging.info('started, PID is '+str(process.pid))
+    return
 
 if __name__ == "__main__":
     main()
