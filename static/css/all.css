@@ -46,7 +46,7 @@ form, fieldset {
 	position:relative;
 }
 .inner {
-	width:960px;
+	width:1010px;
 	margin:0 auto;
 }
 /* header */
@@ -166,7 +166,7 @@ form, fieldset {
 }
 /* sidebar */
 #sidebar {
-	width:328px;
+	width:378px;
 	float:right;
 	padding:21px 0 9999px 11px;
 	margin:0 7px -9999px 0;
@@ -201,7 +201,7 @@ form, fieldset {
 	padding:15px 0 0 19px;
 }
 .form-write-us .text-field {
-	width:289px;
+	width:320px;
 	height:206px;
 	padding:3px;
 	background:#fff;
@@ -210,9 +210,9 @@ form, fieldset {
 }
 .form-write-us .text-field textarea {
 	float:left;
-	width:289px;
-	max-width:289px;
-	min-width:289px;
+	width:320px;
+	max-width:320px;
+	min-width:320px;
 	height:206px;
 	max-height:206px;
 	min-height:206px;
@@ -263,8 +263,8 @@ form, fieldset {
 	padding:0;
 }
 .form-write-us .text {
-	width:298px;
-	padding:0 0 0 20px;
+	width:340px;
+	padding:0 0 0 4px;
 	overflow:hidden;
 }
 .form-write-us .text input {
@@ -282,7 +282,7 @@ form, fieldset {
 	color:#464641;
 }
 .captcha {
-	width:300px;
+	width:350px;
 	padding:11px 0 8px 16px;
 	overflow:hidden;
 }
