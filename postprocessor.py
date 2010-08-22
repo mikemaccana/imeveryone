@@ -100,18 +100,18 @@ def checkspam(message,config,antispam):
 def checkporn(message,config):  
     '''Check images for porn'''
     def savegrayscale(imagefile):
-        ################
+        '''Convert image to greyscale and save'''
         adultimage = Image.open(imagefile)
         adultimage = ImageOps.grayscale(adultimage)
         adultimage.save(imagefile)
         return
         
     if message['localfile'] and config['images'].as_bool('enabled') and config['images'].as_bool('adult'):         
-        count = 0   
-        while count < 2:
+        count = 1   
+        response = {}
+        while count < 3:
             try:
-                logging.info('Checking for porn...')
-                time.sleep(1)
+                logging.info('Checking for porn, try '+str(count))
                 response = pifilter.checkimage(
                     message['localfile'],
                     config['posting']['pifilter']['customerid'],
@@ -120,20 +120,22 @@ def checkporn(message,config):
                 break        
             except:
                 logging.error('Could not open pifilter URL')   
-                return message
-            count = count+1            
-        if response['result']:    
-            logging.warn('message submission '+message['submitid']+' with image '+message['localfile']+' is porn.')
-            # Make a greyscale version and use that instead
-            if config['images']['adultaction'] == 'gray' or config['images']['adultaction'] == 'grey':
-                savegrayscale(message['localfile'])
-                logging.info('Saving greyscale version...')
-                logging.info('ZZZZZ')
-            else:               
-                message['useralerts'].append(config['alerts']['porn'])  
-                logging.info('AAAAAAA')
+                time.sleep(5)
+            count = count+1   
+        if 'result' in response:                         
+            if response['result']:    
+                logging.warn('message submission '+message['submitid']+' with image '+message['localfile']+' is porn.')
+                # Make a greyscale version and use that instead
+                if config['images']['adultaction'] == 'gray' or config['images']['adultaction'] == 'grey':
+                    savegrayscale(message['localfile'])
+                    logging.info('Saving greyscale version...')
+                else:               
+                    message['useralerts'].append(config['alerts']['porn'])  
+            else:
+                logging.info('image is clean')   
         else:
-            logging.info('image is clean')        
+            # No response from pifilter
+            pass             
     return message      
 
 def checklinksandembeds(message,config):
@@ -163,7 +165,7 @@ def saveimages(message,imageconfig):
             message['imageurl'] = None
             imagefile = message['images'][0]
             print 'Saving image: '+imagefile['filename']
-            message['localfile'] = imageconfig['cachedir']+message['id']+'.'+imagefile['filename'].split('.')[-1]
+            message['localfile'] = imageconfig['cachedir']+message['submitid']+'.'+imagefile['filename'].split('.')[-1]
             open(message['localfile'],'wb').write(imagefile['body'])
     return message      
 
