@@ -17,6 +17,7 @@ import fourchan
 import threading
 import Queue
 import sys
+import time
 import postprocessor
 from tornado import template
 from operator import itemgetter
@@ -24,6 +25,7 @@ from configobj import ConfigObj
 from tornado.options import define, options
 from time import gmtime, strftime
 from subprocess import Popen
+from pymongo import Connection
 
 config = ConfigObj('imeveryone.conf')
 
@@ -81,7 +83,9 @@ class DiscussHandler(BaseHandler):
     def get(self,discuss):
         self.write('Harrow! Discussion goes here!'+discuss)
         # Expand graph here.
-        
+    def delete(self,discuss):
+        self.write('Harrow! Discussion goes here!'+discuss)
+            
 
 class AboutHandler(BaseHandler):
     '''Handle conversations'''
@@ -158,10 +162,7 @@ class MessageMixin(object):
         if len(MessageMixin.cache) > self.cache_size:
             MessageMixin.cache = MessageMixin.cache[-self.cache_size:]
 
-def dbclient(dbconfig):
-    dbconnection = Connection(dbconfig['host'],dbconfig.as_int('port'))
-    messagesdb = dbconnection[dbconfig['messagesdb']]
-    messagesdb.insert(post)
+
     
 
 class NewPostHandler(BaseHandler, MessageMixin):
@@ -201,7 +202,6 @@ class NewPostHandler(BaseHandler, MessageMixin):
         message = postprocessor.checkspam(message,config,antispam)
         message = postprocessor.checklinksandembeds(message,config)
         message = postprocessor.checkporn(message,config)
-        logging.warn('---------------')
                     
         # If there are no errors
         if len(message['useralerts']) > 0:
@@ -296,6 +296,19 @@ class AuthLogoutHandler(BaseHandler):
         self.write("You are now logged out")
 
 
+def startdb(dbconfig):
+    '''Start Database'''
+    logging.info('Starting DB...')
+    process = Popen([dbconfig['mongod'],'--dbpath',dbconfig['dbpath']])
+    logging.info('started, PID is '+str(process.pid))    
+    return
+
+def dbclient(dbconfig):
+    '''Start database client, return messages collection'''
+    dbconnection = Connection(dbconfig['host'],dbconfig.as_int('port'))
+    messagesdb = dbconnection[dbconfig['messagesdb']]
+    messagecollect = messagesdb.messages
+    return messagecollect
 
 def main():
     '''Separate main for unittesting and calling from other modules'''
@@ -307,8 +320,10 @@ def main():
         http_server = tornado.httpserver.HTTPServer(Application())
         http_server.listen(options.port)
         
-        # Start MongoDB
+        # Start MongoDB, wait to start, start client.
         startdb(config['database'])
+        time.sleep(5)        
+        messagecollect = dbclient(config['database'])
 
         # Advertising content getter
         if config['injectors']['advertising'].as_bool('enabled'):            
@@ -326,13 +341,7 @@ def main():
     except KeyboardInterrupt:
         print 'Server cancelled'
         sys.exit(1)
-
-def startdb(dbconfig):
-    '''Start Database'''
-    logging.info('Starting DB...')
-    process = Popen([dbconfig['mongod'],'--dbpath',dbconfig['dbpath']])
-    logging.info('started, PID is '+str(process.pid))
-    return
+    
 
 if __name__ == "__main__":
     main()
