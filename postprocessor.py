@@ -11,6 +11,9 @@ from akismet import Akismet
 import pifilter
 import logging
 import time
+import uuid
+from time import gmtime, strftime
+
 
 def startakismet(akismetcfg):
     return Akismet(key=akismetcfg['apikey'], agent=akismetcfg['clientname'])
@@ -59,190 +62,237 @@ consumer.addEndpoint(oembed.OEmbedEndpoint('http://api.embed.ly/oembed/api/v1', 
     ]))
 
 
-def getembeddata(link,config):
-    '''Get embed codes for links'''
-    global consumer
-    options = {
-        'maxwidth':config['images'].as_int('maxwidth'),
-        'maxheight':config['images'].as_int('maxheight'),
-    }
-    response = consumer.embed(link, format='json', )
-    data = response.getData()
-    if data:
-        return data
-    else:
-        return None            
+class Message(object):
+    '''Submitted message'''
+    def __init__(self,messagedata,config,antispam,localfile=None):
+        '''Create message based on body of PUT form data'''   
+        self.submitid = str(uuid.uuid4())
+        self.posttime = messagedata['posttime']
+        # The 'accept' ID
+        self.id = None
+        
+        self.localfile = localfile
+        self.preview = None
+        
+        self.author = messagedata['author']
+        self.posttext = messagedata['posttext']
+        self.challenge = messagedata['challenge']
+        self.response = messagedata['response']
+        self.ip = messagedata['ip']
+        self.useragent = messagedata['useragent']
+        self.referer = messagedata['referer']
+        self.images = messagedata['images']
+        self.host = messagedata['host']
+        self.useralerts = []
+        self.intro = None
+        # can probably remove this
+        self.threadid = None
+        self.embeds = []
+        
+        # Save image from web url if we need to ()
+        if self.localfile is None:
+            self.saveimages(config)
+        
+        # Make preview    
+        if self.localfile is not None:
+            self.makepreviewpic(self.localfile,config['images'])
+        #self.getimagetext(self.localfile,config['images'])
+        
+        self.checktextlength()
+        self.checkcaptcha(config)
+        self.checkspam(config,antispam)
+        self.checklinksandembeds(config)
+        self.checkporn(config)
+        self.makeintro(self.posttext,config['posting'])
 
-def checkcaptcha(message,config):
-    '''Check for captcha correct answer'''
-    recaptcha_response = captcha.submit(message['challenge'], message['response'], config['captcha']['privkey'], message['ip'])
-    if not recaptcha_response.is_valid:
-        message['useralerts'].append(config['alerts']['nothuman'])
-        message['nothuman'] = True   
-    return message    
+        
+        # Override existing links
+        self.link = '/discuss/'+str(self.id)
+    
+    def saveimages(self,config):
+        '''Save images for original posts'''
+        if config['images'].as_bool('enabled'):
+            if self.images is None and len(self.embeds) < 1:
+                self.useralerts.append(config['alerts']['noimage'])
+            else:
+                # Save image data to local file
+                imagefile = self.images[0]
+                logging.info('Saving image: '+imagefile['filename'])
+                self.localfile = imageconfig['cachedir']+self.submitid+'.'+imagefile['filename'].split('.')[-1]
+                open(self.localfile,'wb').write(imagefile['body'])
+        return
+    
+    def makepreviewpic(self,imagefile,imageconfig):
+        '''Reduce images larger than a certain size'''
+        myimage = Image.open(imagefile)
+        width,height = myimage.size
+        aspect = float(width) / float(height)
+        maxwidth = imageconfig.as_int('maxwidth')
+        maxheight = imageconfig.as_int('maxheight')
+        maxsize = (maxwidth,maxheight)
+        # Don't bother if image is already smaller
+        if width < maxwidth and height < maxheight:
+            return imagefile
+        # Resize, save, return preview file name
+        else:
+            myimage.thumbnail(maxsize,Image.ANTIALIAS)
+            newfilename = imagefile.replace('cache','thumbs').split('.')[-2]+'_preview.'+imagefile.split('.')[-1]
+            try:
+                myimage.save(newfilename)
+                logging.info('Saved preview pic to: '+newfilename)
+                self.preview = newfilename
+            except:
+                pass
+            return
+            
+    
+    def checktextlength(self):
+        '''Ensure they're ranting enough, but not too much!'''
+        if len(self.posttext.strip()) == 0:
+            self.useralerts.append('Cat got your tongue?')
+        return
 
-def checkspam(message,config,antispam):
-    try:
-        spam = antispam.comment_check(message['posttext'],data={
-        'user_ip':message['ip'],
-        'user_agent':message['useragent'],
-        'referrer':message['referer'],
-        'SERVER_ADDR':message['host']
-    }, build_data=True, DEBUG=False)
-    # Python Akismet library can fail on some types of unicode
-    except UnicodeEncodeError:
-        spam = True
-    if spam:
-        message['useralerts'].append(config['alerts']['spam'])
-        message['spam'] = True     
-    return message
-
-def checkporn(message,config):  
-    '''Check images for porn'''
-    def savegrayscale(imagefile):
-        '''Convert image to greyscale and save'''
-        adultimage = Image.open(imagefile)
-        adultimage = ImageOps.grayscale(adultimage)
-        adultimage.save(imagefile)
+    
+    def checkcaptcha(self,config):
+        '''Check for captcha correct answer'''
+        recaptcha_response = captcha.submit(self.challenge, self.response, config['captcha']['privkey'], self.ip)
+        if not recaptcha_response.is_valid:
+            self.useralerts.append(config['alerts']['nothuman'])
+            self.nothuman = True
+        return
+    
+    def checkspam(self,config,antispam):
+        '''Check for spam using Akismet'''
+        try:
+            spam = antispam.comment_check(self.posttext,data = {
+            'user_ip':self.ip,
+            'user_agent':self.useragent,
+            'referrer':self.referer,
+            'SERVER_ADDR':self.host
+        }, build_data=True, DEBUG=False)
+        # Python Akismet library can fail on some types of unicode
+        except UnicodeEncodeError:
+            spam = True
+        if spam:
+            self.useralerts.append(config['alerts']['spam'])
+            self.spam = True
+        return
+    
+    def checklinksandembeds(self,config):
+        '''Process any links in the text'''
+        def getembeddata(link,config):
+            '''Get embed codes for links'''
+            global consumer
+            options = {
+                'maxwidth':config['images'].as_int('maxwidth'),
+                'maxheight':config['images'].as_int('maxheight'),
+            }
+            response = consumer.embed(link, format='json', )
+            data = response.getData()
+            if data:
+                return data
+            else:
+                return None
+        linkre = re.compile(r"(http://[^ ]+)")
+        self.embeds = []
+        for link in linkre.findall(self.posttext):
+            try:
+                embed = getembeddata(link,config)
+                if embed:
+                    message.embeds.append(embed)
+            except:
+                pass
+        self.original = self.posttext
+        self.posttext = linkre.sub('', self.posttext)
+        return
+    
+    def checkporn(self,config):
+        '''Check images for porn'''
+        def savegrayscale(imagefile):
+            '''Convert image to greyscale and save'''
+            adultimage = Image.open(imagefile)
+            adultimage = ImageOps.grayscale(adultimage)
+            adultimage.save(imagefile)
+            return
+        if self.localfile and config['images'].as_bool('enabled') and config['images'].as_bool('adult'):
+            count = 1
+            response = {}
+            while count < 3:
+                try:
+                    logging.info('Checking for porn, try '+str(count))
+                    response = pifilter.checkimage(
+                        self.localfile,
+                        config['posting']['pifilter']['customerid'],
+                        aggressive = config['posting']['pifilter'].as_bool('aggressive')
+                        )
+                    break
+                except:
+                    logging.error('Could not open pifilter URL')
+                    time.sleep(5)
+                count = count+1
+            if 'result' in response:
+                if response['result']:
+                    logging.warn('message submission '+self.submitid+' with image '+self.localfile+' is porn.')
+                    # Make a greyscale version and use that instead
+                    if config['images']['adultaction'] == 'gray' or config['images']['adultaction'] == 'grey':
+                        savegrayscale(self.localfile)
+                        logging.info('Saving greyscale version...')
+                    else:
+                        self.useralerts.append(config['alerts']['porn'])
+                else:
+                    logging.info('image is clean')
+            else:
+                # No response from pifilter
+                pass
         return
         
-    if message['localfile'] and config['images'].as_bool('enabled') and config['images'].as_bool('adult'):         
-        count = 1   
-        response = {}
-        while count < 3:
+    def makeintro(self,posttext,postingconfig):
+        '''Reduce the headline text in very long posts if needed'''
+        postwords = posttext.split()
+        longpost = postingconfig.as_int('longpost')
+        choplen = postingconfig.as_int('choplen')
+        if len(postwords) < longpost:
+            return
+        else:
+            self.posttext = ' '.join(postwords[:choplen])+'...'
+            self.intro = '...'+' '.join(postwords[choplen:])
+            return
+            
+    def getcountry(self,ip):
+        '''Get user country - currently unused'''
+        gi = GeoIP.new(GeoIP.GEOIP_MEMORY_CACHE)
+        print gi.country_code_by_addr(ip)
+
+    def checktext(text,postingconfig,alerts):
+        '''Check text is OK'''
+        totalwords = len(text.split())
+        uniquewords = len(set(text.split()))
+        if uniquewords / totalwords < postingconfig.as_int('threshhold'):
+            return False, alerts['lame']
+        else:
+            return True, ''
+
+    def getimagetext(self,imagefile):
+        '''Recieve an image, return the text'''
+        if config['images'].as_bool('enabled') and message.localfile and config['images']['ocr']:
+            # PIL is flaky.
             try:
-                logging.info('Checking for porn, try '+str(count))
-                response = pifilter.checkimage(
-                    message['localfile'],
-                    config['posting']['pifilter']['customerid'],
-                    aggressive=config['posting']['pifilter'].as_bool('aggressive')
-                    )
-                break        
+                image = Image.open(imagefile)
+                # Convert to black and white
+                if image.mode != "L":
+                    image = image.convert("L")
+                # Now let's do this shit
+                imagetext = pytesser.image_to_string(image)
+                self.imagetext = None
+                return
             except:
-                logging.error('Could not open pifilter URL')   
-                time.sleep(5)
-            count = count+1   
-        if 'result' in response:                         
-            if response['result']:    
-                logging.warn('message submission '+message['submitid']+' with image '+message['localfile']+' is porn.')
-                # Make a greyscale version and use that instead
-                if config['images']['adultaction'] == 'gray' or config['images']['adultaction'] == 'grey':
-                    savegrayscale(message['localfile'])
-                    logging.info('Saving greyscale version...')
-                else:               
-                    message['useralerts'].append(config['alerts']['porn'])  
-            else:
-                logging.info('image is clean')   
-        else:
-            # No response from pifilter
-            pass             
-    return message      
-
-def checklinksandembeds(message,config):
-    '''Remove links from text'''
-    linkre = re.compile(r"(http://[^ ]+)")
-    message['embeds'] = []
-    for link in linkre.findall(message['posttext']):
-        try:
-            embed = getembeddata(link,config)
-            if embed:
-                message['embeds'].append(embed)         
-        except:
-            pass
-    message['original'] = message['posttext']
-    message['posttext'] = linkre.sub('', message['posttext'])
-    return message
-
-def saveimages(message,imageconfig):
-    '''Save images for original posts'''                
-    if imageconfig.as_bool('enabled'):
-        if len(message['images']) < 1 and len(embeds) < 1:
-            message['useralerts'].append(config['alerts']['noimage'])
-            message['localfile'] = None
-        else:
-            # Save image data to local file
-            # Set imageurl to be none as this isn't a message from an injector
-            message['imageurl'] = None
-            imagefile = message['images'][0]
-            print 'Saving image: '+imagefile['filename']
-            message['localfile'] = imageconfig['cachedir']+message['submitid']+'.'+imagefile['filename'].split('.')[-1]
-            open(message['localfile'],'wb').write(imagefile['body'])
-    return message      
+                pass
+        return 
 
 
-def reducelargeimages(imagefile,imageconfig):
-    '''Reduce images larger than a certain size'''
-    myimage = Image.open(imagefile)
-    width,height = myimage.size
-    aspect = float(width) / float(height)
-    maxwidth = imageconfig.as_int('maxwidth')
-    maxheight = imageconfig.as_int('maxheight')
-    maxsize = (maxwidth,maxheight)    
-    # Don't bother if image is already smaller
-    if width < maxwidth and height < maxheight:
-        return imagefile
-    # Resize, save, return preview file name    
-    else:    
-        myimage.thumbnail(maxsize,Image.ANTIALIAS)
-        newfilename = imagefile.replace('cache','thumbs').split('.')[-2]+'_preview.'+imagefile.split('.')[-1]
-        try:
-            myimage.save(newfilename)
-        except:
-            return None    
-        return newfilename
 
 
-def getimage(imageurl,cachedir):
-    '''Save an image to disk'''
-    imagefile = imageurl.split('/')[-1]
-    cachedfilename = cachedir+imagefile
-    try:
-        openurl = urllib2.urlopen(imageurl)
-    except:
-        return None    
-    savedfile = open(cachedfilename,'wb')
-    savedfile.write(openurl.read())    
-    return cachedfilename
 
-def makeintro(posttext,postingconfig):
-    '''Reduce the headline text in very long posts if needed'''
-    postwords = posttext.split()
-    longpost = postingconfig.as_int('longpost')
-    choplen = postingconfig.as_int('choplen')
-    if len(postwords) < longpost:
-        return posttext,None 
-    else:
-        posttext = ' '.join(postwords[:choplen])+'...'
-        intro = '...'+' '.join(postwords[choplen:]) 
-        return (posttext, intro)    
-    
-def getcountry(ip):
-    '''Get user country - currently unused'''
-    gi = GeoIP.new(GeoIP.GEOIP_MEMORY_CACHE)
-    print gi.country_code_by_addr(ip)    
-
-def checktext(text,postingconfig,alerts):
-    '''Check text is OK'''
-    totalwords = len(text.split())
-    uniquewords = len(set(text.split()))
-    if uniquewords / totalwords < postingconfig.as_int('threshhold'):
-        return False, alerts['lame']
-    else:    
-        return True, ''
-
-def getimagetext(imagefile):
-    '''Recieve an image, return the text'''
-    # PIL is flaky.
-    try:
-        image = Image.open(imagefile)
-        # Convert to black and white
-        if image.mode != "L":
-            image = image.convert("L")
-        # Now let's do this shit    
-        imagetext = pytesser.image_to_string(image)
-        return imagetext
-    except:
-        return None    
 
 
 

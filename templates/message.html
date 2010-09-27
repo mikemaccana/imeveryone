@@ -1,31 +1,28 @@
 <div class="post">
-	<em class="date"><a href="{{ message['link'] }}"> {{message['posttime']}}</a></em>
-	<h2><a href="{{ message['link'] }}">{{ escape(message['posttext'])}}</a></h2>
-	{% if message['intro'] %}  
+	<em class="date"><a href="{{ message.link }}"> {{message.posttime}}</a></em>
+	<h2><a href="{{ message.link }}">{{ escape(message.posttext)}}</a></h2>
+	
+	{% if message.intro %}  
 	    <div class="text-box">
-			<a href="{{ message['link'] }}">{{escape (message['intro'])}}</a>
+			<a href="{{ message.link }}">{{escape (message.intro)}}</a>
 		</div>	    
 	{% end %}
 	
-	{% if 'embeds' in message %}
-		{% for embed in message['embeds'] %}
-			{% if 'html' in embed %}
-				{{ embed['html'] }}<br/>
-			{% end %}	
-		{% end %}
+	{% for embed in message.embeds %}
+		{% if 'html' in embed %}
+			{{ embed['html'] }}<br/>
+		{% end %}	
 	{% end %}
 	
-	{% if 'preview' in message %}
-		{% if message['preview'] is not None %}
-			<div class="visual">
-				<a href="{{ message['link'] }}" target="_blank"><img src="{{ message['preview'] }}" alt="image description" /></a>
-			</div>
-		{% end %}
+	{% if message.preview is not None %}
+		<div class="visual">
+			<a href="{{ message.link }}" target="_blank"><img src="{{ message.preview }}" alt="image description" /></a>
+		</div>
 	{% end %}
 	
 	<div class="read-more">
-		<a class="more" href="{{ message['link'] }}" target="_blank">Read more...</a>
-		<em><a href="{{ message['link'] }}">{{message['id']}}</a></em>
+		<a class="more" href="{{ message.link }}" target="_blank">Read more...</a>
+		<em><a href="{{ message.link }}">{{message.id}}</a></em>
 	</div>
 </div>
 

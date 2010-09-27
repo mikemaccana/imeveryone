@@ -65,7 +65,7 @@ def connect(channel):
 def gettree(data):
     '''Get serialized HTML, return a tree'''
     # Remove JS
-    badtags=['table','tr','td','noscript','style']
+    badtags = ['table','tr','td','noscript','style']
     cleaner = Cleaner(page_structure=False, javascript=False, annoying_tags=False, remove_tags=badtags)
     cleanhtml = cleaner.clean_html(data) 
     try:
@@ -112,7 +112,7 @@ def getnewposts(channel,lastadded,config):
                     
                 # Fetch the image if necessary  
                 if imageurl:
-                    localfile = postprocessor.getimage(imageurl,config['images']['cachedir'])
+                    localfile = getimage(imageurl,config['images']['cachedir'])
                 else:
                     localfile = None        
                     
@@ -152,11 +152,19 @@ def opendatabase(database):
     except IOError:
         threads = {}    
     return threads    
-    
-def savedatabase(threads,database):
-    '''Save database to a file'''    
-    threadfile = open('threads.db','w')    
-    pickle.dump(threads, threadfile)
+
+
+def getimage(imageurl,cachedir):
+    '''Save an image to disk'''
+    imagefile = imageurl.split('/')[-1]
+    cachedfilename = cachedir+imagefile
+    try:
+        openurl = urllib2.urlopen(imageurl)
+    except:
+        return None
+    savedfile = open(cachedfilename,'wb')
+    savedfile.write(openurl.read())
+    return cachedfilename
 
 class ContentGetter(threading.Thread): 
     '''Gets messages from 4chan and puts them on our message queue'''
@@ -171,16 +179,25 @@ class ContentGetter(threading.Thread):
         lastadded = 0
         while True:
             newposts,lastadded = getnewposts('b',lastadded,self.__config)
-            for message in newposts:
-                message['ip'] = '10.0.0.1'
-                message['useragent'] = 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1.7) Gecko/20091221 Firefox/3.5.7'
-                message['referer'] = None
-                message['submitid'] = str(uuid.uuid4())
-                message['host'] = 'www.imeveryone.com'
-                message['useralerts'] = []
-                #message = postprocessor.checkspam(message,self.__antispam)
-                message = postprocessor.checklinksandembeds(message,self.__config)
-                message = postprocessor.checkporn(message,self.__config)
+            for post in newposts:
+                print 'DEBUG\n\n\n'
+                print post['localfile']
+                ########
+                messagedata = {
+                    'posttime':time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
+                    'author':post['author'],
+                    'posttext':post['posttext'],
+                    'challenge':None,
+                    'response':None,
+                    'ip':'10.0.0.1',
+                    'useragent':'4Chan test client',
+                    'referer':None,
+                    'images':None,
+                    'host':'www.imeveryone.com',
+                }        
+                message = postprocessor.Message(messagedata,self.__config,self.__antispam,localfile=post['localfile'])
+                
+                
                 self.__queue.put(message) 
                 delay = random.randint(self.__delay-2,self.__delay+3)
                 time.sleep(delay)  
