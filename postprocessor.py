@@ -118,7 +118,7 @@ class Message(object):
                 # Save image data to local file
                 imagefile = self.images[0]
                 logging.info('Saving image: '+imagefile['filename'])
-                self.localfile = imageconfig['cachedir']+self.submitid+'.'+imagefile['filename'].split('.')[-1]
+                self.localfile = config['images']['cachedir']+self.submitid+'.'+imagefile['filename'].split('.')[-1]
                 open(self.localfile,'wb').write(imagefile['body'])
         return
     
