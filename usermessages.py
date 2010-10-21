@@ -93,9 +93,10 @@ class Message(object):
         if self.localfile is None:
             self.saveimages(config)
         
-        # Make preview    
-        if self.localfile is not None:
+        # Make preview            
+        if self.localfile is not None and config['images'].as_bool('enabled'):
             self.makepreviewpic(self.localfile,config['images'])
+            
         #self.getimagetext(self.localfile,config['images'])
         
         self.checktextlength()

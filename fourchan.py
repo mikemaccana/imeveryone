@@ -13,8 +13,10 @@ import Queue
 import random
 import sys
 import re
-import postprocessor
+import usermessages
 import uuid
+import logging
+import urllib2
 
 debug = False
 
@@ -158,12 +160,13 @@ def getimage(imageurl,cachedir):
     '''Save an image to disk'''
     imagefile = imageurl.split('/')[-1]
     cachedfilename = cachedir+imagefile
+    savedfile = open(cachedfilename,'wb')
     try:
         openurl = urllib2.urlopen(imageurl)
+        savedfile.write(openurl.read())        
     except:
+        logging.warn('Could not open URL '+imageurl)
         return None
-    savedfile = open(cachedfilename,'wb')
-    savedfile.write(openurl.read())
     return cachedfilename
 
 class ContentGetter(threading.Thread): 
@@ -172,7 +175,7 @@ class ContentGetter(threading.Thread):
         self.__queue = queue
         self.__delay = config['injectors']['fourchan'].as_int('delay')
         self.__config = config
-        self.__antispam = postprocessor.startakismet(config['posting']['akismet'])
+        self.__antispam = usermessages.startakismet(config['posting']['akismet'])
         threading.Thread.__init__(self)
             
     def run(self):
@@ -180,8 +183,6 @@ class ContentGetter(threading.Thread):
         while True:
             newposts,lastadded = getnewposts('b',lastadded,self.__config)
             for post in newposts:
-                print 'DEBUG\n\n\n'
-                print post['localfile']
                 ########
                 messagedata = {
                     'posttime':time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
@@ -195,8 +196,9 @@ class ContentGetter(threading.Thread):
                     'images':None,
                     'host':'www.imeveryone.com',
                 }        
-                message = postprocessor.Message(messagedata,self.__config,self.__antispam,localfile=post['localfile'])
+
                 
+                message = usermessages.Message(messagedata,self.__config,self.__antispam,localfile=post['localfile'])
                 
                 self.__queue.put(message) 
                 delay = random.randint(self.__delay-2,self.__delay+3)
@@ -211,16 +213,4 @@ class ContentProcessor(threading.Thread):
     def run(self):
         while True: 
             message = self.__queue.get() 
-
-def main():
-    '''Start threads in perpetuity'''
-    messageQueue = Queue.Queue(0)
-    
-    mycontentgetter = ContentGetter(messageQueue)
-    mycontentgetter.start()
-    mycontentprocessor = ContentProcessor(messageQueue,delay)
-    mycontentprocessor.start()
-
-if __name__ == '__main__':
-    main()
     

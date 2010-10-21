@@ -5,6 +5,7 @@ import Queue
 import random
 import time
 
+
 class ContentGetter(threading.Thread): 
     '''Periodically ads avertisements to our message queue'''
     def __init__(self, queue, config):

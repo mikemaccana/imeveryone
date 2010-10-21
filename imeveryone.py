@@ -18,7 +18,7 @@ import threading
 import Queue
 import sys
 import time
-import postprocessor
+import usermessages
 from tornado import template
 from operator import itemgetter
 from configobj import ConfigObj
@@ -29,7 +29,7 @@ from pymongo import Connection
 
 config = ConfigObj('imeveryone.conf')
 
-antispam = postprocessor.startakismet(config['posting']['akismet'])
+antispam = usermessages.startakismet(config['posting']['akismet'])
 
 define("port", default=config['server'].as_int('port'), help="run on the given port", type=int)
 
@@ -112,7 +112,7 @@ class RootHandler(BaseHandler):
         
         # Ensure messages are ordered corrrectly on initial connect
         sortedmessages = sorted(MessageMixin.cache, key=lambda message: message.id, reverse=True)
-        captchahtml = postprocessor.captcha.displayhtml(config['captcha']['pubkey'])
+        captchahtml = usermessages.captcha.displayhtml(config['captcha']['pubkey'])
         
         # Show the messages and any alerts
         print useralerts[sessionid]
@@ -142,9 +142,6 @@ class MessageMixin(object):
                 index = len(MessageMixin.cache) - i - 1
                 # Note cursor is unicode not int
                 # Converting unicode to int seems to mysteriously break comparison!
-                print '\n\n\nDEBUG:'
-                print MessageMixin.cache[index].id
-                print '\n\n'
                 if str(MessageMixin.cache[index].id) == str(cursor):
                     # Client is up to date now
                     break
@@ -180,7 +177,6 @@ class NewPostHandler(BaseHandler, MessageMixin):
         
         # Let's make our message
         request = self.request        
-        #self.current_user["first_name"]
         messagedata = {
             'posttime':strftime("%Y-%m-%d %H:%M:%S", gmtime()),
             'author':'Anonymous',
@@ -193,7 +189,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
             'images':request.files['image'],
             'host':request.headers['Host'],
         }        
-        message = postprocessor.Message(messagedata,config,antispam)        
+        message = usermessages.Message(messagedata,config,antispam)        
         
         # If there are no errors
         if len(message.useralerts) > 0:
@@ -237,7 +233,6 @@ class ViewerUpdateHandler(BaseHandler, MessageMixin):
     '''Do updates. All clients continually send posts, which we only respond to when where there are new messages (where we run on_send_messages() )'''
     @tornado.web.asynchronous
     def post(self):
-        # DEBUG Something appears to be happening here to cause the updater to fail
         logging.info('Update request')
         cursor = self.get_argument("cursor", None)
         self.wait_for_messages(self.async_callback(self.on_send_messages),cursor=cursor)
@@ -258,7 +253,7 @@ class ViewerUpdateHandler(BaseHandler, MessageMixin):
                 'preview':newmessage.preview,
                 'id':newmessage.id,
                 'html':newmessage.html,
-                })
+                })  
         # We send a dict with one key, 'messages', which is the jsonmessages list
         self.finish(dict(messages=jsonmessages))
 
@@ -289,7 +284,7 @@ class AuthLogoutHandler(BaseHandler):
 def startdb(dbconfig):
     '''Start Database'''
     logging.info('Starting DB...')
-    process = Popen([dbconfig['mongod'],'--dbpath',dbconfig['dbpath']])
+    process = Popen([dbconfig['mongod'],'--dbpath',dbconfig['dbpath'],'--port',dbconfig['port']])
     logging.info('started, PID is '+str(process.pid))
     return
 
@@ -314,6 +309,8 @@ def main():
         startdb(config['database'])
         time.sleep(5)
         messagecollect = dbclient(config['database'])
+        logging.info('Database server and client started.')
+        print '_'*80
         
         # Advertising content getter
         if config['injectors']['advertising'].as_bool('enabled'):

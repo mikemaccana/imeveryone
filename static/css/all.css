@@ -8,6 +8,15 @@
 	font-weight: normal;
 	font-style: normal;
 }
+
+@font-face {
+	font-family: 'BaskervilleNormalRegular';
+	src: url('../fonts/baskerville-normal-webfont.eot');
+	src: local('☺'), url('../fonts/baskerville-normal-webfont.woff') format('woff'), url('../fonts/baskerville-normal-webfont.ttf') format('truetype'), url('../fonts/baskerville-normal-webfont.svg#webfontDDa9Hej1') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
 html, body {
 	display:table;
 	height:100%;
@@ -60,15 +69,15 @@ form, fieldset {
 	margin:0 0 -4px;
 	font:bold 72px/80px FranklinGothicFSDemiCondensed, Arial, Helvetica, sans-serif;
 	position:relative;
-	text-transform:uppercase;
 }
+
 #header a {color:#fff;}
 #header a:hover {text-decoration:none;}
 #header strong {
-	font:bold 14px/17px FranklinGothicFSDemiCondensed, Arial, Helvetica, sans-serif;
+	font: 14px/17px BaskervilleNormalRegular, Arial, Helvetica, sans-serif;
 	color:#ddc;
 	font-size: 24px;
-	text-transform:uppercase;
+	font-style: italic; 
 }
 /* main */
 #main {
@@ -103,7 +112,6 @@ form, fieldset {
 	font-size:14px;
 	line-height:25px;
 	font-weight:bold;
-	text-transform:uppercase;
 }
 #nav li {
 	display:inline;
@@ -262,8 +270,9 @@ form, fieldset {
 	margin:0;
 	padding:0;
 }
+/* captcha width */
 .form-write-us .text {
-	width:340px;
+	width:365px;
 	padding:0 0 0 4px;
 	overflow:hidden;
 }
@@ -281,8 +290,9 @@ form, fieldset {
 	line-height:13px;
 	color:#464641;
 }
+/* captcha width */
 .captcha {
-	width:350px;
+	width:365px;
 	padding:11px 0 8px 16px;
 	overflow:hidden;
 }
