@@ -26,11 +26,14 @@ from tornado.options import define, options
 from time import gmtime, strftime
 from subprocess import Popen
 from pymongo import Connection
-import ipdb
+import random
 
 antispam = usermessages.startakismet(ConfigObj('imeveryone.conf')['posting']['akismet'])
 
 useralerts = {}
+
+def pick_one(alist):
+    return alist[random.randrange(0,len(alist))]
 
 class Application(tornado.web.Application):
     def __init__(self,config):
@@ -63,6 +66,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
 
 
+
 class TopHandler(BaseHandler):
     '''Top handler''' 
     def get(self):
@@ -72,9 +76,10 @@ class TopHandler(BaseHandler):
             "top.html",
             captcha=captchahtml,
             alerts=[],
-            heading='Todays top losers',
+            heading= pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
+            pagetitle = '''Today's top losers - I'm Everyone''',
             )
         
 class AdminHandler(BaseHandler):
@@ -101,9 +106,10 @@ class AboutHandler(BaseHandler):
             "about.html",
             captcha=captchahtml,
             alerts=[],
-            heading='About Imeveryone',
+            heading = pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
+            pagetitle = '''Who Is Responsible for this Mess? - I'm Everyone''',
             )
 
 
@@ -132,9 +138,10 @@ class RootHandler(BaseHandler):
             messages=sortedmessages,
             captcha=captchahtml,
             alerts=useralerts[sessionid],
-            heading=self.application.config['presentation']['heading'],
+            heading= pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
+            pagetitle = '''Live - I'm Everyone''',
             )
 
 
