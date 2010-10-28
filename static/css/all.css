@@ -60,21 +60,22 @@ form, fieldset {
 }
 /* header */
 #header {
-	padding:7px 0 13px 20px;
-	text-align:center;
-	background:#000;
-	color:#fff;
+    padding:7px 0 13px 20px;
+    text-align:center;
+    background:#000;
+    color:#fff;
 }
 #header h1 {
-	margin:0 0 -4px;
-	font:bold 72px/80px FranklinGothicFSDemiCondensed, Arial, Helvetica, sans-serif;
-	position:relative;
+    margin:0 0 -4px;
+    font:bold 72px/80px FranklinGothicFSDemiCondensed, Arial, Helvetica, sans-serif;
+    position:relative;
+    text-transform:uppercase;
 }
 
 #header a {color:#fff;}
 #header a:hover {text-decoration:none;}
 #header strong {
-	font: 14px/17px BaskervilleNormalRegular, Arial, Helvetica, sans-serif;
+	font: 14px/17px BaskervilleNormalRegular, Helvetica, Verdana, sans-serif;
 	color:#ddc;
 	font-size: 24px;
 	font-style: italic; 

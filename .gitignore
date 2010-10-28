@@ -4,7 +4,8 @@ lib
 share
 mongodb
 .*pyc
-static/cache/.*
+static/cache
+static/thumbs
 db
 temp/tesseract.log
 tornado-0.2/PKG-INFO
@@ -357,3 +358,10 @@ tornado-0.2/tornado/s3server.py
 tornado-0.2/tornado/template.py
 tornado-0.2/tornado/web.py
 tornado-0.2/tornado/wsgi.py
+advertising.pyc
+dnsimple.pyc
+fourchan.pyc
+pifilter.pyc
+tests/test_imeveryone.pyc
+tests/test_postprocessor.pyc
+usermessages.pyc

@@ -26,17 +26,14 @@ from tornado.options import define, options
 from time import gmtime, strftime
 from subprocess import Popen
 from pymongo import Connection
+import ipdb
 
-config = ConfigObj('imeveryone.conf')
-
-antispam = usermessages.startakismet(config['posting']['akismet'])
-
-define("port", default=config['server'].as_int('port'), help="run on the given port", type=int)
+antispam = usermessages.startakismet(ConfigObj('imeveryone.conf')['posting']['akismet'])
 
 useralerts = {}
 
 class Application(tornado.web.Application):
-    def __init__(self):
+    def __init__(self,config):
         # These handlers always get provided with the application, request and any transforms by Tornado
         handlers = [
             (r"/", RootHandler),
@@ -49,13 +46,8 @@ class Application(tornado.web.Application):
             (r"/admin", AdminHandler),
             (r"/contact", ContactHandler),
         ]
-        settings = dict(
-            cookie_secret="43oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
-            login_url="/auth/login",
-            template_path=os.path.join(os.path.dirname(__file__), "templates"),
-            static_path=os.path.join(os.path.dirname(__file__), "static"),
-            xsrf_cookies=True,
-        )
+        self.config = config
+        settings = config['application']
         tornado.web.Application.__init__(self, handlers, **settings)
 
 
@@ -112,7 +104,8 @@ class RootHandler(BaseHandler):
         
         # Ensure messages are ordered corrrectly on initial connect
         sortedmessages = sorted(MessageMixin.cache, key=lambda message: message.id, reverse=True)
-        captchahtml = usermessages.captcha.displayhtml(config['captcha']['pubkey'])
+        
+        captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])
         
         # Show the messages and any alerts
         print useralerts[sessionid]
@@ -121,9 +114,9 @@ class RootHandler(BaseHandler):
             messages=sortedmessages,
             captcha=captchahtml,
             alerts=useralerts[sessionid],
-            heading=config['presentation']['heading'],
-            prompt1 = config['presentation']['prompt'].split()[0],
-            prompt2 = ' '.join(config['presentation']['prompt'].split()[1:]),
+            heading=self.application.config['presentation']['heading'],
+            prompt1 = self.application.config['presentation']['prompt'].split()[0],
+            prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             )
 
 
@@ -132,7 +125,9 @@ class MessageMixin(object):
     waiters = []
     # Amount of messages to keep around for new connections
     cache = []
-    cache_size = config['newclients'].as_int('cachesize')
+    cache_size = 10 
+    # FIXME - should be from global config
+    #cache_size = config['newclients'].as_int('cachesize')
     
     def wait_for_messages(self, callback, cursor=None):
         '''Add new clients to waiters list'''
@@ -302,9 +297,11 @@ def main():
         tornado.options.parse_command_line()
         messageQueue = Queue.Queue(0)
         
-        http_server = tornado.httpserver.HTTPServer(Application())
-        http_server.listen(options.port)
+        config = ConfigObj('imeveryone.conf')
         
+        http_server = tornado.httpserver.HTTPServer(Application(config))
+        http_server.listen(config['server'].as_int('port'))
+                
         # Start MongoDB, wait to start, start client.
         startdb(config['database'])
         time.sleep(5)
