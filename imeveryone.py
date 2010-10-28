@@ -43,8 +43,7 @@ class Application(tornado.web.Application):
             (r"/a/message/updates", ViewerUpdateHandler),
             (r"/discuss/([a-z0-9\-]+)", DiscussHandler),
             (r"/about", AboutHandler),
-            (r"/admin", AdminHandler),
-            (r"/contact", ContactHandler),
+            (r"/top", TopHandler),
         ]
         self.config = config
         settings = config['application']
@@ -64,11 +63,25 @@ class BaseHandler(tornado.web.RequestHandler):
 
 
 
+class TopHandler(BaseHandler):
+    '''Top handler''' 
+    def get(self):
+        captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])       
+        # Show the messages and any alerts
+        self.render(
+            "top.html",
+            captcha=captchahtml,
+            alerts=[],
+            heading='Todays top losers',
+            prompt1 = self.application.config['presentation']['prompt'].split()[0],
+            prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
+            )
+        
 class AdminHandler(BaseHandler):
     '''Handle admin'''
     @tornado.web.authenticated
     def get(self):
-        self.write('Harrow! Admin goes here!')
+        self.render('Harrow! Top goes here!')
 
 class DiscussHandler(BaseHandler):
     '''Handle conversations'''
@@ -82,13 +95,18 @@ class DiscussHandler(BaseHandler):
 class AboutHandler(BaseHandler):
     '''Handle conversations'''
     def get(self):
-        self.render('about.html',heading='About Imeveryone')
+        captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])       
+        # Show the messages and any alerts
+        self.render(
+            "about.html",
+            captcha=captchahtml,
+            alerts=[],
+            heading='About Imeveryone',
+            prompt1 = self.application.config['presentation']['prompt'].split()[0],
+            prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
+            )
 
 
-class ContactHandler(BaseHandler):
-    '''Handle conversations'''
-    def get(self):
-        self.write('Harrow! Contact page goes here!')
 
 
 class RootHandler(BaseHandler):
