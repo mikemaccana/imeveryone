@@ -82,7 +82,7 @@ class DiscussHandler(BaseHandler):
 class AboutHandler(BaseHandler):
     '''Handle conversations'''
     def get(self):
-        self.write('Harrow! About page goes here!')
+        self.render('about.html',heading='About Imeveryone')
 
 
 class ContactHandler(BaseHandler):
