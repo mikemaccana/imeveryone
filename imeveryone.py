@@ -101,7 +101,7 @@ class DiscussHandler(BaseHandler):
         ipdb.set_trace()
         self.render(
             "discuss.html",
-            message=self.application.dbconnect.messages.find_one({'id':messageid}),
+            message=self.application.dbconnect.messages.find_one({'_id':messageid}),
             captcha=captchahtml,
             alerts=[],
             heading= pick_one(self.application.config['presentation']['heading']),
@@ -142,7 +142,7 @@ class RootHandler(BaseHandler):
             useralerts[sessionid] = []
         
         # Ensure messages are ordered corrrectly on initial connect
-        sortedmessages = sorted(MessageMixin.cache, key=lambda message: message.id, reverse=True)
+        sortedmessages = sorted(MessageMixin.cache, key=lambda message: message._id, reverse=True)
         
         captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])
         
@@ -177,7 +177,7 @@ class MessageMixin(object):
                 index = len(MessageMixin.cache) - i - 1
                 # Note cursor is unicode not int
                 # Converting unicode to int seems to mysteriously break comparison!
-                if str(MessageMixin.cache[index].id) == str(cursor):
+                if str(MessageMixin.cache[index]._id) == str(cursor):
                     # Client is up to date now
                     break
             recent = MessageMixin.cache[index + 1:]
@@ -254,14 +254,15 @@ class QueueToWaitingClients(MessageMixin, threading.Thread):
     '''Take messages off the messageQueue, and send them to client'''
     def __init__(self, queue, config):
         self.__queue = queue
+        # Change this to DB lookup of highest ID.
         self.__startid = config['posting'].as_int('startid')
         threading.Thread.__init__(self)
         MessageMixin.__init__(self)
     def run(self):
         while True:
             message = self.__queue.get()
-            message.id = self.__startid
-            logging.info('Preparing to send message ID: '+str(message.id)+' to clients.')
+            message._id = self.__startid
+            logging.info('Preparing to send message ID: '+str(message._id)+' to clients.')
             self.__startid = self.__startid+1
             message.html = render_template('message.html', message=message)
             self.send_messages([message])
@@ -288,7 +289,7 @@ class ViewerUpdateHandler(BaseHandler, MessageMixin):
                 'intro':newmessage.intro,
                 'embeds':newmessage.embeds,
                 'preview':newmessage.preview,
-                'id':newmessage.id,
+                'id':newmessage._id,
                 'html':newmessage.html,
                 })  
         # We send a dict with one key, 'messages', which is the jsonmessages list

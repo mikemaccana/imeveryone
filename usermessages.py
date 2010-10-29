@@ -68,7 +68,7 @@ class Message(object):
         '''Create message based on body of PUT form data'''
         self.posttime = messagedata['posttime']
         # The 'accept' ID
-        self.id = None
+        self._id = None
         
         self.localfile = localfile
         self.preview = None
@@ -107,7 +107,7 @@ class Message(object):
 
         
         # Override existing links
-        self.link = '/discuss/'+str(self.id)
+        self.link = '/discuss/'+str(self._id)
     
     def saveimages(self,config):
         '''Save images for original posts'''
@@ -118,7 +118,7 @@ class Message(object):
                 # Save image data to local file
                 imagefile = self.images[0]
                 logging.info('Saving image: '+imagefile['filename'])
-                self.localfile = config['images']['cachedir']+self.id+'.'+imagefile['filename'].split('.')[-1]
+                self.localfile = config['images']['cachedir']+self._id+'.'+imagefile['filename'].split('.')[-1]
                 open(self.localfile,'wb').write(imagefile['body'])
         return
     
@@ -232,7 +232,7 @@ class Message(object):
                 count = count+1
             if 'result' in response:
                 if response['result']:
-                    logging.warn('message submission '+self.id+' with image '+self.localfile+' is porn.')
+                    logging.warn('message submission '+self._id+' with image '+self.localfile+' is porn.')
                     # Make a greyscale version and use that instead
                     if config['images']['adultaction'] == 'gray' or config['images']['adultaction'] == 'grey':
                         savegrayscale(self.localfile)
