@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+	{% block mainarea %}
+		<div class="twocolumns">
+			<!-- content -->
+			<div id="content">
+				<!-- navigation -->
+				<ul id="nav">
+					<li><a href="/">LIVE</a></li>
+					<li><a href="/top">TOP</a></li>
+					<li><a href="/about">ABOUT</a></li>
+				</ul>
+				<!-- main-block -->
+				<div id="messages">
+					{{ message['posttext'] }}
+				</div>
+				<!-- block -->
+			</div>
+			<!-- sidebar -->
+			<div id="sidebar">
+				<h3>{{ prompt1 }}<span>{{ prompt2 }}</span></h3>
+				<!-- form form-write-us -->
+				<form enctype='multipart/form-data' method='post' action='/a/message/new' class="form-write-us">
+					<fieldset>
+						<ul>
+							<li>
+								<label for="textarea">1. Write it here</label>
+								<div class="container">
+									<div class="text-field">
+										<textarea id="textarea"  name='posttext' cols="20" rows="10"></textarea>
+									</div>
+								</div>
+							</li>
+							<li>
+								<div class="file">
+									<span class="num">2.</span>
+									<div class="submit">
+										<a href="#" class="button">Pick File</a>
+										<input class="file-input-area" name='image' type="file" size="19" value="Browse..." />
+									</div>
+									<input type="text" value="" class="browse" />
+								</div>
+								<span class="info">Or include a video link in your text above</span>
+							</li>
+							<li>
+								<label for="input-text">3. Type these words</label>
+								<div class="text">
+									<div class="captcha">
+										{{ captcha }}
+									</div>
+								</div>
+							</li>
+						</ul>
+						<div class="btn-submit">
+							<input class="btn-submit" type="submit" value="{{ _("Post") }}" />
+						</div>
+						<input type="hidden" name="next" value="{{ request.path }}"/>
+						{{ xsrf_form_html() }}
+					</fieldset>
+				</form>
+				{% for alert in alerts %}
+				    <em>{{ alert }}</em>
+				{% end %}
+
+			</div>
+		</div>
+	{% end %}		

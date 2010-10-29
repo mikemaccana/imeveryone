@@ -28,6 +28,7 @@ from subprocess import Popen
 from pymongo import Connection
 from database import Database
 import random
+import ipdb
 
 antispam = usermessages.startakismet(ConfigObj('imeveryone.conf')['posting']['akismet'])
 
@@ -75,10 +76,6 @@ class TopHandler(BaseHandler):
     '''Top handler''' 
     def get(self):
         captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])    
-        print 'DEBUG'*5 
-        print self.application.dbconnect.messages.find_one()
-        logging.info(self.application.dbconnect.messages.find_one())
-        print 'DEBUG'*5 
         self.render(
             "top.html",
             #topmessages=self.application.dbconnect.messages.find({'tags':tag},limit=5):
@@ -98,10 +95,21 @@ class AdminHandler(BaseHandler):
         self.render('Harrow! Admin goes here!')
 
 class DiscussHandler(BaseHandler):
-    '''Handle conversations'''
-    def get(self,discuss):
-        self.write('Harrow! Discussion goes here!'+discuss)
-        # Expand graph here.
+    '''Handle discussion'''
+    def get(self,messageid):
+        captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])  
+        ipdb.set_trace()
+        self.render(
+            "discuss.html",
+            message=self.application.dbconnect.messages.find_one({'id':messageid}),
+            captcha=captchahtml,
+            alerts=[],
+            heading= pick_one(self.application.config['presentation']['heading']),
+            prompt1 = self.application.config['presentation']['prompt'].split()[0],
+            prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
+            pagetitle = '''Discuss - I'm Everyone''',
+            )        
+        
     def delete(self,discuss):
         self.write('Harrow! Discussion goes here!'+discuss)
 
@@ -327,31 +335,24 @@ def main():
     try:
         tornado.options.parse_command_line()
         messageQueue = Queue.Queue(0)
-        
         config = ConfigObj('imeveryone.conf')
-        
         # Start MongoDB server and client.
         database = Database(config['database'])
         database.start()
         database.dbclient()
-
         # Start web app
         http_server = tornado.httpserver.HTTPServer(Application(config,database=database))
         http_server.listen(config['server'].as_int('port'))
-        print '_'*80
-        
+        print '_'*80        
         # Advertising content getter
         if config['injectors']['advertising'].as_bool('enabled'):
-            advertising.ContentGetter(messageQueue,config).start()
-        
+            advertising.ContentGetter(messageQueue,config).start()        
         # Test 4chan content getter to queue
         if config['injectors']['fourchan'].as_bool('enabled'):
-            fourchan.ContentGetter(messageQueue,config,database=database).start()
-        
+            fourchan.ContentGetter(messageQueue,config,database=database).start()        
         # Take content from queue and send updates to waiting clients
         mycontentprocessor = QueueToWaitingClients(messageQueue,config)
-        mycontentprocessor.start()
-        
+        mycontentprocessor.start()        
         tornado.ioloop.IOLoop.instance().start()
     except KeyboardInterrupt:
         print 'Server cancelled'

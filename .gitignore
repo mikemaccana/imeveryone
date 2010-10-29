@@ -366,3 +366,6 @@ tests/test_imeveryone.pyc
 tests/test_postprocessor.pyc
 usermessages.pyc
 database.pyc
+static/fonts/webfontkit-20100620-144223/demo.html
+static/fonts/webfontkit-20100620-144223/stylesheet.css
+static/images/btn-pick-file.pxm
