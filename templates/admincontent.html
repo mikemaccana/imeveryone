@@ -31,40 +31,40 @@
 
 {% block mainarea %}
 
-	{% for document in documents %}
+	{% for message in messages %}
 	
 		<div class='posttitle'>
 			<div class='nav'>
-				<h2>{{ document['_id']}}</h2>
+				<h2>{{ message['_id']}}</h2>
 			</div>
 			<div class='postactions'>
-				<a href='/admin/content/{{ url_escape(document['_id']) }}'>Edit...</a>
+				<a href='/admin/content/{{ message['_id'] }}'>Edit...</a>
 			</div>
 			<div class='postactions'>	
-				<a href='/admin/content/{{ url_escape(document['_id']) }}' class="delete">Delete...</a>
+				<a href='/admin/content/{{ message['_id'] }}' class="delete">Delete...</a>
 			</div>
 		</div>	
 		<hr />
 		<p>				
 			<table>
-			{% for property in ['answer','discussion'] %}
+			{% for property in ['author','posttext'] %}
 				<tr>
 					<td>
 						<small>{{ property.title() }}</small>
 					</td>
 					<td>
 						<p>
-							{{document[property]}} 
+							{{message[property]}} 
 						</p>
 					</td>
 				</tr>
 			{% end %}
-			{% for property in ['tags','domains'] %}
+			{% for property in ['ip','useragent'] %}
 				<tr>
 					<td>
 						<small>{{ property.title() }}</small>
 					</td>
-					<td>{{ ','.join(document[property]) }}</td>
+					<td>{{ message[property] }}</td>
 				</tr>
 			{% end %}
 			</table>
