@@ -1,0 +1,74 @@
+{% extends "baseadmin.html" %}
+
+{% block description %}
+	Admin
+{% end %}
+
+{% block title %}
+	Admin
+{% end %}
+
+{% block nav %}
+	<a href='/admin'>Admin</a> > Content
+{% end %}
+
+{% block actions %}
+	<a href='/admin/newcontent'>+ Add new content...</a>
+{% end %}
+
+{% block messages %}
+	<p>
+		Welcome {{ name }}	
+	</p>
+{% end %}
+
+{% block heading %}
+	<h1>
+		All Content
+	</h1>		
+{% end %}
+
+
+{% block mainarea %}
+
+	{% for document in documents %}
+	
+		<div class='posttitle'>
+			<div class='nav'>
+				<h2>{{ document['_id']}}</h2>
+			</div>
+			<div class='postactions'>
+				<a href='/admin/content/{{ url_escape(document['_id']) }}'>Edit...</a>
+			</div>
+			<div class='postactions'>	
+				<a href='/admin/content/{{ url_escape(document['_id']) }}' class="delete">Delete...</a>
+			</div>
+		</div>	
+		<hr />
+		<p>				
+			<table>
+			{% for property in ['answer','discussion'] %}
+				<tr>
+					<td>
+						<small>{{ property.title() }}</small>
+					</td>
+					<td>
+						<p>
+							{{document[property]}} 
+						</p>
+					</td>
+				</tr>
+			{% end %}
+			{% for property in ['tags','domains'] %}
+				<tr>
+					<td>
+						<small>{{ property.title() }}</small>
+					</td>
+					<td>{{ ','.join(document[property]) }}</td>
+				</tr>
+			{% end %}
+			</table>
+		</p>
+	{% end %}	
+
+{% end %}

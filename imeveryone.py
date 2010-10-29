@@ -50,6 +50,7 @@ class Application(tornado.web.Application):
             (r"/about", AboutHandler),
             (r"/top", TopHandler),
             (r"/admin", AdminHandler),
+            (r"/admin/content", AdminContentHandler),
         ]
         self.config = config
         settings = config['application']
@@ -97,6 +98,21 @@ class AdminHandler(BaseHandler):
             name = self.current_user["first_name"],
             #pagetitle = '''Discuss - I'm Everyone''',
         )
+
+class AdminContentHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self):
+        logging.info('/admin login from user :'+self.current_user["name"])
+        ipdb.set_trace()
+        if self.current_user["name"] != 'Mike MacCana':
+            self.write('Access denied. User '+self.current_user["name"]+' is not allowed')
+        else:    
+            documents=[]
+            for document in self.application.dbconnect.content.find():
+                documents.append(document)
+            documents.sort()    
+            self.render("content.html",documents=documents,name=self.current_user["first_name"])
+
         
 class DiscussHandler(BaseHandler):
     '''Handle discussion'''
