@@ -290,6 +290,10 @@ class Message(object):
                 pass
         return 
 
+    def getscore(views, hoursold, gravity=1.8):
+        '''Get score for moessage. Based on
+        http://amix.dk/blog/post/19574'''
+        return (views - 1) / pow((hoursold+2), gravity)
 
 
 

@@ -11,7 +11,9 @@
 				</ul>
 				<!-- main-block -->
 				<div id="messages">
-					Top messages go here....
+					{% for topmessage in topmessages %}
+						<p>{{ topmessage['posttext'] }}</p>
+					{% end %}
 				</div>
 				<!-- block -->
 			</div>

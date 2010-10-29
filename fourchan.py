@@ -171,11 +171,12 @@ def getimage(imageurl,cachedir):
 
 class ContentGetter(threading.Thread): 
     '''Gets messages from 4chan and puts them on our message queue'''
-    def __init__(self, queue, config):
+    def __init__(self, queue, config, database):
         self.__queue = queue
         self.__delay = config['injectors']['fourchan'].as_int('delay')
         self.__config = config
         self.__antispam = usermessages.startakismet(config['posting']['akismet'])
+        self.dbconnect = database.connection
         threading.Thread.__init__(self)
             
     def run(self):
@@ -201,6 +202,11 @@ class ContentGetter(threading.Thread):
                 message = usermessages.Message(messagedata,self.__config,self.__antispam,localfile=post['localfile'])
                 
                 self.__queue.put(message) 
+                
+                # Add alerts to dict and save dict to DB
+                messagedata['alerts'] = message.useralerts
+                self.dbconnect.messages.insert(messagedata)
+                
                 delay = random.randint(self.__delay-2,self.__delay+3)
                 time.sleep(delay)  
 

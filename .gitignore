@@ -365,3 +365,4 @@ pifilter.pyc
 tests/test_imeveryone.pyc
 tests/test_postprocessor.pyc
 usermessages.pyc
+database.pyc

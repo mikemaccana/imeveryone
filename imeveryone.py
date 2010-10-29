@@ -26,6 +26,7 @@ from tornado.options import define, options
 from time import gmtime, strftime
 from subprocess import Popen
 from pymongo import Connection
+from database import Database
 import random
 
 antispam = usermessages.startakismet(ConfigObj('imeveryone.conf')['posting']['akismet'])
@@ -36,7 +37,7 @@ def pick_one(alist):
     return alist[random.randrange(0,len(alist))]
 
 class Application(tornado.web.Application):
-    def __init__(self,config):
+    def __init__(self,config,database):
         # These handlers always get provided with the application, request and any transforms by Tornado
         handlers = [
             (r"/", RootHandler),
@@ -47,10 +48,13 @@ class Application(tornado.web.Application):
             (r"/discuss/([a-z0-9\-]+)", DiscussHandler),
             (r"/about", AboutHandler),
             (r"/top", TopHandler),
+            (r"/admin", AdminHandler),
         ]
         self.config = config
         settings = config['application']
         tornado.web.Application.__init__(self, handlers, **settings)
+        # Have one global connection to the content collection
+        self.dbconnect = database.connection
 
 
 
@@ -70,10 +74,15 @@ class BaseHandler(tornado.web.RequestHandler):
 class TopHandler(BaseHandler):
     '''Top handler''' 
     def get(self):
-        captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])       
-        # Show the messages and any alerts
+        captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])    
+        print 'DEBUG'*5 
+        print self.application.dbconnect.messages.find_one()
+        logging.info(self.application.dbconnect.messages.find_one())
+        print 'DEBUG'*5 
         self.render(
             "top.html",
+            #topmessages=self.application.dbconnect.messages.find({'tags':tag},limit=5):
+            topmessages=self.application.dbconnect.messages.find(limit=10),
             captcha=captchahtml,
             alerts=[],
             heading= pick_one(self.application.config['presentation']['heading']),
@@ -86,7 +95,7 @@ class AdminHandler(BaseHandler):
     '''Handle admin'''
     @tornado.web.authenticated
     def get(self):
-        self.render('Harrow! Top goes here!')
+        self.render('Harrow! Admin goes here!')
 
 class DiscussHandler(BaseHandler):
     '''Handle conversations'''
@@ -111,8 +120,6 @@ class AboutHandler(BaseHandler):
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Who Is Responsible for this Mess? - I'm Everyone''',
             )
-
-
 
 
 class RootHandler(BaseHandler):
@@ -186,15 +193,13 @@ class MessageMixin(object):
     
 
 class NewPostHandler(BaseHandler, MessageMixin):
-    '''Recieve new content from users and add them to our message queue'''
+    '''Recieve new original content from users and add them to our message queue'''
     def post(self):
         global messageQueue, config, useralerts
-        logging.info("Post recieved from user!")
-        
+        logging.info("Post recieved from user!")        
         # Clear alerts from previous posts
         sessionid = self.get_cookie('sessionid')
-        useralerts[sessionid] = []
-        
+        useralerts[sessionid] = []        
         # Let's make our message
         request = self.request        
         messagedata = {
@@ -209,14 +214,17 @@ class NewPostHandler(BaseHandler, MessageMixin):
             'images':request.files['image'],
             'host':request.headers['Host'],
         }        
-        message = usermessages.Message(messagedata,config,antispam)        
-        
+        message = usermessages.Message(messagedata,config,antispam)               
         # If there are no errors
         if len(message.useralerts) > 0:
-            logging.info('Bad post!: '+' '.join(message.useralerts))
+            logging.info('Bad post!: '+' '.join(message.useralerts))            
         else:
             logging.info('Good post.')
             messageQueue.put(message)
+        
+        # Add alerts to dict and save dict to DB
+        messagedata['alerts'] = message.useralerts
+        self.application.dbconnect.messages.insert(messagedata)
         
         # We're done - sent the user back to wherever 'next' input pointed to.
         if self.get_argument("next", None):
@@ -224,8 +232,6 @@ class NewPostHandler(BaseHandler, MessageMixin):
     # Just in case someone tries to access this URL via a GET
     def get(self):
         self.redirect('/')
-
-
 
 def render_template(template_name, **kwargs):
     '''Render a template (independent of requests)'''
@@ -324,14 +330,14 @@ def main():
         
         config = ConfigObj('imeveryone.conf')
         
-        http_server = tornado.httpserver.HTTPServer(Application(config))
+        # Start MongoDB server and client.
+        database = Database(config['database'])
+        database.start()
+        database.dbclient()
+
+        # Start web app
+        http_server = tornado.httpserver.HTTPServer(Application(config,database=database))
         http_server.listen(config['server'].as_int('port'))
-                
-        # Start MongoDB, wait to start, start client.
-        startdb(config['database'])
-        time.sleep(5)
-        messagecollect = dbclient(config['database'])
-        logging.info('Database server and client started.')
         print '_'*80
         
         # Advertising content getter
@@ -340,7 +346,7 @@ def main():
         
         # Test 4chan content getter to queue
         if config['injectors']['fourchan'].as_bool('enabled'):
-            fourchan.ContentGetter(messageQueue,config).start()
+            fourchan.ContentGetter(messageQueue,config,database=database).start()
         
         # Take content from queue and send updates to waiting clients
         mycontentprocessor = QueueToWaitingClients(messageQueue,config)
