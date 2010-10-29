@@ -11,7 +11,11 @@
 				</ul>
 				<!-- main-block -->
 				<div id="messages">
-					{{ message['posttext'] }}
+					{% if message['posttext'] %}
+						{{ message['posttext'] }}
+					{% else %}
+						No post text!
+					{% end %}	
 				</div>
 				<!-- block -->
 			</div>

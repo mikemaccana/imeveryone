@@ -57,7 +57,11 @@ class Application(tornado.web.Application):
         tornado.web.Application.__init__(self, handlers, **settings)
         # Have one global connection to the content collection
         self.dbconnect = database.connection
-
+        self.currentid = config['posting'].as_int('startid')
+    def getnextid(self):
+        nextid = self.currentid
+        self.currentid += 1
+        return nextid
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -241,7 +245,8 @@ class NewPostHandler(BaseHandler, MessageMixin):
             'images':request.files['image'],
             'host':request.headers['Host'],
         }        
-        message = usermessages.Message(messagedata,self.application.config,antispam)               
+        _id = self.application.getnextid()
+        message = usermessages.Message(messagedata,self.application.config,antispam,_id)               
         # If there are no errors
         if len(message.useralerts) > 0:
             logging.info('Bad post!: '+' '.join(message.useralerts))            
@@ -254,7 +259,8 @@ class NewPostHandler(BaseHandler, MessageMixin):
         # which is good since it doesn't work
         messagedata['images'] = None
         messagedata['alerts'] = message.useralerts
-        self.application.dbconnect.messages.insert(messagedata)
+        messagedata['_id'] = message._id
+        self.application.dbconnect.messages.save(messagedata)
         
         # We're done - sent the user back to wherever 'next' input pointed to.
         if self.get_argument("next", None):
@@ -272,17 +278,14 @@ def render_template(template_name, **kwargs):
 class QueueToWaitingClients(MessageMixin, threading.Thread):
     '''Take messages off the messageQueue, and send them to client'''
     def __init__(self, queue, config):
-        self.__queue = queue
+        self.queue = queue
         # Change this to DB lookup of highest ID.
-        self.__startid = config['posting'].as_int('startid')
         threading.Thread.__init__(self)
         MessageMixin.__init__(self)
     def run(self):
         while True:
-            message = self.__queue.get()
-            message._id = self.__startid
+            message = self.queue.get()
             logging.info('Preparing to send message ID: '+str(message._id)+' to clients.')
-            self.__startid = self.__startid+1
             message.html = render_template('message.html', message=message)
             self.send_messages([message])
 
@@ -364,7 +367,8 @@ def main():
         database.start()
         database.dbclient()
         # Start web app
-        http_server = tornado.httpserver.HTTPServer(Application(config,database=database))
+        app = Application(config,database=database)
+        http_server = tornado.httpserver.HTTPServer(app)
         http_server.listen(config['server'].as_int('port'))
         print '_'*80        
         # Advertising content getter
@@ -372,7 +376,7 @@ def main():
             advertising.ContentGetter(messageQueue,config).start()        
         # Test 4chan content getter to queue
         if config['injectors']['fourchan'].as_bool('enabled'):
-            fourchan.ContentGetter(messageQueue,config,database=database).start()        
+            fourchan.ContentGetter(messageQueue,config,database=database, app=app).start()        
         # Take content from queue and send updates to waiting clients
         mycontentprocessor = QueueToWaitingClients(messageQueue,config)
         mycontentprocessor.start()        

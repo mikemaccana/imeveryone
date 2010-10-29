@@ -64,11 +64,10 @@ consumer.addEndpoint(oembed.OEmbedEndpoint('http://api.embed.ly/oembed/api/v1', 
 
 class Message(object):
     '''Submitted message'''
-    def __init__(self,messagedata,config,antispam,localfile=None):
+    def __init__(self,messagedata,config,antispam,_id,localfile=None):
         '''Create message based on body of PUT form data'''
         self.posttime = messagedata['posttime']
-        # The 'accept' ID
-        self._id = None
+        self._id = _id
         
         self.localfile = localfile
         self.preview = None

@@ -171,13 +171,14 @@ def getimage(imageurl,cachedir):
 
 class ContentGetter(threading.Thread): 
     '''Gets messages from 4chan and puts them on our message queue'''
-    def __init__(self, queue, config, database):
+    def __init__(self, queue, config, database, app):
         self.__queue = queue
         self.__delay = config['injectors']['fourchan'].as_int('delay')
         self.__config = config
         self.__antispam = usermessages.startakismet(config['posting']['akismet'])
         self.dbconnect = database.connection
         threading.Thread.__init__(self)
+        self.app = app
             
     def run(self):
         lastadded = 0
@@ -198,14 +199,15 @@ class ContentGetter(threading.Thread):
                     'host':'www.imeveryone.com',
                 }        
 
-                
-                message = usermessages.Message(messagedata,self.__config,self.__antispam,localfile=post['localfile'])
+                newid = app.getnextid()
+                message = usermessages.Message(messagedata,self.__config,self.__antispam,newid,localfile=post['localfile'])
                 
                 self.__queue.put(message) 
                 
                 # Add alerts to dict and save dict to DB
                 messagedata['alerts'] = message.useralerts
-                self.dbconnect.messages.insert(messagedata)
+                messagedata['_id'] = message._id
+                self.dbconnect.messages.upsert(messagedata)
                 
                 delay = random.randint(self.__delay-2,self.__delay+3)
                 time.sleep(delay)  
