@@ -199,7 +199,7 @@ class ContentGetter(threading.Thread):
                     'host':'www.imeveryone.com',
                 }        
 
-                newid = app.getnextid()
+                newid = self.app.getnextid()
                 message = usermessages.Message(messagedata,self.__config,self.__antispam,newid,localfile=post['localfile'])
                 
                 self.__queue.put(message) 
@@ -207,7 +207,7 @@ class ContentGetter(threading.Thread):
                 # Add alerts to dict and save dict to DB
                 messagedata['alerts'] = message.useralerts
                 messagedata['_id'] = message._id
-                self.dbconnect.messages.upsert(messagedata)
+                self.dbconnect.messages.save(messagedata)
                 
                 delay = random.randint(self.__delay-2,self.__delay+3)
                 time.sleep(delay)  

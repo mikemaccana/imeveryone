@@ -120,11 +120,11 @@ class AdminContentHandler(BaseHandler):
 class DiscussHandler(BaseHandler):
     '''Handle discussion'''
     def get(self,messageid):
-        captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])  
-        ipdb.set_trace()
+        captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])
+        message = self.application.dbconnect.messages.find_one({'_id':int(messageid)})
         self.render(
             "discuss.html",
-            message=self.application.dbconnect.messages.find_one({'_id':messageid}),
+            message=message,
             captcha=captchahtml,
             alerts=[],
             heading= pick_one(self.application.config['presentation']['heading']),

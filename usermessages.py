@@ -231,7 +231,7 @@ class Message(object):
                 count = count+1
             if 'result' in response:
                 if response['result']:
-                    logging.warn('message submission '+self._id+' with image '+self.localfile+' is porn.')
+                    logging.warn('message submission '+str(self._id)+' with image '+self.localfile+' is porn.')
                     # Make a greyscale version and use that instead
                     if config['images']['adultaction'] == 'gray' or config['images']['adultaction'] == 'grey':
                         savegrayscale(self.localfile)
