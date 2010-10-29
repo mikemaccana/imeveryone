@@ -1,0 +1,66 @@
+<!DOCTYPE HTML>
+<html> 
+    <head> 
+	    <title>{% block title %}Default title{% end %}</title> 
+	    <meta http-equiv="content-type" content="text/html; charset=utf-8"/> 
+		<meta NAME="Description" content="{% block description %}Default description{% end %}">
+
+		<script language="JavaScript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+		<script language="JavaScript" src="/static/js/rest.js"></script>
+		<script src="/static/iphonecheckboxes/jquery/iphone-style-checkboxes.js" type="text/javascript"></script>
+		<link rel="stylesheet" charset="utf-8" href="/static/iphonecheckboxes/style.css" type="text/css" media="screen">		
+		<script type="text/javascript">
+			$(document).ready(function() {
+				$('.on_off :checkbox').iphoneStyle();
+			});
+		</script>		
+		{% block js %}				
+		{% end %}		
+
+		{% block css %}				
+		{% end %}		
+		<link rel="stylesheet" href="/static/css/typography.css" type="text/css" type="text/css" media="screen" charset="utf-8">
+		<link rel="stylesheet" href="/static/css/styleadmin.css" type="text/css" type="text/css" media="screen" charset="utf-8">
+    </head> 
+	<body> 
+		<div class="fullscreen">
+			<div id="top">
+				<div class="fullcolumn">
+					<h1><a href='/admin'>ImEveryone Admin</a></h1>
+				</div>
+			</div>	
+			
+			<div id="navbar">
+				<div class="fullcolumn">
+					<div class="nav">
+						{% block nav %}
+							Admin
+						{% end %}
+					</div>
+					<div class="actions">
+						{% block actions %}
+							
+						{% end %}
+					</div>					
+				</div>
+			</div>			
+			
+			<div class="fullcolumn" id="messages">
+				{% block messages %}
+				{% end %}
+			</div>	
+
+			<div class="fullcolumn" id="pageheader">
+				{% block heading %}
+					<h1>Default Heading</h1>
+				{% end %}
+			</div>	
+			
+		    <div id="mainarea"> 
+				{% block mainarea %}
+					Default mainarea
+				{% end %}
+		    </div> 
+		</div> 
+	</body> 
+</html>

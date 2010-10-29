@@ -92,8 +92,12 @@ class AdminHandler(BaseHandler):
     '''Handle admin'''
     @tornado.web.authenticated
     def get(self):
-        self.render('Harrow! Admin goes here!')
-
+        self.render(
+            "admin.html",
+            name = self.current_user["first_name"],
+            #pagetitle = '''Discuss - I'm Everyone''',
+        )
+        
 class DiscussHandler(BaseHandler):
     '''Handle discussion'''
     def get(self,messageid):

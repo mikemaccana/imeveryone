@@ -1,0 +1,32 @@
+{% extends "baseadmin.html" %}
+
+{% block description %}
+	Admin
+{% end %}
+
+{% block title %}
+	Admin
+{% end %}
+
+{% block nav %}
+	Admin
+{% end %}
+
+{% block messages %}
+	<p>
+		Welcome {{ name }}	
+	</p>
+{% end %}
+
+{% block heading %}
+	<h1>
+		Admin
+	</h1>			
+{% end %}
+
+{% block mainarea %}
+	<h2><a href='/admin/content'>Content</a></h2>
+	<h2><a href='/admin/users'>Users</a></h2>
+	<h2><a href='/admin/invites'>Invites</a></h2>
+
+{% end %}

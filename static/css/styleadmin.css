@@ -1,0 +1,212 @@
+/*give the body height:100% so that its child
+  elements can have percentage heights*/
+body {
+    height:100%;
+	background-color:#F3F3F3;
+	color:#333333;
+	margin:10% 5% 0;
+	text-align:left;
+	font: 20px/28px 'AllerLightRegular', Calibri, Tahoma, Arial, sans-serif;
+}
+
+/*this is what we want the div to look like*/
+div.fullscreen{
+  display:block;
+
+  /*set the div in the top-left corner of the screen*/
+  position:absolute;
+  top:0;
+  left:0;
+
+  /*set the width and height to 100% of the screen*/
+  width:100%;
+  height:100%;
+}
+
+#top{
+    padding: 5px 12px;
+    position: relative;
+    color: white;
+    z-index: 100;
+    height: 40px;
+    text-shadow:0 1px #FFFFFF;
+    background: url("/static/images/blackbgshiny.jpg") scroll center top #232323;
+}
+
+.fullcolumn{
+    margin: 0 auto;
+    width: 980px;
+}
+
+#navbar{
+    background: url("/static/images/subnavbg.gif") repeat-x scroll 0 0 transparent;
+    padding: 0px;
+    position: relative;
+    color: white;
+    z-index: 100;
+    height: 29px;
+    margin: 0px;
+    position: static;
+    text-shadow:0 1px #000000;
+    font-size: 16px;
+    line-height: 29px; 
+    font-family: Verdana,Geneva,sans-serif;
+}
+
+.nav {
+    margin: 0 auto;
+    width: 650px; 
+    float:left;   
+}
+
+.actions {
+    margin-top: 0px; 
+    width: 200px; 
+    float:right;   
+}
+
+.postactions {
+    width: 70px; 
+    float:right;   
+    font-size: 12px;
+    text-align: center;
+    margin: 20px 3px 0px 0px;
+    background:none repeat scroll 0 0 #555555;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;    
+}
+
+#mainarea{
+	width: 940px;
+	clear:both;
+	margin:auto;
+	background-color: #FFFFFF; 
+    padding: 10px 20px;   
+    -moz-box-shadow: 5px 5px 5px #ccc;
+    -webkit-box-shadow: 5px 5px 5px #ccc;
+    box-shadow: 5px 5px 5px #ccc;
+    position: relative;
+    z-index: 200;    
+}
+
+#pageheader{
+    background: url("/static/images/bg.png") scroll center top #232323;
+    font-size:12px;
+    font-weight:bold;
+    padding:10px 20px;
+    position:relative;
+    width:940px;
+    z-index: 100;
+    -webkit-border-top-left-radius: 15px;
+    -webkit-border-top-right-radius: 15px;
+    -moz-border-radius-topleft: 15px;
+    -moz-border-radius-topright: 15px;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;   
+    -moz-box-shadow: 5px 5px 5px #ccc;
+    -webkit-box-shadow: 5px 5px 5px #ccc;
+    box-shadow: 5px 5px 5px #ccc; 
+    color: white;
+}
+
+h1 {
+    font-size: 30px;
+    line-height: 36px;
+    text-align:left;
+    margin: 5px;
+}
+
+h2 {
+    font-size: 24px;
+    line-height: 30px;
+}
+
+h1 a:link, h1 a:visited, h2 a:link, h2 a:visited, h3 a:link, h3 a:visited, h4 a:link, h4 a:visited, h5 a:link, h5 a:visited, h6 a:link, h6 a:visited {
+    text-decoration: none;
+}
+
+#navbar a:link, #navbar a:visited, #navbar a:hover, .postactions a:link, .postactions a:visited, .postactions a:hover {
+    color: white;
+    text-decoration: none;
+}
+
+.posttitle {
+    vertical-align: middle;
+}
+
+a:hover, a:visited {
+    text-decoration: underline;
+    text-decoration: none;
+    color: black;
+}
+
+#top a:link, #top a:visited {
+    color: white;
+}
+
+
+small {
+    line-height: 14px;
+    font-size: 10px;
+}
+
+input {
+    width: 400px;
+}
+
+textarea {
+    rows: 10;
+    cols: 60;
+    font: 20px/28px 'AllerLightRegular', Calibri, Tahoma, Arial, sans-serif;
+}
+
+span.command {
+	color: #CCCCCC; 
+	background-color: #333333;
+	font-family: 'BPmonoRegular', Calibri, Tahoma, Arial, sans-serif;
+}
+
+div.editable
+{
+	border: solid 2px Transparent;
+	padding-left: 15px;
+	padding-right: 15px;
+}
+
+div.editable:hover
+{
+	border-color: black;
+}
+
+hr {
+    clear: both;    
+}
+
+table, td, th
+{ 
+    border: 14px solid white;
+    border-collapse: collapse;
+    vertical-align:text-top;
+}
+
+.button {
+    -moz-box-shadow:0 0 5px #2288CC;
+    background-color:#3399DD;
+    background-image:url("/static/images/buttons/bg-btn-blue.gif");
+    background-position:0 0;
+    border-color:#3399DD #3399DD #2288CC;
+    color:#FFFFFF !important;
+    text-shadow:-1px -1px 0 #3399DD;
+    -moz-border-radius:4px 4px 4px 4px;
+    border-style:solid;
+    border-width:1px;
+    cursor:pointer;
+    display:inline-block;
+    font: 20px/28px 'MuseoSans300', Calibri, Tahoma, Arial, sans-serif;
+    width: 150px;
+    margin:0;
+    overflow:hidden;
+    padding:5px 9px;
+}
+
