@@ -65,8 +65,7 @@ consumer.addEndpoint(oembed.OEmbedEndpoint('http://api.embed.ly/oembed/api/v1', 
 class Message(object):
     '''Submitted message'''
     def __init__(self,messagedata,config,antispam,localfile=None):
-        '''Create message based on body of PUT form data'''   
-        self.submitid = str(uuid.uuid4())
+        '''Create message based on body of PUT form data'''
         self.posttime = messagedata['posttime']
         # The 'accept' ID
         self.id = None
@@ -119,7 +118,7 @@ class Message(object):
                 # Save image data to local file
                 imagefile = self.images[0]
                 logging.info('Saving image: '+imagefile['filename'])
-                self.localfile = config['images']['cachedir']+self.submitid+'.'+imagefile['filename'].split('.')[-1]
+                self.localfile = config['images']['cachedir']+self.id+'.'+imagefile['filename'].split('.')[-1]
                 open(self.localfile,'wb').write(imagefile['body'])
         return
     
@@ -233,7 +232,7 @@ class Message(object):
                 count = count+1
             if 'result' in response:
                 if response['result']:
-                    logging.warn('message submission '+self.submitid+' with image '+self.localfile+' is porn.')
+                    logging.warn('message submission '+self.id+' with image '+self.localfile+' is porn.')
                     # Make a greyscale version and use that instead
                     if config['images']['adultaction'] == 'gray' or config['images']['adultaction'] == 'grey':
                         savegrayscale(self.localfile)

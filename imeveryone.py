@@ -203,7 +203,7 @@ class MessageMixin(object):
 class NewPostHandler(BaseHandler, MessageMixin):
     '''Recieve new original content from users and add them to our message queue'''
     def post(self):
-        global messageQueue, config, useralerts
+        global messageQueue, useralerts
         logging.info("Post recieved from user!")        
         # Clear alerts from previous posts
         sessionid = self.get_cookie('sessionid')
@@ -222,7 +222,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
             'images':request.files['image'],
             'host':request.headers['Host'],
         }        
-        message = usermessages.Message(messagedata,config,antispam)               
+        message = usermessages.Message(messagedata,self.application.config,antispam)               
         # If there are no errors
         if len(message.useralerts) > 0:
             logging.info('Bad post!: '+' '.join(message.useralerts))            
@@ -231,6 +231,9 @@ class NewPostHandler(BaseHandler, MessageMixin):
             messageQueue.put(message)
         
         # Add alerts to dict and save dict to DB
+        # Note: we saved image files already, so no need to put POSTed image data into MongoDB
+        # which is good since it doesn't work
+        messagedata['images'] = None
         messagedata['alerts'] = message.useralerts
         self.application.dbconnect.messages.insert(messagedata)
         
@@ -258,7 +261,7 @@ class QueueToWaitingClients(MessageMixin, threading.Thread):
         while True:
             message = self.__queue.get()
             message.id = self.__startid
-            logging.info('Preparing to send message ID: '+str(message.id)+' with submit id '+str(message.submitid)+' to clients.')
+            logging.info('Preparing to send message ID: '+str(message.id)+' to clients.')
             self.__startid = self.__startid+1
             message.html = render_template('message.html', message=message)
             self.send_messages([message])
