@@ -112,15 +112,14 @@ class AdminContentHandler(BaseHandler):
             messages.sort()  
             self.render("admincontent.html",messages=messages,name=self.current_user["first_name"])
 
-        
 class DiscussHandler(BaseHandler):
     '''Handle discussion'''
     def get(self,messageid):
         captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])
-        message = self.application.dbconnect.messages.find_one({'_id':int(messageid)})
+        mymessage = self.application.dbconnect.messages.find_one({'_id':int(messageid)})
         self.render(
             "discuss.html",
-            message=message,
+            message=mymessage,
             captcha=captchahtml,
             alerts=[],
             heading= pick_one(self.application.config['presentation']['heading']),
@@ -129,9 +128,8 @@ class DiscussHandler(BaseHandler):
             pagetitle = '''Discuss - I'm Everyone''',
             )        
         
-    def delete(self,discuss):
-        self.write('Harrow! Discussion goes here!'+discuss)
-
+#    def delete(self,discuss):
+#        self.write('Harrow! Discussion goes here!'+discuss)
 
 class AboutHandler(BaseHandler):
     '''Handle conversations'''
@@ -192,6 +190,7 @@ class MessageMixin(object):
             index = 0
             for i in xrange(len(MessageMixin.cache)):
                 index = len(MessageMixin.cache) - i - 1
+                logging.info('Cache index is %s', index)
                 # Note cursor is unicode not int
                 # Converting unicode to int seems to mysteriously break comparison!
                 if str(MessageMixin.cache[index]._id) == str(cursor):
@@ -211,7 +210,9 @@ class MessageMixin(object):
                 callback(messages)
             except:
                 logging.error("Error in waiter callback", exc_info=True)
+        logging.info('Done sending messages, setting waiters back to 0')
         MessageMixin.waiters = []
+        logging.info('Adding messages to cache')
         MessageMixin.cache.extend(messages)
         if len(MessageMixin.cache) > self.cache_size:
             MessageMixin.cache = MessageMixin.cache[-self.cache_size:]
@@ -254,6 +255,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
         messagedata['images'] = None
         messagedata['alerts'] = message.useralerts
         messagedata['_id'] = message._id
+        messagedata['comments'] = []
         self.application.dbconnect.messages.save(messagedata)
         
         # We're done - sent the user back to wherever 'next' input pointed to.

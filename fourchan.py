@@ -197,6 +197,7 @@ class ContentGetter(threading.Thread):
                     'referer':None,
                     'images':None,
                     'host':'www.imeveryone.com',
+                    'comments':[],
                 }        
 
                 newid = self.app.getnextid()

@@ -1,3 +1,7 @@
+{% block js %}
+
+{% end %}
+
 {% extends "base.html" %}
 	{% block mainarea %}
 		<div class="twocolumns">
@@ -16,6 +20,14 @@
 					{% else %}
 						No post text!
 					{% end %}	
+					{% if len(message['comments']) %}
+						{% for comment in message['comments'] %}
+							<p>{{ message[comment] }} </p>
+							<a class='reply'>Reply</a>
+						{% end %}
+					{% else %}
+						<p><a class='reply'>Be the first to comment.</a></p>
+					{% end %}
 				</div>
 				<!-- block -->
 			</div>
@@ -61,6 +73,7 @@
 						{{ xsrf_form_html() }}
 					</fieldset>
 				</form>
+				<!-- end of form -->	
 				{% for alert in alerts %}
 				    <em>{{ alert }}</em>
 				{% end %}
