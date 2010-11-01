@@ -63,7 +63,6 @@ class Application(tornado.web.Application):
         self.currentid += 1
         return nextid
 
-
 class BaseHandler(tornado.web.RequestHandler):
     '''Generic class for all URL handlers to inherit from - ensures users are always logged in'''
     def get_current_user(self):
@@ -73,9 +72,6 @@ class BaseHandler(tornado.web.RequestHandler):
             return None
         else:
             return tornado.escape.json_decode(user_json)
-
-
-
 
 class TopHandler(BaseHandler):
     '''Top handler''' 
@@ -152,7 +148,6 @@ class AboutHandler(BaseHandler):
             pagetitle = '''Who Is Responsible for this Mess? - I'm Everyone''',
             )
 
-
 class RootHandler(BaseHandler):
     '''Handle request for our front page'''
     def get(self):
@@ -181,7 +176,6 @@ class RootHandler(BaseHandler):
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Live - I'm Everyone''',
             )
-
 
 class MessageMixin(object):
     '''This is where the magic of tornado happens - we add clients to a waiters list, and when new messages arrive, we run send_messages() '''
@@ -317,9 +311,6 @@ class ViewerUpdateHandler(BaseHandler, MessageMixin):
         # We send a dict with one key, 'messages', which is the jsonmessages list
         self.finish(dict(messages=jsonmessages))
 
-              
-
-
 class AuthLoginHandler(BaseHandler, tornado.auth.GoogleMixin):
     @tornado.web.asynchronous
     def get(self):
@@ -333,7 +324,6 @@ class AuthLoginHandler(BaseHandler, tornado.auth.GoogleMixin):
             raise tornado.web.HTTPError(500, "Google auth failed")
         self.set_secure_cookie("user", tornado.escape.json_encode(user))
         self.redirect("/")
-
 
 class AuthLogoutHandler(BaseHandler):
     def get(self):
