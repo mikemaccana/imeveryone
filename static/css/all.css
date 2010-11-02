@@ -102,6 +102,13 @@ form, fieldset {
 	padding-bottom:8px;
 	overflow:hidden;
 }
+
+/* discussion comments */
+.commentbox {
+    font: 14px/17px Georgia, Helvetica, Verdana, sans-serif;
+    background:#DDDDCC;
+}
+
 /* navigation */
 #nav {
 	width:549px;
@@ -315,6 +322,7 @@ form, fieldset {
 	line-height:0;
 	cursor:pointer;
 }
+
 .form-write-us em {
 	display:block;
 	padding:10px 19px 0 0;
