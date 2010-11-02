@@ -8,13 +8,13 @@
 	<script type="text/javascript">
 	
 		$(document).ready(function(){
-			(function(){ jQuery('.replybutton').bind('click', function(event, ui){setTimeout(function(){var target = jQuery('div.message'); target.after('<div class="commentbox"><form action="/invite" id="inviterequest" method="post"><table><tr><td>Name</td><td><textarea class="input" name="name"></textarea></td></tr><tr><td>Message</td><td><textarea class="biginput" name="aboutme"></textarea></td></tr></table>{{ xsrf_form_html() }}<input type="submit" value="Add comment" id="opener" class="button" /></form></div>')}, 250); event.preventDefault()});})();
+			$('.replybutton').bind('click', function(event, ui){setTimeout(function(){var target = jQuery('div.message'); target.after('<div class="commentbox"><form action="/invite" id="inviterequest" method="post"><table><tr><td>Name</td><td><textarea class="input" name="name"></textarea></td></tr><tr><td>Message</td><td><textarea class="biginput" name="aboutme"></textarea></td></tr></table>{{ xsrf_form_html() }}<input type="submit" value="Add comment" id="opener" class="button" /></form></div>')}, 250); event.preventDefault()});
 			
-		    $('#commenttree').collapsible({xoffset:'-10',yoffset:'5',defaulthide: false});
+		    $('#commenttree').collapsible({xoffset:'-10',yoffset:'5'});
 		});
 	</script>
 
-	<script type="text/javascript" src="{{ static_url("jcollapsible/jCollapsible.min.js") }}" ></script>
+
 		
 {% end %}
 
