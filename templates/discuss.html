@@ -1,19 +1,58 @@
 {% extends "base.html" %}
 
+{% block css %}
+{% end %}
+
 {% block js %}
 	<script type="text/javascript">
-		if(window.jQuery){jQuery(function(){
-			(function(){ jQuery('.replybutton').bind('click', function(event, ui){setTimeout(function(){var target = jQuery('div.message'); target.after('<div class="commentbox"><p>Add your comment</p></div>')}, 250); event.preventDefault()});})();
-		})};
+	
+		$(document).ready(function(){
+			(function(){ jQuery('.replybutton').bind('click', function(event, ui){setTimeout(function(){var target = jQuery('div.message'); target.after('<div class="commentbox"><form action="/invite" id="inviterequest" method="post"><table><tr><td>Name</td><td><textarea class="input" name="name"></textarea></td></tr><tr><td>Message</td><td><textarea class="biginput" name="aboutme"></textarea></td></tr></table>{{ xsrf_form_html() }}<input type="submit" value="Add comment" id="opener" class="button" /></form></div>')}, 250); event.preventDefault()});})();
+		});
 	</script>
+
+	<script type="text/javascript" src="{{ static_url("jcollapsible/jCollapsible.min.js") }}" ></script>
+		
 {% end %}
 
 {% block mainarea %}
-	{% if message['posttext'] %}
-		{{ message['posttext'] }}
+
+<div class="post">
+
+	<em class="date"><a href="#"> {{message['posttime']}}</a></em>
+
+	{% if 'posttext' in message %}
+		<h2><a href="#">{{ escape(message['posttext'])}}</a></h2>
 	{% else %}
-		No post text!
+		<h2><a href="#">No post text</a></h2>
 	{% end %}	
+
+	{% if 'intro' in message %}  
+	    <div class="text-box">
+			<a href="#">{{escape (message.intro)}}</a>
+		</div>	    
+	{% end %}
+
+	{% if 'embeds' in message %}
+		{% for embed in message['embeds'] %}
+			{% if 'html' in embed %}
+				{{ embed['html'] }}<br/>
+			{% end %}	
+		{% end %}
+	{% end %}
+	{% if 'preview' in message %}
+		{% if message['preview'] is not None %}
+			<div class="visual">
+				<a href="#" target="_blank"><img src="{{ message['preview'] }}" alt="image description" /></a>
+			</div>
+		{% end %}
+	{% end %}
+	
+	<div class="read-more">
+		<a class="more" href="/discuss/{{message['_id']}}" target="_blank">Read more...</a>
+		<em><a href="#">{{message['_id']}}</a></em>
+	</div>
+	
 	{% if len(message['comments']) %}
 		{% for comment in message['comments'] %}
 			<p>{{ message[comment] }} </p>
@@ -26,6 +65,8 @@
 			<a href='/reply' class="replybutton">Be the first to comment</a>
 		</div>
 	{% end %}
+
+</div>
 	
 {% end %}	
 
