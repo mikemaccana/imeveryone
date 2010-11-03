@@ -260,6 +260,8 @@ class NewPostHandler(BaseHandler, MessageMixin):
             messageQueue.put(message)
         
         # Add alerts to dict and save dict to DB
+        # FIXME - imagedata not being set to zero in usermessages, non-encoded so screwing mongo up.
+        message.__dict__['imagedata'] = []
         self.application.dbconnect.messages.save(message.__dict__)
         
         # We're done - sent the user back to wherever 'next' input pointed to.
