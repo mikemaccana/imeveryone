@@ -81,7 +81,7 @@ def gettree(data):
 
 def getnewposts(channel,lastadded,config):
     '''Return list of new threads. Each thread is a dict.'''
-    newthreads = []
+    newposts = []
     # Connect and get content
     data = connect(channel)
     # Parse content into etree
@@ -129,9 +129,28 @@ def getnewposts(channel,lastadded,config):
                 
                 # Add the thread (as long as its new)    
                 if threadid > lastadded:
-                    newthreads.append( {'author':author,'posttext':posttext,'imageurl':imageurl,'thumb':thumb,'threadid':threadid,'link':link,'posttime':timetext,'localfile':localfile,'preview':None})
+                    newposts.append( {
+                        'author':author,
+                        'posttext':posttext,
+                        'imageurl':imageurl,
+                        'thumb':thumb,
+                        'threadid':threadid,
+                        'link':link,
+                        #'posttime':timetext,
+                        'posttime':time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
+                        'localfile':localfile,
+                        'preview':None,
+                        'challenge':None,
+                        'response':None,
+                        'ip':'10.0.0.1',
+                        'useragent':'4Chan test client',
+                        'referer':None,
+                        'imagedata':None,
+                        'host':'www.imeveryone.com',
+                        'comments':[],
+                    })
                     lastadded = threadid
-    return newthreads,lastadded
+    return newposts,lastadded
 
 def getbefore(element,amount):
     '''Fetch the element that is X beofre the current one'''
@@ -186,30 +205,15 @@ class ContentGetter(threading.Thread):
         while True:
             newposts,lastadded = getnewposts('b',lastadded,self.__config)
             for post in newposts:
-                ########
-                messagedata = {
-                    'posttime':time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
-                    'author':post['author'],
-                    'posttext':post['posttext'],
-                    'challenge':None,
-                    'response':None,
-                    'ip':'10.0.0.1',
-                    'useragent':'4Chan test client',
-                    'referer':None,
-                    'images':None,
-                    'host':'www.imeveryone.com',
-                    'comments':[],
-                }        
-
+                # Add new 4chan posts
                 newid = self.app.getnextid()
                 message = usermessages.Message(
-                    messagedata,
+                    post,
                     self.__config,
                     self.__antispam,
                     newid,
                     localfile=post['localfile']
                 )
-                
                 self.__queue.put(message) 
                 
                 # Save to DB

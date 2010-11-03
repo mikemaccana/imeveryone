@@ -79,7 +79,7 @@ class Message(object):
         self.ip = messagedata['ip']
         self.useragent = messagedata['useragent']
         self.referer = messagedata['referer']
-        self.imagedata = messagedata['images']
+        self.imagedata = messagedata['imagedata']
         self.host = messagedata['host']
         self.useralerts = []
         self.intro = None
