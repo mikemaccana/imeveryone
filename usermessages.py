@@ -79,10 +79,11 @@ class Message(object):
         self.ip = messagedata['ip']
         self.useragent = messagedata['useragent']
         self.referer = messagedata['referer']
-        self.images = messagedata['images']
+        self.imagedata = messagedata['images']
         self.host = messagedata['host']
         self.useralerts = []
         self.intro = None
+        self.comments = []
         # can probably remove this
         self.threadid = None
         self.embeds = []
@@ -111,14 +112,16 @@ class Message(object):
     def saveimages(self,config):
         '''Save images for original posts'''
         if config['images'].as_bool('enabled'):
-            if self.images is None and len(self.embeds) < 1:
+            if self.imagedata is None and len(self.embeds) < 1:
                 self.useralerts.append(config['alerts']['noimage'])
             else:
                 # Save image data to local file
-                imagefile = self.images[0]
+                imagefile = self.imagedata[0]
                 logging.info('Saving image: '+imagefile['filename'])
                 self.localfile = config['images']['cachedir']+self._id+'.'+imagefile['filename'].split('.')[-1]
                 open(self.localfile,'wb').write(imagefile['body'])
+                # Set self.imagedata to None now we've saved our image data
+                self.imagedata = None
         return
     
     def makepreviewpic(self,imagefile,imageconfig):

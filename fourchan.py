@@ -17,6 +17,7 @@ import usermessages
 import uuid
 import logging
 import urllib2
+import ipdb
 
 debug = False
 
@@ -201,14 +202,18 @@ class ContentGetter(threading.Thread):
                 }        
 
                 newid = self.app.getnextid()
-                message = usermessages.Message(messagedata,self.__config,self.__antispam,newid,localfile=post['localfile'])
+                message = usermessages.Message(
+                    messagedata,
+                    self.__config,
+                    self.__antispam,
+                    newid,
+                    localfile=post['localfile']
+                )
                 
                 self.__queue.put(message) 
                 
-                # Add alerts to dict and save dict to DB
-                messagedata['alerts'] = message.useralerts
-                messagedata['_id'] = message._id
-                self.dbconnect.messages.save(messagedata)
+                # Save to DB
+                self.dbconnect.messages.save(message.__dict__)
                 
                 delay = random.randint(self.__delay-2,self.__delay+3)
                 time.sleep(delay)  

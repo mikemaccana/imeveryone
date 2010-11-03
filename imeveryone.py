@@ -227,22 +227,32 @@ class NewPostHandler(BaseHandler, MessageMixin):
         sessionid = self.get_cookie('sessionid')
         useralerts[sessionid] = []        
         # Let's make our message
-        request = self.request        
         messagedata = {
+            'top':False,
             'posttime':strftime("%Y-%m-%d %H:%M:%S", gmtime()),
             'author':'Anonymous',
             'posttext':self.get_argument('posttext'),
             'challenge':self.get_argument('recaptcha_challenge_field'),
             'response':self.get_argument('recaptcha_response_field'),
-            'ip':request.remote_ip,
-            'useragent':request.headers['User-Agent'],
-            'referer':request.headers['Referer'],
-            'images':request.files['image'],
-            'host':request.headers['Host'],
-        }        
+            'ip':self.request.remote_ip,
+            'useragent':self.request.headers['User-Agent'],
+            'referer':self.request.headers['Referer'],
+            'imagedata':self.request.files['image'],
+            'host':self.request.headers['Host'],
+            'replies':[],
+        }      
+        if self.request.path == '/a/message/new':
+            messagedata['top'] = True
+        
+        
         _id = self.application.getnextid()
-        message = usermessages.Message(messagedata,self.application.config,antispam,_id)               
-        # If there are no errors
+        message = usermessages.Message(
+            messagedata,
+            self.application.config,
+            antispam,
+            _id
+        )    
+        # If there are no errors, add to queue
         if len(message.useralerts) > 0:
             logging.info('Bad post!: '+' '.join(message.useralerts))            
         else:
@@ -250,13 +260,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
             messageQueue.put(message)
         
         # Add alerts to dict and save dict to DB
-        # Note: we saved image files already, so no need to put POSTed image data into MongoDB
-        # which is good since it doesn't work
-        messagedata['images'] = None
-        messagedata['alerts'] = message.useralerts
-        messagedata['_id'] = message._id
-        messagedata['comments'] = []
-        self.application.dbconnect.messages.save(messagedata)
+        self.application.dbconnect.messages.save(message.__dict__)
         
         # We're done - sent the user back to wherever 'next' input pointed to.
         if self.get_argument("next", None):
@@ -265,6 +269,9 @@ class NewPostHandler(BaseHandler, MessageMixin):
     def get(self):
         self.redirect('/')
 
+
+        
+        
 def render_template(template_name, **kwargs):
     '''Render a template (independent of requests)'''
     loader = template.Loader(os.path.join(os.path.dirname(__file__), "templates"))
