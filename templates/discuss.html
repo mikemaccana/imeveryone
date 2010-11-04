@@ -11,13 +11,22 @@
 		
 		$(document).ready(function(){			
 			
-			$('.replybutton').bind('click', function(event, ui){
-				setTimeout(function(){var target = jQuery('div.message'); target.after(content)}, 250); 
-				event.preventDefault()
+			$('.replybutton').click(function(event, ui){
+				setTimeout(function(){
+					var target = jQuery('div.message'); 
+					target.after(content)
+				}, 250); 
+				event.preventDefault();
 			});
+
+
 			
 		    $('#commenttree').collapsible({xoffset:'-10',yoffset:'5'});
 		});
+		
+		
+		
+		
 	</script>
 
 
@@ -36,9 +45,10 @@
 		<h2><a href="#">No post text</a></h2>
 	{% end %}	
 
-	{% if 'intro' in message %}  
+
+	{% if message['intro'] is not None %}  
 	    <div class="text-box">
-			<a href="#">{{escape (message.intro)}}</a>
+			<a href="#">{{escape (message['intro'])}}</a>
 		</div>	    
 	{% end %}
 
@@ -63,19 +73,27 @@
 	</div>
 	
 	{% if len(message['comments']) %}
-		{% for comment in message['comments'] %}
-			<p>{{ message[comment] }} </p>
-			<div class='message'>
-				<a href='/reply' class="replybutton">Reply</a>
-			</div>
-		{% end %}
+		<ul id="commenttree">
+			{% for comment in message['comments'] %}	
+				<div class="comment">
+					<div class="commentheading">
+						<p>date and and stuff</p>
+					</div>
+					<div class='message'>
+						<a href='/reply' class="replybutton">Reply</a>
+					</div>
+					<p>{{ message[comment] }}/p>
+				</div>
+			{% end %}
+		</ul>
 	{% else %}
 		<div class='message'>
 			<a href='/reply' class="replybutton">Be the first to comment</a>
 		</div>
 	{% end %}
 	
-	<ul id="commenttree">
+		
+		
 	<li>Foo</li>
 	<li>Bar
 		<ul>

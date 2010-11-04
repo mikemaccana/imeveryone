@@ -84,9 +84,10 @@ class Message(object):
         self.useralerts = []
         self.intro = None
         self.comments = []
-        # can probably remove this
+        # threadid, is only for content getters , can remove later
         self.threadid = None
         self.embeds = []
+        self.intro = None
         
         # Save image from web url if we need to ()
         if self.localfile is None:
@@ -112,7 +113,7 @@ class Message(object):
     def saveimages(self,config):
         '''Save images for original posts'''
         if config['images'].as_bool('enabled'):
-            if self.imagedata is None and len(self.embeds) < 1:
+            if len(self.imagedata) == 0 and len(self.embeds) < 1:
                 self.useralerts.append(config['alerts']['noimage'])
             else:
                 # Save image data to local file

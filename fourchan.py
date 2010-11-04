@@ -214,7 +214,9 @@ class ContentGetter(threading.Thread):
                     newid,
                     localfile=post['localfile']
                 )
-                self.__queue.put(message) 
+                # Assuming no alerts, put post onto queue
+                if len(message.posttext) > 0:
+                    self.__queue.put(message) 
                 
                 # Save to DB
                 self.dbconnect.messages.save(message.__dict__)
