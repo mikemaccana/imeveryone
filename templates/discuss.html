@@ -11,7 +11,7 @@
 		
 		$(document).ready(function(){			
 			
-			$('.replybutton').click(function(event, ui){
+			$('#addcomment').click(function(event, ui){
 				setTimeout(function(){
 					var target = jQuery('div.message'); 
 					target.after(content)
@@ -68,7 +68,7 @@
 	{% end %}
 	
 	<div class="read-more">
-		<button id="getinvite" class="replybutton">
+		<button id="addcomment" class="button">
 			{% if len(message['comments']) %}
 				Add comment...
 			{% else %}

@@ -107,7 +107,7 @@ form, fieldset {
 
 /* discussion comments */
 
-.replybutton {
+.button {
     /* -moz-box-shadow:0 0 5px #2288CC; */
     background-color:#9a9a8e;
     background-image:url("/static/images/button.gif"); 
