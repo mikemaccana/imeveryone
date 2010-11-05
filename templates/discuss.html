@@ -12,14 +12,13 @@
 		$(document).ready(function(){			
 			
 			$('#addcomment').click(function(event, ui){
+				$(this).unbind('click');
 				setTimeout(function(){
 					var target = jQuery('div.topmessage'); 
 					target.after(content)
 				}, 250); 
 				event.preventDefault();
 			});
-
-
 			
 		    $('#commenttree').collapsible({xoffset:'-10',yoffset:'5'});
 		});
