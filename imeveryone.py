@@ -76,11 +76,15 @@ class BaseHandler(tornado.web.RequestHandler):
 class TopHandler(BaseHandler):
     '''Top handler''' 
     def get(self):
-        captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])    
+        captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey']) 
+        topmessages=[]
+        for message in self.application.dbconnect.messages.find(limit=10):
+            topmessages.append(message)
+        #ipdb.set_trace()   
         self.render(
             "top.html",
             #topmessages=self.application.dbconnect.messages.find({'tags':tag},limit=5):
-            topmessages=self.application.dbconnect.messages.find(limit=10),
+            topmessages=topmessages,
             captcha=captchahtml,
             alerts=[],
             heading= pick_one(self.application.config['presentation']['heading']),

@@ -1,7 +1,44 @@
 {% extends "base.html" %}
 
 {% block mainarea %}
-	{% for topmessage in topmessages %}
-		<p>{{ topmessage['posttext'] }}</p>
+	{% for message in topmessages %}
+		<div class="post">
+			 
+			<em class="date"><a href="/discuss/{{ message['_id'] }}"> {{message['posttime']}}</a></em>
+			<h2><a href="/discuss/{{ message['_id'] }}">{{ escape(message['posttext'])}}</a></h2>
+
+			{% if 'intro' in message %}
+				{% if message['intro'] %}  
+				    <div class="text-box">
+						<a href="/discuss/{{ message['_id'] }}">{{escape (message['intro'])}}</a>
+					</div>	    
+				{% end %}
+			{% end %}
+
+			{% if 'embeds' in message %}
+				{% for embed in message['embeds'] %}
+					{% if 'html' in embed %}
+						{{ embed['html'] }}<br/>
+					{% end %}	
+				{% end %}
+			{% end %}
+			
+			{% if 'preview' in message %}
+				{% if message['preview'] is not None %}
+					<div class="visual">
+						<a href="/discuss/{{ message['_id'] }}" target="_blank"><img src="{{ message['preview'] }}" alt="image description" /></a>
+					</div>
+				{% end %}
+			{% end %}
+			
+			<div class="read-more">
+				<a class="more" href="/discuss/{{ message['_id'] }}" target="_blank">Read more...</a>
+				<em><a href="/discuss/{{ message['_id'] }}">{{ message['_id'] }}</a></em>
+			</div>
+			
+		</div>
+
+
+		
 	{% end %}
 {% end %}	
