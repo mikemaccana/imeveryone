@@ -68,20 +68,17 @@
 	{% end %}
 	
 	<div class="read-more">
-		<a class="more" href="/discuss/{{message['_id']}}" target="_blank">
+		<button id="getinvite" class="replybutton">
 			{% if len(message['comments']) %}
 				Add comment...
 			{% else %}
 				Be the first to comment
 			{% end %}	
-		</a>
+		</button>
 		<em><a href="#">{{message['_id']}}</a></em>
 	</div>
 
 	<div id="commentarea">
-
-		
-		<!-- end li when next item starts. Need to fix first item -->
 		<ul id="commenttree">	
 			{% for item in ['foo','bar','in','baz','woo','out','zam'] %}
 				{% if item == 'in' %}
@@ -109,6 +106,7 @@
 			{% end %}
 		</ul>
 	</div>
+	
 </div>
 	
 {% end %}	

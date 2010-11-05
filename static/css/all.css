@@ -107,8 +107,30 @@ form, fieldset {
 
 /* discussion comments */
 
+.replybutton {
+    /* -moz-box-shadow:0 0 5px #2288CC; */
+    background-color:#9a9a8e;
+    background-image:url("/static/images/button.gif"); 
+    background-position:0 0;
+    border-color:#74746c; 
+    color:#FFFFFF !important;
+    text-shadow:-1px -1px 0 #74746c;
+    -webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+    border-radius: 20px;
+    border-style:solid;
+    border-width:1px;
+    cursor:pointer;
+    display:inline-block;
+    font: 16px/20px Georgia,"Times New Roman",Times,sans-serif;
+    margin: 1px 12px 1px 1px;
+    overflow:hidden;
+    padding:4px 6px;
+    height: 2em;    
+}
+
 #commentarea {
-    font: 14px/17px Georgia, Helvetica, Verdana, sans-serif;
+    font: 14px/17px Georgia,"Times New Roman",Times,sans-serif;
     text-align: left;  
     line-height:25px;    
 }
@@ -121,7 +143,7 @@ form, fieldset {
 }
 
 .comment {
-    background:none repeat scroll 0 0 #FAFDFF;
+    background:none repeat scroll 0 0 #F9F8F3;
 	width:400px;
 	border: 1px solid #B1A57D;
 	passing: 3px;
