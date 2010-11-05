@@ -68,44 +68,47 @@
 	{% end %}
 	
 	<div class="read-more">
-		<a class="more" href="/discuss/{{message['_id']}}" target="_blank">Read more...</a>
+		<a class="more" href="/discuss/{{message['_id']}}" target="_blank">
+			{% if len(message['comments']) %}
+				Add comment...
+			{% else %}
+				Be the first to comment
+			{% end %}	
+		</a>
 		<em><a href="#">{{message['_id']}}</a></em>
 	</div>
-	
-	<!--
-	
-	{% if len(message['comments']) %}
-		<ul id="commenttree">
-			{% for comment in message['comments'] %}	
-				<div class="comment">
-					<div class="commentheading">
-						<p>date and and stuff</p>
-					</div>
-					<div class='message'>
-						<a href='/reply' class="replybutton">Reply</a>
-					</div>
-					<p>{{ message[comment] }}/p>
-				</div>
+
+	<div id="commentarea">
+
+		
+		<!-- end li when next item starts. Need to fix first item -->
+		<ul id="commenttree">	
+			{% for item in ['foo','bar','in','baz','woo','out','zam'] %}
+				{% if item == 'in' %}
+					<ul>
+				{% elif item == 'out' %}
+					</ul>
+					</li>
+				{% else %}
+					<li>
+						<div class="comment">
+							<div class="commentheading">
+								date and stuff
+							</div>
+							<div class='message'>
+								<p>item
+								<a href='/reply' class="replybutton">Reply</a>
+								</p>
+							</div>
+						</div>	
+					<!-- don't close if there's replies-->	
+					{% if not item == 'bar' %}
+						</li>
+					{% end %}
+				{% end %}							
 			{% end %}
 		</ul>
-	{% else %}
-		<div class='message'>
-			<a href='/reply' class="replybutton">Be the first to comment</a>
-		</div>
-	{% end %}
-	-->
-	<br />
-	<ul id="commenttree">	
-	<li>Foo</li>
-	<li>Bar
-		<ul>
-		<li>Foo</li>
-		<li>Bar</li>
-		<li>Baz</li>
-		</ul>	
-	</li>
-	<li>Baz</li>
-	</ul>
+	</div>
 </div>
 	
 {% end %}	
