@@ -161,14 +161,29 @@ form, fieldset {
     list-style:none outside none;
 }
 
-.commentbox {
+.commentinput {
+    width: 550px;
+    float: left;
+}
+
+input {
+	border: 1px solid #B1A57D;    
+}
+
+.addcommentbox {
+    background:none repeat scroll 0 0 #DDDDCC;    
+	padding: 5px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;        
+    margin: 5px;  
 }
 
 .comment {
     background:none repeat scroll 0 0 #F9F8F3;
 	width:400px;
 	border: 1px solid #B1A57D;
-	passing: 3px;
+	padding: 3px;
     -webkit-border-radius: 3px;
     -moz-border-radius: 3px;
     border-radius: 3px;    
