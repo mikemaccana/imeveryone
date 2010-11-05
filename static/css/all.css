@@ -88,7 +88,9 @@ form, fieldset {
 	margin:0 -9999px;
 	background:#f9f8f3;
 }
-* html #main {padding-bottom:5px;}
+* html #main {
+    padding-bottom:5px;
+}
 .twocolumns {
 	width:100%;
 	overflow:hidden;
@@ -104,23 +106,38 @@ form, fieldset {
 }
 
 /* discussion comments */
-.commentbox {
+
+#commentarea {
     font: 14px/17px Georgia, Helvetica, Verdana, sans-serif;
-    background:#DDDDCC;
+    text-align: left;  
+    line-height:25px;    
+}
+
+#commenttree li {
+    list-style:none outside none;
+}
+
+.commentbox {
 }
 
 .comment {
-	width:550px;
-	border: 1px solid #A3A3A3;
+    background:none repeat scroll 0 0 #FAFDFF;
+	width:400px;
+	border: 1px solid #B1A57D;
+	passing: 3px;
     -webkit-border-radius: 3px;
     -moz-border-radius: 3px;
     border-radius: 3px;    
+    margin: 5px;  
 }
 
+.message {
+    padding: 3px;    
+}
 .commentheading {
-    background: #E9EAEE;
-    margin-bottom:0;
-    margin-top:0;
+    background: #DDDDCC;
+    margin: 0px;
+    padding: 3px;
 }
 
 .replybutton {
