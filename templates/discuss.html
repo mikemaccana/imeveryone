@@ -68,13 +68,15 @@
 	{% end %}
 	
 	<div class="read-more">
-		<button id="addcomment" class="button">
-			{% if len(message['comments']) %}
-				Add comment...
-			{% else %}
-				Be the first to comment
-			{% end %}	
-		</button>
+		<div class="more">
+			<button id="addcomment" class="button">
+				{% if len(message['comments']) %}
+					Add comment...
+				{% else %}
+					Be the first to comment
+				{% end %}	
+			</button>
+		</div>
 		<em><a href="#">{{message['_id']}}</a></em>
 	</div>
 

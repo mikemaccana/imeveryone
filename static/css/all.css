@@ -108,25 +108,47 @@ form, fieldset {
 /* discussion comments */
 
 .button {
-    /* -moz-box-shadow:0 0 5px #2288CC; */
+    -moz-box-shadow:0 0 5px #9a9a8e; 
     background-color:#9a9a8e;
     background-image:url("/static/images/button.gif"); 
     background-position:0 0;
     border-color:#74746c; 
     color:#FFFFFF !important;
-    text-shadow:-1px -1px 0 #74746c;
+    text-shadow:-1px -1px 0 #9a9a8e;
     -webkit-border-radius: 20px;
     -moz-border-radius: 20px;
     border-radius: 20px;
     border-style:solid;
     border-width:1px;
     cursor:pointer;
-    display:inline-block;
     font: 16px/20px Georgia,"Times New Roman",Times,sans-serif;
     margin: 1px 12px 1px 1px;
     overflow:hidden;
-    padding:4px 6px;
-    height: 2em;    
+    padding: 3px 12px;
+	height: 28px;    
+	min-width: 105px;
+}
+
+.redbutton {
+    -moz-box-shadow:0 0 5px #d00000; 
+    background-color:#b70000;
+    background-image:url("/static/images/buttonred.gif"); 
+    background-position:0 0;
+    border-color:#b70000; 
+    color:#FFFFFF !important;
+    text-shadow:-1px -1px 0 #d00000;
+    -webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+    border-radius: 20px;
+    border-style:solid;
+    border-width:1px;
+    cursor:pointer;
+    font: 16px/20px Georgia,"Times New Roman",Times,sans-serif;
+    margin: 1px 12px 1px 1px;
+    overflow:hidden;
+    padding: 3px 12px;
+	height: 28px;   
+	min-width: 105px;
 }
 
 #commentarea {
@@ -256,6 +278,7 @@ form, fieldset {
 	margin:0 7px -9999px 0;
 	background:#ddddcc;
 	overflow:hidden;
+	min-height: 1000px;
 }
 #sidebar h3 {
 	margin:0 0 18px;
@@ -306,11 +329,8 @@ form, fieldset {
 	overflow:auto;
 }
 .form-write-us .submit {
-	width: 105px;
-	height: 32px;
 	margin:0 3px 0 6px;
 	float:left;
-	overflow:hidden;
 	position:relative;
 }
 .file {
@@ -335,13 +355,10 @@ form, fieldset {
 	margin-top:-3px;
 	float:left;
 }
+
 .form-write-us .submit a {
-	background:red url(../images/btn-pick-file.gif) no-repeat;
-	height:100%;
-	display:block;
-	text-indent:-9999px;
-	overflow:hidden;
 } 
+
 .form-write-us input {
 	margin:0;
 	padding:0;
@@ -374,21 +391,12 @@ form, fieldset {
 }
 .captcha img {float:left;}
 .btn-submit {
-	height:32px;
-	padding:2px 0 0 107px;
-	overflow:hidden;
+    width:365px;
+    text-align: center;
 }
 .btn-submit input {
 	float:left;
 	width: 105px;
-	height: 32px;
-	background:url(../images/btn-say-it.gif) no-repeat;
-	border:0;
-	text-indent:-9999px;
-	overflow:hidden;
-	font-size:0;
-	line-height:0;
-	cursor:pointer;
 }
 
 .form-write-us em {
