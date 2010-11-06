@@ -7,7 +7,7 @@
 	<script type="text/javascript" src="{{ static_url("jcollapsible/jCollapsible.min.js") }}" ></script>
 	<script type="text/javascript">
 	
-		content = '<div class="addcommentbox"><form action="/invite" id="inviterequest" method="post"><textarea class="commentinput" name="aboutme"></textarea>{{ xsrf_form_html() }}<input type="submit" value="Post comment" id="opener" class="button" /></form></div>';
+		content = '<div class="addcommentbox"><form action="/comment" id="inviterequest" method="post"><textarea class="commentinput" name="aboutme"></textarea>{{ xsrf_form_html() }}<input type="submit" value="Post comment" id="opener" class="button" /></form></div>';
 		
 		$(document).ready(function(){			
 			
