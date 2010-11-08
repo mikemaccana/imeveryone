@@ -162,8 +162,9 @@ form, fieldset {
 }
 
 .commentinput {
-    width: 99%;
+    width: 98%;
     float: left;
+    margin: 1px 2px 4px
 }
 
 input {
@@ -271,7 +272,7 @@ input {
 .read-more {
 	width:555px;
 	padding:7px 34px 0 25px;
-	text-align:right;
+	text-align:left;
 	font-size:14px;
 	line-height:19px;
 	overflow:hidden;
@@ -279,11 +280,10 @@ input {
 }
 .read-more em a,
 .read-more em {color:#b8b8b4;}
-.more {
-	float:left;
-	padding-top:3px;
-	color:#ce0919;
-	font-weight:bold;
+
+/* was more */
+.rightalign {
+	float:right;
 }
 /* sidebar */
 #sidebar {

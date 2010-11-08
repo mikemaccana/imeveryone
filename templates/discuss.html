@@ -7,12 +7,14 @@
 	<script type="text/javascript" src="{{ static_url("jcollapsible/jCollapsible.min.js") }}" ></script>
 	<script type="text/javascript">
 	
-		content = '<div class="addcommentbox"><form action="/comment" id="inviterequest" method="post"><textarea class="commentinput" name="aboutme"></textarea>{{ xsrf_form_html() }}<input type="submit" value="Post comment" id="opener" class="button" /></form></div>';
+
 		
 		$(document).ready(function(){			
 			
 			$('.addcomment').click(function(event, ui){
 				$(this).unbind('click');
+				action = $(this).attr("href");
+				content = '<div class="addcommentbox"><form action="'+action+'" id="inviterequest" method="post"><textarea class="commentinput" name="aboutme"></textarea>{{ xsrf_form_html() }}<input type="submit" value="Post comment" id="opener" class="button" /></form></div>';
 				jQuery(this).parent().after(content);
 				event.preventDefault();
 			});
@@ -64,18 +66,17 @@
 		{% end %}
 	
 		<div class="read-more">
-			<div class="more">
-				<button class="addcomment">
-					{% if len(message['comments']) %}
-						Add comment...
-					{% else %}
-						Be the first to comment
-					{% end %}	
-				</button>
+			<button class="addcomment">
+				{% if len(message['comments']) %}
+					Add comment...
+				{% else %}
+					Be the first to comment
+				{% end %}	
+			</button>
+			<div class="rightalign">		
+				<em><a href="#">{{message['_id']}}</a></em>
 			</div>
-			<em><a href="#">{{message['_id']}}</a></em>
-		</div>
-
+		</div>	
 	</div>
 	<div id="commentarea">
 		<ul id="commenttree">	
@@ -93,7 +94,7 @@
 							</div>
 							<div class='message'>
 								<p>item
-								<a href='/reply' class="addcomment">Reply</a>
+								<a href='/reply/{{item}}' class="addcomment">Reply</a>
 								</p>
 							</div>
 						</div>	
