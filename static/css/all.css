@@ -107,7 +107,7 @@ form, fieldset {
 
 /* discussion comments */
 
-.button {
+.button, .addcomment {
     -moz-box-shadow:0 0 5px #9a9a8e; 
     background-color:#9a9a8e;
     background-image:url("/static/images/button.gif"); 
@@ -162,7 +162,7 @@ form, fieldset {
 }
 
 .commentinput {
-    width: 550px;
+    width: 99%;
     float: left;
 }
 

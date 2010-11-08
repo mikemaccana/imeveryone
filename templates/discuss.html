@@ -11,12 +11,9 @@
 		
 		$(document).ready(function(){			
 			
-			$('#addcomment').click(function(event, ui){
+			$('.addcomment').click(function(event, ui){
 				$(this).unbind('click');
-				setTimeout(function(){
-					var target = jQuery('div.topmessage'); 
-					target.after(content)
-				}, 250); 
+				jQuery(this).parent().after(content);
 				event.preventDefault();
 			});
 			
@@ -68,7 +65,7 @@
 	
 		<div class="read-more">
 			<div class="more">
-				<button id="addcomment" class="button">
+				<button class="addcomment">
 					{% if len(message['comments']) %}
 						Add comment...
 					{% else %}
@@ -96,7 +93,7 @@
 							</div>
 							<div class='message'>
 								<p>item
-								<a href='/reply' class="replybutton">Reply</a>
+								<a href='/reply' class="addcomment">Reply</a>
 								</p>
 							</div>
 						</div>	
