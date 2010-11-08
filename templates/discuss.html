@@ -66,14 +66,14 @@
 		{% end %}
 	
 		<div class="read-more">
-			<button class="addcomment">
+			<a href='/reply/{{message['_id']}}' class="addcomment">
 				{% if len(message['comments']) %}
 					Add comment...
 				{% else %}
 					Be the first to comment
 				{% end %}	
-			</button>
-			<div class="rightalign">		
+			</a>
+			<div class="rightalign">
 				<em><a href="#">{{message['_id']}}</a></em>
 			</div>
 		</div>	
