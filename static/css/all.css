@@ -408,13 +408,16 @@ input {
 	padding:11px 0 8px 16px;
 	overflow:hidden;
 }
-.captcha img {float:left;}
+
+.captcha img {
+    float:left;
+}
+
 .btn-submit {
     width:365px;
     text-align: center;
 }
 .btn-submit input {
-	float:left;
 	width: 105px;
 }
 
