@@ -113,7 +113,7 @@ class Message(object):
     def saveimages(self,config):
         '''Save images for original posts'''
         if config['images'].as_bool('enabled'):
-            if len(self.imagedata) == 0 and len(self.embeds) < 1:
+            if self.imagedata is None and len(self.embeds) < 1:
                 self.useralerts.append(config['alerts']['noimage'])
             else:
                 # Save image data to local file

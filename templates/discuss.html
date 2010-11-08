@@ -11,14 +11,18 @@
 		
 		$(document).ready(function(){			
 			
-			$('.addcomment').click(function(event, ui){
-				$(this).unbind('click');
-				action = $(this).attr("href");
-				content = '<div class="addcommentbox"><form action="'+action+'" id="inviterequest" method="post"><textarea class="commentinput" name="aboutme"></textarea>{{ xsrf_form_html() }}<input type="submit" value="Post comment" id="opener" class="button" /></form></div>';
-				jQuery(this).parent().after(content);
-				event.preventDefault();
-			});
-			
+			$('.addcomment').toggle(
+			    function () {
+					action = $(this).attr("href");
+					content = '<div class="addcommentbox"><form action="'+action+'" id="inviterequest" method="post"><textarea class="commentinput" name="aboutme"></textarea>{{ xsrf_form_html() }}<input type="submit" value="Post comment" id="opener" class="button" /></form></div>';
+					$(this).parent().append(content);
+				},
+				function () {
+					// alert('woo!')
+					$(this).parent().remove('.addcommentbox');
+				}
+			);
+				
 		    $('#commenttree').collapsible({xoffset:'-10',yoffset:'5'});
 		});
 		
@@ -66,7 +70,7 @@
 		{% end %}
 	
 		<div class="read-more">
-			<a href='/reply/{{message['_id']}}' class="addcomment">
+			<a href='/discuss/{{message['_id']}}' class="addcomment">
 				{% if len(message['comments']) %}
 					Add comment...
 				{% else %}

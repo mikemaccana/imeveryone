@@ -17,8 +17,9 @@
 	<script type="text/javascript" src="{{ static_url("js/input-type-file.js") }}" ></script>
 	<script>
 	var RecaptchaOptions = {
-	   theme : 'clean',
-	   tabindex : 2
+		theme : 'custom',
+    	custom_theme_widget: 'recaptcha_widget',
+		tabindex : 2
 	};
 	</script>
 </head>
@@ -78,12 +79,51 @@
 										<span class="info">Or include a video link in your text above</span>
 									</li>
 									<li>
-										<label for="input-text">3. Type these words</label>
-										<div class="text">
-											<div class="captcha">
-												{{ captcha }}
+										<!-- start captcha code -->
+										<div id="recaptcha_widget" style="display:none">
+											<label for="input-text">
+												<span class="recaptcha_only_if_image">3. Type these words</span>
+												<span class="recaptcha_only_if_audio">3. Type the numbers you hear</span>
+											</label>
+											<div id="recaptcha_indent">
+												<div id="recaptcha_image"></div>
+												<div class="recaptcha_only_if_incorrect_sol" style="color:red">Incorrect please try again</div>
+												
+												<div id="captchabuttons">
+													<div>
+														<a href="javascript:Recaptcha.reload()">
+															<img src="/static/images/recreload.gif" alt="Get another CAPTCHA"/>
+														</a>
+													</div>
+												
+													<div class="recaptcha_only_if_image">
+														<a href="javascript:Recaptcha.switch_type('audio')">
+															<img src="/static/images/recaudio.gif" alt="Get an audio CAPTCHA"/>
+														</a>
+													</div>
+													<div class="recaptcha_only_if_audio">
+														<a href="javascript:Recaptcha.switch_type('image')">
+															<img src="/static/images/rectext.gif" alt="Get an image CAPTCHA"/>
+														</a>
+													</div>
+													<div>
+														<a href="javascript:Recaptcha.showhelp()">
+															<img src="/static/images/rechelp.gif" alt="Help"/>
+														</a>
+													</div>
+												</div>
+												
+												<input type="text" id="recaptcha_response_field" name="recaptcha_response_field" />
 											</div>
 										</div>
+										<script type="text/javascript" src="http://www.google.com/recaptcha/api/challenge?k=6LeDDLsSAAAAAEd_PN6diNQaj7PXz5Dq7AEGi_69">
+										</script>
+										<noscript>
+											<iframe src="http://www.google.com/recaptcha/api/noscript?k=6LeDDLsSAAAAAEd_PN6diNQaj7PXz5Dq7AEGi_69" height="300" width="500" frameborder="0"></iframe><br>
+											<textarea name="recaptcha_challenge_field" rows="3" cols="40"></textarea>
+											<input type="hidden" name="recaptcha_response_field" value="manual_challenge">
+										</noscript>
+										<!-- end captcha code-->
 									</li>
 								</ul>
 								<div class="btn-submit">

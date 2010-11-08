@@ -403,6 +403,22 @@ input {
 	color:#464641;
 }
 /* captcha width */
+
+#recaptcha_indent {
+    margin: 1px 1px 1px 20px;
+}
+
+#captchabuttons
+{
+    /* keeps capctha reload, audio buttons etc small as they're dictated by line height */
+    font-size: 5px;    
+}
+
+#recaptcha_image {
+    float: left;
+    margin: 2px;
+}
+
 .captcha {
 	width:365px;
 	padding:11px 0 8px 16px;
