@@ -10,17 +10,15 @@
 		$(document).ready(function(){			
 			// Toggle creating and destroying an 'addcommentbox' child
 			// Live allows us to manipulate DOM elements made even after the document is ready
-			// length($(this).parent('.addcommentbox'))
 			$('.addcomment').live('click', function(event) {
-				if (1 == 1) {
-					alert('adding commentbox!')
+				if ($(this).siblings('.addcommentbox').length == 0) {
 			      	action = $(this).attr("href");
 					content = '<div class="addcommentbox"><form action="'+action+'" method="post"><textarea class="commentinput" name="aboutme"></textarea>{{ xsrf_form_html() }}<input type="submit" value="Post comment" id="opener" class="button" /></form></div>';
 					$(this).parent().append(content);	
 					event.preventDefault();				
 			    } else {
-					alert('adding commentbox!')
-			      	$(self).closest('.addcommentbox').remove();
+			      	$(this).siblings('.addcommentbox').remove();
+					event.preventDefault();	
 			    };
 			});
 			
@@ -41,8 +39,6 @@
 
 <div class="post">
 	<div class="topmessage">
-		
-		<div class="addcommentbox">DELETEME</div>
 		
 		<em class="date"><a href="#"> {{message['posttime']}}</a></em>
 
