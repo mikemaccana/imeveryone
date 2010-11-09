@@ -281,10 +281,15 @@ input {
 .read-more em a,
 .read-more em {color:#b8b8b4;}
 
-/* was more */
+.more {
+    color:#ce0919;
+    font-weight:bold;
+}
+
 .rightalign {
 	float:right;
 }
+
 /* sidebar */
 #sidebar {
 	width:378px;

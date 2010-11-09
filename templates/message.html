@@ -19,11 +19,16 @@
 			<a href="{{ message.link }}" target="_blank"><img src="{{ message.preview }}" alt="image description" /></a>
 		</div>
 	{% end %}
-	
+		
 	<div class="read-more">
-		<a class="more" href="/discuss/{{message._id}}" target="_blank">Read more...</a>
-		<em><a href="{{ message.link }}">{{message._id}}</a></em>
+		<a href='/discuss/{{message._id}}' class="more">
+			Read more...
+		</a>
+		<div class="rightalign">
+			<em><a href="{{ message.link }}">{{message._id}}</a></em>
+		</div>
 	</div>
+	
 </div>
 
 
