@@ -13,7 +13,7 @@
 			$('.addcomment').live('click', function(event) {
 				if ($(this).siblings('.addcommentbox').length == 0) {
 			      	action = $(this).attr("href");
-					content = '<div class="addcommentbox"><form action="'+action+'" method="post"><textarea class="commentinput" name="aboutme"></textarea>{{ xsrf_form_html() }}<input type="submit" value="Post comment" id="opener" class="button" /></form></div>';
+					content = '<div class="addcommentbox"><form action="'+action+'" method="post"><textarea class="commentinput" name="posttext"></textarea>{{ xsrf_form_html() }}<input type="submit" value="Post comment" id="opener" class="button" /></form></div>';
 					$(this).parent().append(content);	
 					event.preventDefault();				
 			    } else {

@@ -32,13 +32,11 @@ import ipdb
 
 antispam = usermessages.startakismet(ConfigObj('imeveryone.conf')['posting']['akismet'])
 
-useralerts = {}
-
 def pick_one(alist):
     return alist[random.randrange(0,len(alist))]
 
 
-def messagemaker(handler):
+def messagemaker(handler,parentid=None):
     '''Get a request, return a message (used for both new posts and comments)
     FIXME: maybe move to usermessages, rename to requesttomessage? '''
     messagedata = {
@@ -58,6 +56,11 @@ def messagemaker(handler):
     if handler.request.path == '/a/message/new':
         messagedata['top'] = True
     _id = handler.application.getnextid()
+    
+    # Add out new comment ID as a child of parent
+    if parentid:
+        parent = self.application.dbconnect.messages.find_one({'_id':parent})
+        parent['replies'].append(_id)
         
     message = usermessages.Message(
         messagedata,
@@ -84,6 +87,7 @@ class Application(tornado.web.Application):
             (r"/admin/content", AdminContentHandler),
         ]
         self.config = config
+        self.useralerts = {}
         settings = config['application']
         tornado.web.Application.__init__(self, handlers, **settings)
         # Have one global connection to the content collection
@@ -162,11 +166,32 @@ class DiscussHandler(BaseHandler):
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Discuss - I'm Everyone''',
             )
-    '''def post(self,messageid):
-        #Add a new child comment
+    def post(self,messageid):
+        '''Add a new child comment'''
         logging.info('New comment request')
-        message = #self.get_argument("cursor", None)  
-        mymessage = self.application.dbconnect.messages.save({'_id':int(messageid)})      '''   
+      
+        # Clear alerts from previous posts
+        sessionid = self.get_cookie('sessionid')
+        self.application.useralerts[sessionid] = []        
+        
+        # Make message
+        message = messagemaker(self,parentid=messageid)       
+    
+        # If there are no errors, add to queue
+        if len(message.useralerts) > 0:
+            logging.info('Bad comment!: '+' '.join(message.useralerts))            
+        else:
+            logging.info('Good comment.')
+            messageQueue.put(message)
+        
+        # Add alerts to dict and save dict to DB
+        # FIXME - imagedata not being set to zero in usermessages, non-encoded so screwing mongo up.
+        message.__dict__['imagedata'] = []
+        self.application.dbconnect.messages.save(message.__dict__)
+        
+        # We're done - sent the user back to wherever 'next' input pointed to.
+        if self.get_argument("next", None):
+            self.redirect(self.get_argument("next"))
         
 #    def delete(self,discuss):
 #        self.write('Harrow! Discussion goes here!'+discuss)
@@ -189,13 +214,12 @@ class AboutHandler(BaseHandler):
 class RootHandler(BaseHandler):
     '''Handle request for our front page'''
     def get(self):
-        global useralerts,config
         # Each user has a sessionid - we use this to present success / failure messages etc when posting
         if not self.get_cookie('sessionid'):
             self.set_cookie('sessionid', str(uuid.uuid4()))
         sessionid = self.get_cookie('sessionid')
-        if not sessionid in useralerts:
-            useralerts[sessionid] = []
+        if not sessionid in self.application.useralerts:
+            self.application.useralerts[sessionid] = []
         
         # Ensure messages are ordered corrrectly on initial connect
         sortedmessages = sorted(MessageMixin.cache, key=lambda message: message._id, reverse=True)
@@ -203,12 +227,12 @@ class RootHandler(BaseHandler):
         captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])
         
         # Show the messages and any alerts
-        print useralerts[sessionid]
+        print self.application.useralerts[sessionid]
         self.render(
             "index.html",
             messages=sortedmessages,
             captcha=captchahtml,
-            alerts=useralerts[sessionid],
+            alerts=self.application.useralerts[sessionid],
             heading= pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
@@ -261,7 +285,7 @@ class MessageMixin(object):
 class NewPostHandler(BaseHandler, MessageMixin):
     '''Recieve new original content from users and add them to our message queue'''
     def post(self):
-        global messageQueue, useralerts
+        global messageQueue
         logging.info("Post recieved from user!")        
         # Clear alerts from previous posts
         sessionid = self.get_cookie('sessionid')
