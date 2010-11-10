@@ -37,6 +37,37 @@ useralerts = {}
 def pick_one(alist):
     return alist[random.randrange(0,len(alist))]
 
+
+def messagemaker(handler):
+    '''Get a request, return a message (used for both new posts and comments)
+    FIXME: maybe move to usermessages, rename to requesttomessage? '''
+    messagedata = {
+        'top':False,
+        'posttime':strftime("%Y-%m-%d %H:%M:%S", gmtime()),
+        'author':'Anonymous',
+        'posttext':handler.get_argument('posttext'),
+        'challenge':handler.get_argument('recaptcha_challenge_field'),
+        'response':handler.get_argument('recaptcha_response_field'),
+        'ip':handler.request.remote_ip,
+        'useragent':handler.request.headers['User-Agent'],
+        'referer':handler.request.headers['Referer'],
+        'imagedata':handler.request.files['image'],
+        'host':handler.request.headers['Host'],
+        'replies':[],
+    }      
+    if handler.request.path == '/a/message/new':
+        messagedata['top'] = True
+    _id = handler.application.getnextid()
+        
+    message = usermessages.Message(
+        messagedata,
+        handler.application.config,
+        antispam,
+        _id
+    )
+    
+    return message    
+
 class Application(tornado.web.Application):
     def __init__(self,config,database):
         # These handlers always get provided with the application, request and any transforms by Tornado
@@ -117,8 +148,8 @@ class AdminContentHandler(BaseHandler):
             self.render("admincontent.html",messages=messages,name=self.current_user["first_name"])
 
 class DiscussHandler(BaseHandler):
-    '''Handle discussion'''
     def get(self,messageid):
+        '''Show discussion for a thread'''
         captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])
         mymessage = self.application.dbconnect.messages.find_one({'_id':int(messageid)})
         self.render(
@@ -130,7 +161,12 @@ class DiscussHandler(BaseHandler):
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Discuss - I'm Everyone''',
-            )        
+            )
+    '''def post(self,messageid):
+        #Add a new child comment
+        logging.info('New comment request')
+        message = #self.get_argument("cursor", None)  
+        mymessage = self.application.dbconnect.messages.save({'_id':int(messageid)})      '''   
         
 #    def delete(self,discuss):
 #        self.write('Harrow! Discussion goes here!'+discuss)
@@ -230,32 +266,10 @@ class NewPostHandler(BaseHandler, MessageMixin):
         # Clear alerts from previous posts
         sessionid = self.get_cookie('sessionid')
         useralerts[sessionid] = []        
-        # Let's make our message
-        messagedata = {
-            'top':False,
-            'posttime':strftime("%Y-%m-%d %H:%M:%S", gmtime()),
-            'author':'Anonymous',
-            'posttext':self.get_argument('posttext'),
-            'challenge':self.get_argument('recaptcha_challenge_field'),
-            'response':self.get_argument('recaptcha_response_field'),
-            'ip':self.request.remote_ip,
-            'useragent':self.request.headers['User-Agent'],
-            'referer':self.request.headers['Referer'],
-            'imagedata':self.request.files['image'],
-            'host':self.request.headers['Host'],
-            'replies':[],
-        }      
-        if self.request.path == '/a/message/new':
-            messagedata['top'] = True
         
-        
-        _id = self.application.getnextid()
-        message = usermessages.Message(
-            messagedata,
-            self.application.config,
-            antispam,
-            _id
-        )    
+        # Make message
+        message = messagemaker(self)       
+    
         # If there are no errors, add to queue
         if len(message.useralerts) > 0:
             logging.info('Bad post!: '+' '.join(message.useralerts))            
