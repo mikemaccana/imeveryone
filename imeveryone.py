@@ -154,6 +154,7 @@ class TopHandler(BaseHandler):
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Today's top losers - I'm Everyone''',
             captcha = self.application.config['captcha'].as_bool('enabled'),
+            readmore=True,
             )
         
 class AdminHandler(BaseHandler):
@@ -202,6 +203,7 @@ class DiscussHandler(BaseHandler):
             pagetitle = '''Discuss - I'm Everyone''',
             commenttree=commenttree,
             nexturl=self.request.uri,
+            readmore=False,
             )
             
     def post(self,parentid):

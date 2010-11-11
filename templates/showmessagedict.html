@@ -29,10 +29,19 @@
 {% end %}
 
 <div class="read-more">
-	<a href='/discuss/{{message['_id']}}' class="more">
-		Read more...
-	</a>
-	<div class="rightalign">
-		<em>{{message['_id']}}</em>
-	</div>
+    <a href='/discuss/{{message['_id']}}'
+		{% if readmore %}
+		class="more"> Read more...
+		{% else %}
+			class="addcomment">
+	        {% if len(message['comments']) %}
+	            Add comment...
+	        {% else %}
+	            Be the first to comment
+	        {% end %}    
+        {% end %}    
+    </a>
+    <div class="rightalign">
+        <em>{{message['_id']}}</em>
+    </div>
 </div>
