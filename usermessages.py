@@ -107,6 +107,7 @@ class Message(object):
         self.threadid = None
         self.embeds = []
         self.intro = None
+        self.score = 1
         
         # Save image from web url if we need to ()
         if self.localfile is None:

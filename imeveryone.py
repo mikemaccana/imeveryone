@@ -97,7 +97,7 @@ class Application(tornado.web.Application):
             (r"/auth/logout", AuthLogoutHandler),
             (r"/a/message/new", NewPostHandler),
             (r"/a/message/updates", ViewerUpdateHandler),
-            (r"/discuss/([a-z0-9\-]+)", DiscussHandler),
+            (r"/discuss/([0-9\-]+)", DiscussHandler),
             (r"/about", AboutHandler),
             (r"/top", TopHandler),
             (r"/admin", AdminHandler),
@@ -113,7 +113,12 @@ class Application(tornado.web.Application):
             idlist = []
             for message in self.dbconnect.messages.find():
                 idlist.append(int(message['_id'])) 
-            biggest = sorted(idlist, reverse=True)[0]
+            sortedids = sorted(idlist, reverse=True)
+            if not sortedids:
+                # A fresh DB.
+                biggest = -1
+            else: 
+                biggest = sortedids[0]   
             return biggest  
         self.currentid = getstartid()
     def getnextid(self):
@@ -134,8 +139,10 @@ class BaseHandler(tornado.web.RequestHandler):
 class TopHandler(BaseHandler):
     '''Top handler''' 
     def get(self):
+        limit = self.application.config['scoring'].as_int('toplimit')
         topmessages=[]
-        for message in self.application.dbconnect.messages.find(limit=10):
+        descending = -1
+        for message in self.application.dbconnect.messages.find(limit=limit).sort('score', descending):
             topmessages.append(message)
         self.render(
             "top.html",
@@ -182,6 +189,7 @@ class DiscussHandler(BaseHandler):
         # Create a tree of comments.
         #commenttree = ['foo','bar','in','baz','woo','out','zam']   
         commenttree = usermessages.buildtree(mymessage,messagedb=self.application.dbconnect.messages)
+        #ipdb.set_trace()
         
         self.render(
             "discuss.html",

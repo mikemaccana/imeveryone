@@ -21,7 +21,9 @@
 {% if 'preview' in message %}
 	{% if message['preview'] is not None %}
 		<div class="visual">
-			<a href="/discuss/{{ message['_id'] }}" target="_blank"><img src="{{ message['preview'] }}" alt="image description" /></a>
+			<a href="/discuss/{{ message['_id'] }}" target="_blank">
+				<img src="{{ message['preview'] }}" alt="image description" />
+			</a>
 		</div>
 	{% end %}
 {% end %}
