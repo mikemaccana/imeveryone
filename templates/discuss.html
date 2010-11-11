@@ -98,13 +98,12 @@
 								date and stuff
 							</div>
 							<div class='message'>
-								<p>{{ item['posttext'] }}
+								<p>{{ item['posttext'] }}</p>
 								<a href='/discuss/{{item['_id']}}' class="addcomment">Reply</a>
-								</p>
 							</div>
 						</div>	
-					<!-- don't close if there's replies-->	
-					{% if not item == 'bar' %}
+					<!-- only close if there are no replies-->	
+					{% if not len(item['comments']) %}
 						</li>
 					{% end %}
 				{% end %}							
