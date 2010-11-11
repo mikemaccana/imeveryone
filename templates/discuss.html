@@ -39,49 +39,7 @@
 
 <div class="post">
 	<div class="topmessage">
-		
-		<em class="date"><a href="#"> {{message['posttime']}}</a></em>
-
-		{% if 'posttext' in message %}
-			<h2><a href="#">{{ escape(message['posttext'])}}</a></h2>
-		{% else %}
-			<h2><a href="#">No post text</a></h2>
-		{% end %}	
-
-
-		{% if message['intro'] is not None %}  
-		    <div class="text-box">
-				<a href="#">{{escape (message['intro'])}}</a>
-			</div>	    
-		{% end %}
-
-		{% if 'embeds' in message %}
-			{% for embed in message['embeds'] %}
-				{% if 'html' in embed %}
-					{{ embed['html'] }}<br/>
-				{% end %}	
-			{% end %}
-		{% end %}
-		{% if 'preview' in message %}
-			{% if message['preview'] is not None %}
-				<div class="visual">
-					<a href="#" target="_blank"><img src="{{ message['preview'] }}" alt="image description" /></a>
-				</div>
-			{% end %}
-		{% end %}
-	
-		<div class="read-more">
-			<a href='/discuss/{{message['_id']}}' class="addcomment">
-				{% if len(message['comments']) %}
-					Add comment...
-				{% else %}
-					Be the first to comment
-				{% end %}	
-			</a>
-			<div class="rightalign">
-				<em><a href="#">{{message['_id']}}</a></em>
-			</div>
-		</div>	
+		{% include 'showmessagedict.html' %}	
 	</div>
 	<div id="commentarea">
 		<ul id="commenttree">	
@@ -95,11 +53,12 @@
 					<li>
 						<div class="comment">
 							<div class="commentheading">
-								date and stuff
+								{{ item['posttime'] }}
 							</div>
 							<div class='message'>
 								<p>{{ item['posttext'] }}</p>
 								<a href='/discuss/{{item['_id']}}' class="addcomment">Reply</a>
+								<div class='rightalign'><em>{{ item['_id'] }}</em></div>
 							</div>
 						</div>	
 					<!-- only close if there are no replies-->	

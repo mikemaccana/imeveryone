@@ -278,8 +278,9 @@ input {
 	overflow:hidden;
 	margin:0 0 0 -23px;
 }
-.read-more em a,
-.read-more em {color:#b8b8b4;}
+.read-more em a, .read-more em {
+    
+}
 
 .more {
     color:#ce0919;
@@ -288,6 +289,7 @@ input {
 
 .rightalign {
 	float:right;
+	color:#b8b8b4;
 }
 
 /* sidebar */
