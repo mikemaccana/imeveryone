@@ -32,6 +32,11 @@ import ipdb
 
 antispam = usermessages.startakismet(ConfigObj('imeveryone.conf')['posting']['akismet'])
 
+def stoplogging():
+    '''Stop logging, start debugger.'''
+    logging.getLogger().setLevel(logging.CRITICAL)
+    print 'Stopped logging'
+
 def pick_one(alist):
     return alist[random.randrange(0,len(alist))]
 
@@ -47,11 +52,15 @@ def messagemaker(handler,parentid=None):
         'ip':handler.request.remote_ip,
         'useragent':handler.request.headers['User-Agent'],
         'referer':handler.request.headers['Referer'],
-        'imagedata':handler.request.files['image'],
         'host':handler.request.headers['Host'],
-        'replies':[],
     }  
-    
+
+    # Add image data if enabled
+    if 'image' in handler.request.files:
+        messagedata['imagedata'] = handler.request.files['image']
+    else:
+        messagedata['imagedata'] = None
+        
     # Add capctha info if enabled
     if handler.application.config['captcha'].as_bool('enabled'):
         messagedata['challenge'] = handler.get_argument('recaptcha_challenge_field')
@@ -61,12 +70,15 @@ def messagemaker(handler,parentid=None):
         
     if handler.request.path == '/a/message/new':
         messagedata['top'] = True
+        
     _id = handler.application.getnextid()
     
     # Add out new comment ID as a child of parent
     if parentid:
-        parent = self.application.dbconnect.messages.find_one({'_id':parent})
-        parent['replies'].append(_id)
+        parent = handler.application.dbconnect.messages.find_one({'_id':int(parentid)})
+        parent['comments'].append(_id)
+        logging.info('Adding comment '+str(_id)+' as child of parent '+str(parentid))
+        handler.application.dbconnect.messages.save(parent)
         
     message = usermessages.Message(
         messagedata,
@@ -95,12 +107,18 @@ class Application(tornado.web.Application):
         self.useralerts = {}
         settings = config['application']
         tornado.web.Application.__init__(self, handlers, **settings)
-        # Have one global connection to the content collection
         self.dbconnect = database.connection
-        self.currentid = config['posting'].as_int('startid')
+        def getstartid():
+            '''Get highest _id of all messages in DB'''
+            idlist = []
+            for message in self.dbconnect.messages.find():
+                idlist.append(int(message['_id'])) 
+            biggest = sorted(idlist, reverse=True)[0]
+            return biggest  
+        self.currentid = getstartid()
     def getnextid(self):
-        nextid = self.currentid
         self.currentid += 1
+        nextid = self.currentid
         return nextid
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -119,7 +137,6 @@ class TopHandler(BaseHandler):
         topmessages=[]
         for message in self.application.dbconnect.messages.find(limit=10):
             topmessages.append(message)
-        #ipdb.set_trace()   
         self.render(
             "top.html",
             #topmessages=self.application.dbconnect.messages.find({'tags':tag},limit=5):
@@ -158,8 +175,14 @@ class AdminContentHandler(BaseHandler):
 class DiscussHandler(BaseHandler):
     def get(self,messageid):
         '''Show discussion for a thread'''
+        messageid = int(messageid)
         captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])
-        mymessage = self.application.dbconnect.messages.find_one({'_id':int(messageid)})
+        mymessage = self.application.dbconnect.messages.find_one({'_id':messageid})
+        
+        # Create a tree of comments.
+        #commenttree = ['foo','bar','in','baz','woo','out','zam']   
+        commenttree = usermessages.buildtree(mymessage,messagedb=self.application.dbconnect.messages)
+        
         self.render(
             "discuss.html",
             message=mymessage,
@@ -169,8 +192,11 @@ class DiscussHandler(BaseHandler):
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Discuss - I'm Everyone''',
+            commenttree=commenttree,
+            nexturl=self.request.uri,
             )
-    def post(self,messageid):
+            
+    def post(self,parentid):
         '''Add a new child comment'''
         logging.info('New comment request')
       
@@ -179,26 +205,21 @@ class DiscussHandler(BaseHandler):
         self.application.useralerts[sessionid] = []        
         
         # Make message
-        message = messagemaker(self,parentid=messageid)       
+        message = messagemaker(self,parentid=parentid)       
     
         # If there are no errors, add to queue
         if len(message.useralerts) > 0:
             logging.info('Bad comment!: '+' '.join(message.useralerts))            
         else:
             logging.info('Good comment.')
-            messageQueue.put(message)
         
         # Add alerts to dict and save dict to DB
         # FIXME - imagedata not being set to zero in usermessages, non-encoded so screwing mongo up.
         message.__dict__['imagedata'] = []
         self.application.dbconnect.messages.save(message.__dict__)
         
-        # We're done - sent the user back to wherever 'next' input pointed to.
-        if self.get_argument("next", None):
-            self.redirect(self.get_argument("next"))
-        
-#    def delete(self,discuss):
-#        self.write('Harrow! Discussion goes here!'+discuss)
+        # We're done - sent the user back to the comment
+        self.redirect(self.get_argument('nexturl'))
 
 class AboutHandler(BaseHandler):
     '''Handle conversations'''

@@ -13,7 +13,7 @@
 			$('.addcomment').live('click', function(event) {
 				if ($(this).siblings('.addcommentbox').length == 0) {
 			      	action = $(this).attr("href");
-					content = '<div class="addcommentbox"><form action="'+action+'" method="post"><textarea class="commentinput" name="posttext"></textarea>{{ xsrf_form_html() }}<input type="submit" value="Post comment" id="opener" class="button" /></form></div>';
+					content = '<div class="addcommentbox"><form action="'+action+'" method="post"><textarea class="commentinput" name="posttext"></textarea>{{ xsrf_form_html() }}<input type="hidden" value="{{ nexturl }}" name="nexturl"><input type="submit" value="Post comment" id="opener" class="button" /></form></div>';
 					$(this).parent().append(content);	
 					event.preventDefault();				
 			    } else {
@@ -85,7 +85,7 @@
 	</div>
 	<div id="commentarea">
 		<ul id="commenttree">	
-			{% for item in ['foo','bar','in','baz','woo','out','zam'] %}
+			{% for item in commenttree %}
 				{% if item == 'in' %}
 					<ul>
 				{% elif item == 'out' %}
@@ -98,8 +98,8 @@
 								date and stuff
 							</div>
 							<div class='message'>
-								<p>item
-								<a href='/reply/{{item}}' class="addcomment">Reply</a>
+								<p>{{ item['posttext'] }}
+								<a href='/discuss/{{item['_id']}}' class="addcomment">Reply</a>
 								</p>
 							</div>
 						</div>	
