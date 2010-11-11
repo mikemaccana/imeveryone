@@ -1,0 +1,22 @@
+<div id="sidebar">
+	<div id="sidebarcontents">	
+		<h3>The<span>Rules</span></h3>
+		<!-- form form-write-us -->
+		<form enctype='multipart/form-data' method='post' action='/a/message/new' class="form-write-us">
+				<ul>
+					<li>
+						<p>No names or other identifying data.</p>
+					</li>
+					<li>
+						<p>Be original.</p>	
+					</li>
+					<li>
+						<p>That's all.</p>	
+					</li>					
+				</ul>
+		</form>
+		{% for alert in alerts %}
+		    <em>{{ alert }}</em>
+		{% end %}
+	</div>
+</div>

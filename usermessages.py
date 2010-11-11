@@ -157,13 +157,14 @@ class Message(object):
 
     
     def checkcaptcha(self,config):
-        '''Check for captcha correct answer'''
-        recaptcha_response = captcha.submit(self.challenge, self.response, config['captcha']['privkey'], self.ip)
-        if not recaptcha_response.is_valid:
-            self.useralerts.append(config['alerts']['nothuman'])
-            self.nothuman = True
+        '''Check for correct CAPTCHA answer'''
+        if config['captcha'].as_bool('enabled'):
+            recaptcha_response = captcha.submit(self.challenge, self.response, config['captcha']['privkey'], self.ip)
+            if not recaptcha_response.is_valid:
+                self.useralerts.append(config['alerts']['nothuman'])
+                self.nothuman = True
         return
-    
+
     def checkspam(self,config,antispam):
         '''Check for spam using Akismet'''
         try:

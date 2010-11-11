@@ -44,15 +44,21 @@ def messagemaker(handler,parentid=None):
         'posttime':strftime("%Y-%m-%d %H:%M:%S", gmtime()),
         'author':'Anonymous',
         'posttext':handler.get_argument('posttext'),
-        'challenge':handler.get_argument('recaptcha_challenge_field'),
-        'response':handler.get_argument('recaptcha_response_field'),
         'ip':handler.request.remote_ip,
         'useragent':handler.request.headers['User-Agent'],
         'referer':handler.request.headers['Referer'],
         'imagedata':handler.request.files['image'],
         'host':handler.request.headers['Host'],
         'replies':[],
-    }      
+    }  
+    
+    # Add capctha info if enabled
+    if handler.application.config['captcha'].as_bool('enabled'):
+        messagedata['challenge'] = handler.get_argument('recaptcha_challenge_field')
+        messagedata['response'] = handler.get_argument('recaptcha_response_field')
+    else:
+        messagedata['challenge'],messagedata['response'] = None, None
+        
     if handler.request.path == '/a/message/new':
         messagedata['top'] = True
     _id = handler.application.getnextid()
@@ -67,8 +73,7 @@ def messagemaker(handler,parentid=None):
         handler.application.config,
         antispam,
         _id
-    )
-    
+    )   
     return message    
 
 class Application(tornado.web.Application):
@@ -111,7 +116,6 @@ class BaseHandler(tornado.web.RequestHandler):
 class TopHandler(BaseHandler):
     '''Top handler''' 
     def get(self):
-        captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey']) 
         topmessages=[]
         for message in self.application.dbconnect.messages.find(limit=10):
             topmessages.append(message)
@@ -120,12 +124,12 @@ class TopHandler(BaseHandler):
             "top.html",
             #topmessages=self.application.dbconnect.messages.find({'tags':tag},limit=5):
             topmessages=topmessages,
-            captcha=captchahtml,
             alerts=[],
             heading= pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Today's top losers - I'm Everyone''',
+            captcha = self.application.config['captcha'].as_bool('enabled'),
             )
         
 class AdminHandler(BaseHandler):
@@ -203,12 +207,12 @@ class AboutHandler(BaseHandler):
         # Show the messages and any alerts
         self.render(
             "about.html",
-            captcha=captchahtml,
             alerts=[],
             heading = pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Who Is Responsible for this Mess? - I'm Everyone''',
+            captcha = self.application.config['captcha'].as_bool('enabled'),
             )
 
 class RootHandler(BaseHandler):
@@ -231,12 +235,12 @@ class RootHandler(BaseHandler):
         self.render(
             "index.html",
             messages=sortedmessages,
-            captcha=captchahtml,
             alerts=self.application.useralerts[sessionid],
             heading= pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Live - I'm Everyone''',
+            captcha = self.application.config['captcha'].as_bool('enabled'),
             )
 
 class MessageMixin(object):
@@ -289,10 +293,11 @@ class NewPostHandler(BaseHandler, MessageMixin):
         logging.info("Post recieved from user!")        
         # Clear alerts from previous posts
         sessionid = self.get_cookie('sessionid')
-        useralerts[sessionid] = []        
+        self.application.useralerts[sessionid] = []        
         
         # Make message
-        message = messagemaker(self)       
+        message = messagemaker(self) 
+
     
         # If there are no errors, add to queue
         if len(message.useralerts) > 0:
