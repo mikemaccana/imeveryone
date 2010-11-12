@@ -208,7 +208,7 @@ class DiscussHandler(BaseHandler):
             "discuss.html",
             message=mymessage,
             captcha=captchahtml,
-            alerts = self.application.useralerts[self.get_cookie('sessionid')],
+            alerts = alerts,
             heading= pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),

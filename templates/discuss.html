@@ -13,11 +13,13 @@
 			$('.addcomment').live('click', function(event) {
 				if ($(this).siblings('.addcommentbox').length == 0) {
 			      	action = $(this).attr("href");
-					content = '<div class="addcommentbox"><form action="'+action+'" method="post"><textarea class="commentinput" name="posttext"></textarea>{{ xsrf_form_html() }}<input type="hidden" value="{{ nexturl }}" name="nexturl"><input type="submit" value="Post comment" id="opener" class="button" /></form></div>';
-					$(this).parent().append(content);	
+					content = $('<div class="addcommentbox"><form action="'+action+'" method="post"><textarea class="commentinput" name="posttext"></textarea>{{ xsrf_form_html() }}<input type="hidden" value="{{ nexturl }}" name="nexturl"><input type="submit" value="Post comment" id="opener" class="button" /></form></div>').hide();
+					content.appendTo($(this).parent()).slideDown();			        
 					event.preventDefault();				
 			    } else {
-			      	$(this).siblings('.addcommentbox').remove();
+			      	$(this).siblings('.addcommentbox').slideUp("normal", function() {
+					     $(this).remove();
+					});
 					event.preventDefault();	
 			    };
 			});
