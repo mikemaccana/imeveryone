@@ -109,7 +109,8 @@ class Message(object):
         self.intro = None
         self.score = 1
         
-        # Save image from web url if we need to ()
+        
+        # If there's no local image file, save image from web url
         if self.localfile is None:
             self.saveimages(config)
         
@@ -119,7 +120,7 @@ class Message(object):
             
         #self.getimagetext(self.localfile,config['images'])
         
-        self.checktextlength()
+        self.checktext(config)
         self.checkcaptcha(config)
         self.checkspam(config,antispam)
         self.checklinksandembeds(config)
@@ -169,12 +170,18 @@ class Message(object):
             return
             
     
-    def checktextlength(self):
+    def checktext(self,config):
         '''Ensure they're ranting enough, but not too much!'''
+        # Zero sized posts
         if len(self.posttext.strip()) == 0:
-            self.useralerts.append('Cat got your tongue?')
-        return
-
+            self.useralerts.append(config['alerts']['zero'])
+        else:
+            # Check text isn't full of dupes
+            totalwords = len(self.posttext.split())
+            uniquewords = len(set(self.posttext.split()))
+            if uniquewords / totalwords < config['posting'].as_float('threshhold'):
+                self.useralerts.append(config['alerts']['lame'])
+        return    
     
     def checkcaptcha(self,config):
         '''Check for correct CAPTCHA answer'''
@@ -286,15 +293,6 @@ class Message(object):
         '''Get user country - currently unused'''
         gi = GeoIP.new(GeoIP.GEOIP_MEMORY_CACHE)
         print gi.country_code_by_addr(ip)
-
-    def checktext(text,postingconfig,alerts):
-        '''Check text is OK'''
-        totalwords = len(text.split())
-        uniquewords = len(set(text.split()))
-        if uniquewords / totalwords < postingconfig.as_int('threshhold'):
-            return False, alerts['lame']
-        else:
-            return True, ''
 
     def getimagetext(self,imagefile):
         '''Recieve an image, return the text'''

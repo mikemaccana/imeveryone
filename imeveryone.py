@@ -41,6 +41,17 @@ def pick_one(alist):
     return alist[random.randrange(0,len(alist))]
 
 
+def showalerts(handler):
+    '''Show alerts for session''' 
+    mycookie = handler.get_cookie('sessionid')
+    if mycookie in handler.application.useralerts:
+        alerts = handler.application.useralerts[mycookie]
+        if len(alerts) > 0:
+            logging.info('About to show user alerts for cookie user: '+mycookie)
+    else:
+        alerts = []
+    return alerts    
+
 def messagemaker(handler,parentid=None):
     '''Get a request, return a message (used for both new posts and comments)
     FIXME: maybe move to usermessages, rename to requesttomessage? '''
@@ -79,7 +90,7 @@ def messagemaker(handler,parentid=None):
         parent['comments'].append(_id)
         logging.info('Adding comment '+str(_id)+' as child of parent '+str(parentid))
         handler.application.dbconnect.messages.save(parent)
-        
+
     message = usermessages.Message(
         messagedata,
         handler.application.config,
@@ -92,7 +103,7 @@ class Application(tornado.web.Application):
     def __init__(self,config,database):
         # These handlers always get provided with the application, request and any transforms by Tornado
         handlers = [
-            (r"/", RootHandler),
+            (r"/", LiveHandler),
             (r"/auth/login", AuthLoginHandler),
             (r"/auth/logout", AuthLogoutHandler),
             (r"/a/message/new", NewPostHandler),
@@ -144,17 +155,18 @@ class TopHandler(BaseHandler):
         descending = -1
         for message in self.application.dbconnect.messages.find(limit=limit).sort('score', descending):
             topmessages.append(message)
+        alerts = showalerts(self)
+                
         self.render(
             "top.html",
-            #topmessages=self.application.dbconnect.messages.find({'tags':tag},limit=5):
-            topmessages=topmessages,
-            alerts=[],
-            heading= pick_one(self.application.config['presentation']['heading']),
+            topmessages = topmessages,
+            alerts = alerts,
+            heading = pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Today's top losers - I'm Everyone''',
             captcha = self.application.config['captcha'].as_bool('enabled'),
-            readmore=True,
+            readmore = True,
             )
         
 class AdminHandler(BaseHandler):
@@ -188,15 +200,15 @@ class DiscussHandler(BaseHandler):
         mymessage = self.application.dbconnect.messages.find_one({'_id':messageid})
         
         # Create a tree of comments.
-        #commenttree = ['foo','bar','in','baz','woo','out','zam']   
         commenttree = usermessages.buildtree(mymessage,messagedb=self.application.dbconnect.messages)
-        #ipdb.set_trace()
+        
+        alerts = showalerts(self)
         
         self.render(
             "discuss.html",
             message=mymessage,
             captcha=captchahtml,
-            alerts=[],
+            alerts = self.application.useralerts[self.get_cookie('sessionid')],
             heading= pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
@@ -217,10 +229,13 @@ class DiscussHandler(BaseHandler):
         # Make message
         message = messagemaker(self,parentid=parentid)       
     
-        # If there are no errors, add to queue
+        # If there are errors, alert
         if len(message.useralerts) > 0:
-            logging.info('Bad comment!: '+' '.join(message.useralerts))            
+            logging.info('Bad comment!: '+' '.join(message.useralerts))   
+            # Add the messages alerts to our session alerts
+            self.application.useralerts[sessionid] = message.useralerts
         else:
+            # If there are no errors, add to queue
             logging.info('Good comment.')
         
         # Add alerts to dict and save dict to DB
@@ -234,19 +249,23 @@ class DiscussHandler(BaseHandler):
 class AboutHandler(BaseHandler):
     '''Handle conversations'''
     def get(self):
-        captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])       
+        captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])     
+        
+        alerts = showalerts(self)
+          
         # Show the messages and any alerts
         self.render(
             "about.html",
-            alerts=[],
+            alerts = alerts,
             heading = pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Who Is Responsible for this Mess? - I'm Everyone''',
             captcha = self.application.config['captcha'].as_bool('enabled'),
             )
+            
 
-class RootHandler(BaseHandler):
+class LiveHandler(BaseHandler):
     '''Handle request for our front page'''
     def get(self):
         # Each user has a sessionid - we use this to present success / failure messages etc when posting
@@ -262,12 +281,12 @@ class RootHandler(BaseHandler):
         captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])
         
         # Show the messages and any alerts
-        print self.application.useralerts[sessionid]
+        alerts = showalerts(self)
         self.render(
             "index.html",
-            messages=sortedmessages,
-            alerts=self.application.useralerts[sessionid],
-            heading= pick_one(self.application.config['presentation']['heading']),
+            messages = sortedmessages,
+            alerts = alerts,
+            heading = pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Live - I'm Everyone''',
@@ -328,11 +347,11 @@ class NewPostHandler(BaseHandler, MessageMixin):
         
         # Make message
         message = messagemaker(self) 
-
     
         # If there are no errors, add to queue
         if len(message.useralerts) > 0:
-            logging.info('Bad post!: '+' '.join(message.useralerts))            
+            logging.info('Bad post!: '+' '.join(message.useralerts))      
+            self.application.useralerts[sessionid].extend(message.useralerts)    
         else:
             logging.info('Good post.')
             messageQueue.put(message)
@@ -345,6 +364,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
         # We're done - sent the user back to wherever 'next' input pointed to.
         if self.get_argument("next", None):
             self.redirect(self.get_argument("next"))
+        
     # Just in case someone tries to access this URL via a GET
     def get(self):
         self.redirect('/')

@@ -73,8 +73,10 @@
 				{{ xsrf_form_html() }}
 			</fieldset>
 		</form>
-		{% for alert in alerts %}
-		    <em>{{ alert }}</em>
+		{% if len(alerts) %}
+			<div id='alerts'>
+				<p>{{ alerts[0] }}</p>
+			</div>	
 		{% end %}
 
 	</div>
