@@ -28,7 +28,7 @@ from subprocess import Popen
 from pymongo import Connection
 from database import Database
 import random
-import ipdb
+#import ipdb
 
 antispam = usermessages.startakismet(ConfigObj('imeveryone.conf')['posting']['akismet'])
 
@@ -84,10 +84,14 @@ def messagemaker(handler,parentid=None):
         
     _id = handler.application.getnextid()
     
-    # Add out new comment ID as a child of parent
+    # Add our new comment ID as a child of parent, increment parents score
     if parentid:
         parent = handler.application.dbconnect.messages.find_one({'_id':int(parentid)})
         parent['comments'].append(_id)
+        
+        # Increment score for message
+        parent['score']+=handler.application.config['scoring'].as_int('view')
+        
         logging.info('Adding comment '+str(_id)+' as child of parent '+str(parentid))
         handler.application.dbconnect.messages.save(parent)
 
@@ -198,6 +202,10 @@ class DiscussHandler(BaseHandler):
         messageid = int(messageid)
         captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])
         mymessage = self.application.dbconnect.messages.find_one({'_id':messageid})
+        
+        # Increment score for message
+        mymessage['score']+=self.application.config['scoring'].as_int('view')
+        self.application.dbconnect.messages.save(mymessage)
         
         # Create a tree of comments.
         commenttree = usermessages.buildtree(mymessage,messagedb=self.application.dbconnect.messages)

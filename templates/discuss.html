@@ -28,9 +28,6 @@
 		    $('#commenttree').collapsible({xoffset:'-10',yoffset:'5'});
 		});
 		
-		
-		
-		
 	</script>
 
 
@@ -58,7 +55,7 @@
 								{{ item['posttime'] }}
 							</div>
 							<div class='message'>
-								<p>{{ item['posttext'] }}</p>
+								<p class="hyphenate">{{ item['posttext'] }}</p>
 								<a href='/discuss/{{item['_id']}}' class="addcomment">Reply</a>
 								<div class='rightalign'><em>{{ item['_id'] }}</em></div>
 							</div>

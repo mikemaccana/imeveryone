@@ -1,9 +1,9 @@
-<div class="post">
+<div class="post hyphenate">
 	<em class="date"><a href="{{ message.link }}"> {{message.posttime}}</a></em>
 	<h2><a href="{{ message.link }}">{{ escape(message.posttext)}}</a></h2>
 	
 	{% if message.intro %}  
-	    <div class="text-box">
+	    <div class="text-box hyphenate">
 			<a href="{{ message.link }}">{{escape (message.intro)}}</a>
 		</div>	    
 	{% end %}

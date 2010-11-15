@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html>
+<html lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>{{ pagetitle }}</title>
@@ -15,6 +15,10 @@
 	{% block js %}
 	{% end %}
 	<script type="text/javascript" src="{{ static_url("js/input-type-file.js") }}" ></script>
+	<script type="text/javascript" src="{{ static_url("js/hyphenate.js") }}" ></script>
+	<script type="text/javascript">
+	            Hyphenator.run();
+	</script>
 	<script>
 	var RecaptchaOptions = {
 		theme : 'custom',
