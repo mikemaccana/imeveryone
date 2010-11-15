@@ -103,10 +103,9 @@ class Message(object):
         self.host = messagedata['host']
         self.article = messagedata['article']
         self.useralerts = []
+        self.headline = None
         self.intro = None
         self.comments = []
-        # threadid, is only for content getters , can remove later
-        self.threadid = None
         self.embeds = []
         self.intro = None
         self.score = 1
@@ -121,13 +120,12 @@ class Message(object):
             self.makepreviewpic(self.localfile,config['images'])
             
         #self.getimagetext(self.localfile,config['images'])
-        
         self.checktext(config)
         self.checkcaptcha(config)
         self.checkspam(config,antispam)
         self.checklinksandembeds(config)
         self.checkporn(config)
-        self.makeintro(self.posttext,config['posting'])
+        self.makeintro(config['posting'])
 
         
         # Override existing links
@@ -279,17 +277,18 @@ class Message(object):
                 pass
         return
         
-    def makeintro(self,posttext,postingconfig):
+    def makeintro(self,postingconfig):
         '''Reduce the headline text in very long posts if needed'''
-        postwords = posttext.split()
+        postwords = self.posttext.split()
         longpost = postingconfig.as_int('longpost')
         choplen = postingconfig.as_int('choplen')
+        longpost = postingconfig.as_int('longpost')
         if len(postwords) < longpost:
-            return
+            self.headline = self.posttext
         else:
-            self.posttext = ' '.join(postwords[:choplen])+'...'
-            self.intro = '...'+' '.join(postwords[choplen:])
-            return
+            self.headline = ' '.join(postwords[:choplen])+'...'
+            self.intro = '...'+' '.join(postwords[choplen:longpost])
+        return
             
     def getcountry(self,ip):
         '''Get user country - currently unused'''
