@@ -117,6 +117,7 @@ class Application(tornado.web.Application):
             (r"/top", TopHandler),
             (r"/admin", AdminHandler),
             (r"/admin/content", AdminContentHandler),
+            (r"/(.*)", CatchAllHandler),
         ]
         self.config = config
         self.useralerts = {}
@@ -272,6 +273,14 @@ class AboutHandler(BaseHandler):
             captcha = self.application.config['captcha'].as_bool('enabled'),
             )
             
+
+class CatchAllHandler(BaseHandler):
+    def get(self,url):
+        '''404'''
+        logging.warn('Bad URL: '+url)
+        self.render('notfound.html',pagetitle='Not Found!',heading='Oops',prompt1='Doesnt Exist Heh?',prompt2='Make It',badurl=url)
+        raise tornado.web.HTTPError(404)
+
 
 class LiveHandler(BaseHandler):
     '''Handle request for our front page'''
