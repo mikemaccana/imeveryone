@@ -37,6 +37,7 @@ a {
 	color:#000;
 }
 
+
 /* a:hover {text-decoration:underline;} */
 
 input, textarea {
@@ -161,6 +162,17 @@ form, fieldset {
     list-style:none outside none;
 }
 
+.floatleft {
+    float: left;
+    margin: 5px;
+}
+
+.floatright {
+    float: right;
+    margin: 5px;
+}
+
+
 .commentinput {
     width: 98%;
     float: left;
@@ -183,6 +195,7 @@ input {
 .comment {
     background:none repeat scroll 0 0 #F9F8F3;
 	width:400px;
+	min-height: 190px;
 	border: 1px solid #B1A57D;
 	padding: 3px;
     -webkit-border-radius: 3px;
@@ -308,6 +321,12 @@ input {
     -webkit-border-radius: 6px;
     -moz-border-radius: 6px;
     border-radius: 6px;	
+}
+
+.smallcaps {
+    font-variant: small-caps;
+    text-align: center;
+    text-shadow: 0px 1px 0px #e5e5ee;
 }
 
 #sidebar h3 {
