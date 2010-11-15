@@ -65,19 +65,20 @@ consumer.addEndpoint(oembed.OEmbedEndpoint('http://api.embed.ly/oembed/api/v1', 
 
 
 def buildtree(master,messagedb):
-    '''Recieve a message, return a consolidated tree of all comments
-    ['mfoo','mbar','in','mbaz','mwoo','out','mzam']  '''
+    '''Recieve a message, return a consolidated tree of all comments'''
     tree = []
     def expandchildren(commenttoexpand):
         '''Expand child comments, adding to tree'''
         childcommentids = commenttoexpand['comments']
         for childcommentid in childcommentids:
-            childcomment = messagedb.find_one({'_id':childcommentid})
-            tree.append(childcomment)
-            if len(childcomment['comments']):    
-                tree.append('in')
-                expandchildren(childcomment)
-                tree.append('out')
+            childcomment = messagedb.find_one({'_id':childcommentid})         
+            # Make sure DB actually returned some comments
+            if childcomment is not None:
+                tree.append(childcomment)
+                if len(childcomment['comments']):    
+                    tree.append('in')
+                    expandchildren(childcomment)
+                    tree.append('out')
     expandchildren(master)
     return tree
 
@@ -100,6 +101,7 @@ class Message(object):
         self.referer = messagedata['referer']
         self.imagedata = messagedata['imagedata']
         self.host = messagedata['host']
+        self.article = messagedata['article']
         self.useralerts = []
         self.intro = None
         self.comments = []

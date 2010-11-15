@@ -148,6 +148,7 @@ def getnewposts(channel,lastadded,config):
                         'imagedata':None,
                         'host':'www.imeveryone.com',
                         'comments':[],
+                        'article':True,
                     })
                     lastadded = threadid
     return newposts,lastadded

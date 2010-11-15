@@ -37,8 +37,7 @@ def stoplogging():
     logging.getLogger().setLevel(logging.CRITICAL)
     print 'Stopped logging'
 
-def pick_one(alist):
-    return alist[random.randrange(0,len(alist))]
+
 
 
 def showalerts(handler):
@@ -52,56 +51,60 @@ def showalerts(handler):
         alerts = []
     return alerts    
 
-def messagemaker(handler,parentid=None):
-    '''Get a request, return a message (used for both new posts and comments)
-    FIXME: maybe move to usermessages, rename to requesttomessage? '''
-    messagedata = {
-        'top':False,
-        'posttime':strftime("%Y-%m-%d %H:%M:%S", gmtime()),
-        'author':'Anonymous',
-        'posttext':handler.get_argument('posttext'),
-        'ip':handler.request.remote_ip,
-        'useragent':handler.request.headers['User-Agent'],
-        'referer':handler.request.headers['Referer'],
-        'host':handler.request.headers['Host'],
-    }  
+class ContentAddMixin(object):
+    '''Mixin for posting of articles and comments'''
+    def messagemaker(self,parentid=None):
+        '''Get a request, return a message (used for both new posts and comments)
+        FIXME: maybe move to usermessages, rename to requesttomessage? '''
+        messagedata = {
+            'top':False,
+            'posttime':strftime("%Y-%m-%d %H:%M:%S", gmtime()),
+            'author':'Anonymous',
+            'posttext':self.get_argument('posttext'),
+            'ip':self.request.remote_ip,
+            'useragent':self.request.headers['User-Agent'],
+            'referer':self.request.headers['Referer'],
+            'host':self.request.headers['Host'],
+        }  
 
-    # Add image data if enabled
-    if 'image' in handler.request.files:
-        messagedata['imagedata'] = handler.request.files['image']
-    else:
-        messagedata['imagedata'] = None
+        # Add image data if enabled
+        if 'image' in self.request.files:
+            messagedata['imagedata'] = self.request.files['image']
+        else:
+            messagedata['imagedata'] = None
         
-    # Add capctha info if enabled
-    if handler.application.config['captcha'].as_bool('enabled'):
-        messagedata['challenge'] = handler.get_argument('recaptcha_challenge_field')
-        messagedata['response'] = handler.get_argument('recaptcha_response_field')
-    else:
-        messagedata['challenge'],messagedata['response'] = None, None
+        # Add capctha info if enabled
+        if self.application.config['captcha'].as_bool('enabled'):
+            messagedata['challenge'] = self.get_argument('recaptcha_challenge_field')
+            messagedata['response'] = self.get_argument('recaptcha_response_field')
+        else:
+            messagedata['challenge'],messagedata['response'] = None, None
         
-    if handler.request.path == '/a/message/new':
-        messagedata['top'] = True
+        if self.request.path == '/a/message/new':
+            messagedata['article'] = True
+        else:
+            messagedata['article'] = False
         
-    _id = handler.application.getnextid()
+        _id = self.application.getnextid()
     
-    # Add our new comment ID as a child of parent, increment parents score
-    if parentid:
-        parent = handler.application.dbconnect.messages.find_one({'_id':int(parentid)})
-        parent['comments'].append(_id)
+        # Add our new comment ID as a child of parent, increment parents score
+        if parentid:
+            parent = self.application.dbconnect.messages.find_one({'_id':int(parentid)})
+            parent['comments'].append(_id)
         
-        # Increment score for message
-        parent['score']+=handler.application.config['scoring'].as_int('view')
+            # Increment score for message
+            parent['score']+=self.application.config['scoring'].as_int('view')
         
-        logging.info('Adding comment '+str(_id)+' as child of parent '+str(parentid))
-        handler.application.dbconnect.messages.save(parent)
+            logging.info('Adding comment '+str(_id)+' as child of parent '+str(parentid))
+            self.application.dbconnect.messages.save(parent)
 
-    message = usermessages.Message(
-        messagedata,
-        handler.application.config,
-        antispam,
-        _id
-    )   
-    return message    
+        message = usermessages.Message(
+            messagedata,
+            self.application.config,
+            antispam,
+            _id
+        )   
+        return message    
 
 class Application(tornado.web.Application):
     def __init__(self,config,database):
@@ -143,14 +146,17 @@ class Application(tornado.web.Application):
         return nextid
 
 class BaseHandler(tornado.web.RequestHandler):
-    '''Generic class for all URL handlers to inherit from - ensures users are always logged in'''
+    '''Generic class for all URL handlers to inherit from'''
     def get_current_user(self):
+        '''ensures users are always logged in'''
         user_json = self.get_secure_cookie("user")
         if not user_json:
             # User isn't logged in
             return None
         else:
             return tornado.escape.json_decode(user_json)
+    def pick_one(self,alist):
+        return alist[random.randrange(0,len(alist))]        
 
 class TopHandler(BaseHandler):
     '''Top handler''' 
@@ -158,7 +164,7 @@ class TopHandler(BaseHandler):
         limit = self.application.config['scoring'].as_int('toplimit')
         topmessages=[]
         descending = -1
-        for message in self.application.dbconnect.messages.find(limit=limit).sort('score', descending):
+        for message in self.application.dbconnect.messages.find({'article':True},limit=limit).sort('score', descending):
             topmessages.append(message)
         alerts = showalerts(self)
                 
@@ -166,7 +172,7 @@ class TopHandler(BaseHandler):
             "top.html",
             topmessages = topmessages,
             alerts = alerts,
-            heading = pick_one(self.application.config['presentation']['heading']),
+            heading = self.pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Today's top losers - I'm Everyone''',
@@ -197,18 +203,22 @@ class AdminContentHandler(BaseHandler):
             messages.sort()  
             self.render("admincontent.html",messages=messages,name=self.current_user["first_name"])
 
-class DiscussHandler(BaseHandler):
+class DiscussHandler(BaseHandler,ContentAddMixin):
     def get(self,messageid):
         '''Show discussion for a thread'''
         messageid = int(messageid)
         captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])
         mymessage = self.application.dbconnect.messages.find_one({'_id':messageid})
         
+        # Check for discussion of invalid items
+        if mymessage is None:
+            self.redirect('/notfound')
+        
         # Increment score for message
         mymessage['score']+=self.application.config['scoring'].as_int('view')
         self.application.dbconnect.messages.save(mymessage)
         
-        # Create a tree of comments.
+        # Create a tree of comments
         commenttree = usermessages.buildtree(mymessage,messagedb=self.application.dbconnect.messages)
         
         alerts = showalerts(self)
@@ -218,7 +228,7 @@ class DiscussHandler(BaseHandler):
             message=mymessage,
             captcha=captchahtml,
             alerts = alerts,
-            heading= pick_one(self.application.config['presentation']['heading']),
+            heading= self.pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Discuss - I'm Everyone''',
@@ -236,7 +246,7 @@ class DiscussHandler(BaseHandler):
         self.application.useralerts[sessionid] = []        
         
         # Make message
-        message = messagemaker(self,parentid=parentid)       
+        message = self.messagemaker(parentid=parentid)       
     
         # If there are errors, alert
         if len(message.useralerts) > 0:
@@ -266,7 +276,7 @@ class AboutHandler(BaseHandler):
         self.render(
             "about.html",
             alerts = alerts,
-            heading = pick_one(self.application.config['presentation']['heading']),
+            heading = self.pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Who Is Responsible for this Mess? - I'm Everyone''',
@@ -303,7 +313,7 @@ class LiveHandler(BaseHandler):
             "index.html",
             messages = sortedmessages,
             alerts = alerts,
-            heading = pick_one(self.application.config['presentation']['heading']),
+            heading = self.pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Live - I'm Everyone''',
@@ -353,7 +363,7 @@ class MessageMixin(object):
             MessageMixin.cache = MessageMixin.cache[-self.cache_size:]
     
 
-class NewPostHandler(BaseHandler, MessageMixin):
+class NewPostHandler(BaseHandler, MessageMixin, ContentAddMixin):
     '''Recieve new original content from users and add them to our message queue'''
     def post(self):
         global messageQueue
@@ -363,7 +373,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
         self.application.useralerts[sessionid] = []        
         
         # Make message
-        message = messagemaker(self) 
+        message = self.messagemaker() 
     
         # If there are no errors, add to queue
         if len(message.useralerts) > 0:
