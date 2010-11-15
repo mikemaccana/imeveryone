@@ -36,75 +36,7 @@ def stoplogging():
     '''Stop logging, start debugger.'''
     logging.getLogger().setLevel(logging.CRITICAL)
     print 'Stopped logging'
-
-
-
-
-def showalerts(handler):
-    '''Show alerts for session''' 
-    mycookie = handler.get_cookie('sessionid')
-    if mycookie in handler.application.useralerts:
-        alerts = handler.application.useralerts[mycookie]
-        if len(alerts) > 0:
-            logging.info('About to show user alerts for cookie user: '+mycookie)
-    else:
-        alerts = []
-    return alerts    
-
-class ContentAddMixin(object):
-    '''Mixin for posting of articles and comments'''
-    def messagemaker(self,parentid=None):
-        '''Get a request, return a message (used for both new posts and comments)
-        FIXME: maybe move to usermessages, rename to requesttomessage? '''
-        messagedata = {
-            'top':False,
-            'posttime':strftime("%Y-%m-%d %H:%M:%S", gmtime()),
-            'author':'Anonymous',
-            'posttext':self.get_argument('posttext'),
-            'ip':self.request.remote_ip,
-            'useragent':self.request.headers['User-Agent'],
-            'referer':self.request.headers['Referer'],
-            'host':self.request.headers['Host'],
-        }  
-
-        # Add image data if enabled
-        if 'image' in self.request.files:
-            messagedata['imagedata'] = self.request.files['image']
-        else:
-            messagedata['imagedata'] = None
-        
-        # Add capctha info if enabled
-        if self.application.config['captcha'].as_bool('enabled'):
-            messagedata['challenge'] = self.get_argument('recaptcha_challenge_field')
-            messagedata['response'] = self.get_argument('recaptcha_response_field')
-        else:
-            messagedata['challenge'],messagedata['response'] = None, None
-        
-        if self.request.path == '/a/message/new':
-            messagedata['article'] = True
-        else:
-            messagedata['article'] = False
-        
-        _id = self.application.getnextid()
-    
-        # Add our new comment ID as a child of parent, increment parents score
-        if parentid:
-            parent = self.application.dbconnect.messages.find_one({'_id':int(parentid)})
-            parent['comments'].append(_id)
-        
-            # Increment score for message
-            parent['score']+=self.application.config['scoring'].as_int('view')
-        
-            logging.info('Adding comment '+str(_id)+' as child of parent '+str(parentid))
-            self.application.dbconnect.messages.save(parent)
-
-        message = usermessages.Message(
-            messagedata,
-            self.application.config,
-            antispam,
-            _id
-        )   
-        return message    
+ 
 
 class Application(tornado.web.Application):
     def __init__(self,config,database):
@@ -141,6 +73,7 @@ class Application(tornado.web.Application):
             return biggest  
         self.currentid = getstartid()
     def getnextid(self):
+        '''Return next avail comment/reply ID'''
         self.currentid += 1
         nextid = self.currentid
         return nextid
@@ -156,7 +89,76 @@ class BaseHandler(tornado.web.RequestHandler):
         else:
             return tornado.escape.json_decode(user_json)
     def pick_one(self,alist):
-        return alist[random.randrange(0,len(alist))]        
+        '''Pick an item from a list at random'''
+        return alist[random.randrange(0,len(alist))]     
+    def showalerts(handler):
+        '''Show alerts for session''' 
+        mycookie = handler.get_cookie('sessionid')
+        if mycookie in handler.application.useralerts:
+            alerts = handler.application.useralerts[mycookie]
+            if len(alerts) > 0:
+                logging.info('About to show user alerts for cookie user: '+mycookie)
+        else:
+            alerts = []
+        return alerts    
+    def clearalerts(self):
+        '''Clear alerts for session''' 
+        mycookie = self.get_cookie('sessionid')
+        if mycookie in self.application.useralerts:
+            self.application.useralerts[mycookie] = []
+        return
+    def messagemaker(self,parentid=None):
+        '''Get a request, return a message (used for both new posts and comments)
+        FIXME: maybe move to usermessages, rename to requesttomessage? '''
+        messagedata = {
+            'top':False,
+            'posttime':strftime("%Y-%m-%d %H:%M:%S", gmtime()),
+            'author':'Anonymous',
+            'posttext':self.get_argument('posttext'),
+            'ip':self.request.remote_ip,
+            'useragent':self.request.headers['User-Agent'],
+            'referer':self.request.headers['Referer'],
+            'host':self.request.headers['Host'],
+        }  
+
+        # Add image data if enabled
+        if 'image' in self.request.files:
+            messagedata['imagedata'] = self.request.files['image']
+        else:
+            messagedata['imagedata'] = None
+
+        # Add capctha info if enabled
+        if self.application.config['captcha'].as_bool('enabled'):
+            messagedata['challenge'] = self.get_argument('recaptcha_challenge_field')
+            messagedata['response'] = self.get_argument('recaptcha_response_field')
+        else:
+            messagedata['challenge'],messagedata['response'] = None, None
+
+        if self.request.path == '/a/message/new':
+            messagedata['article'] = True
+        else:
+            messagedata['article'] = False
+
+        _id = self.application.getnextid()
+
+        # Add our new comment ID as a child of parent, increment parents score
+        if parentid:
+            parent = self.application.dbconnect.messages.find_one({'_id':int(parentid)})
+            parent['comments'].append(_id)
+
+            # Increment score for message
+            parent['score']+=self.application.config['scoring'].as_int('view')
+
+            logging.info('Adding comment '+str(_id)+' as child of parent '+str(parentid))
+            self.application.dbconnect.messages.save(parent)
+
+        message = usermessages.Message(
+            messagedata,
+            self.application.config,
+            antispam,
+            _id
+        )   
+        return message           
 
 class TopHandler(BaseHandler):
     '''Top handler''' 
@@ -166,7 +168,7 @@ class TopHandler(BaseHandler):
         descending = -1
         for message in self.application.dbconnect.messages.find({'article':True},limit=limit).sort('score', descending):
             topmessages.append(message)
-        alerts = showalerts(self)
+        alerts = self.showalerts()
                 
         self.render(
             "top.html",
@@ -203,7 +205,7 @@ class AdminContentHandler(BaseHandler):
             messages.sort()  
             self.render("admincontent.html",messages=messages,name=self.current_user["first_name"])
 
-class DiscussHandler(BaseHandler,ContentAddMixin):
+class DiscussHandler(BaseHandler):
     def get(self,messageid):
         '''Show discussion for a thread'''
         messageid = int(messageid)
@@ -221,7 +223,7 @@ class DiscussHandler(BaseHandler,ContentAddMixin):
         # Create a tree of comments
         commenttree = usermessages.buildtree(mymessage,messagedb=self.application.dbconnect.messages)
         
-        alerts = showalerts(self)
+        alerts = self.showalerts()
         
         self.render(
             "discuss.html",
@@ -270,7 +272,7 @@ class AboutHandler(BaseHandler):
     def get(self):
         captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])     
         
-        alerts = showalerts(self)
+        alerts = self.showalerts()
           
         # Show the messages and any alerts
         self.render(
@@ -308,7 +310,7 @@ class LiveHandler(BaseHandler):
         captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])
         
         # Show the messages and any alerts
-        alerts = showalerts(self)
+        alerts = self.showalerts()
         self.render(
             "index.html",
             messages = sortedmessages,
@@ -319,6 +321,7 @@ class LiveHandler(BaseHandler):
             pagetitle = '''Live - I'm Everyone''',
             captcha = self.application.config['captcha'].as_bool('enabled'),
             )
+        self.clearalerts() 
 
 class MessageMixin(object):
     '''This is where the magic of tornado happens - we add clients to a waiters list, and when new messages arrive, we run send_messages() '''
@@ -363,7 +366,7 @@ class MessageMixin(object):
             MessageMixin.cache = MessageMixin.cache[-self.cache_size:]
     
 
-class NewPostHandler(BaseHandler, MessageMixin, ContentAddMixin):
+class NewPostHandler(BaseHandler, MessageMixin):
     '''Recieve new original content from users and add them to our message queue'''
     def post(self):
         global messageQueue
