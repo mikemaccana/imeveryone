@@ -209,10 +209,10 @@ class ContentGetter(threading.Thread):
                 # Add new 4chan posts
                 newid = self.app.getnextid()
                 message = usermessages.Message(
-                    post,
                     self.__config,
                     self.__antispam,
                     newid,
+                    messagedata=post,
                     localfile=post['localfile']
                 )
                 # Assuming no alerts, put post onto queue

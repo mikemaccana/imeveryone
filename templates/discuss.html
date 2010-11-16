@@ -25,7 +25,7 @@
 			});
 			
 				
-		    $('#commenttree').collapsible({xoffset:'-10',yoffset:'5'});
+		    $('#commenttree').collapsible({xoffset:'-7',yoffset:'5',defaulthide: false});
 		});
 		
 	</script>
@@ -55,9 +55,10 @@
 								{{ item['posttime'] }}
 							</div>
 							<div class='message'>
-								<img class='floatleft' src="/static/images/avatar.png"/>
-
-								<p class="hyphenate">{{ item['posttext'] }}</p>
+								<img class='floatleft' src="/static/images/avatars/{{ item['avatar'] }}.png"/>
+								<div class="commenttext">
+									<p class="hyphenate">{{ item['posttext'] }}</p>
+								</div>	
 								<a href='/discuss/{{item['_id']}}' class="addcomment">Reply</a>
 								<div class='rightalign'><em>{{ item['_id'] }}</em></div>
 							</div>

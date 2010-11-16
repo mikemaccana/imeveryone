@@ -190,6 +190,7 @@ input {
     -moz-border-radius: 6px;
     border-radius: 6px;        
     margin: 5px;  
+    clear: both;
 }
 
 .comment {
@@ -211,6 +212,10 @@ input {
     background: #DDDDCC;
     margin: 0px;
     padding: 3px;
+}
+
+.commenttext {
+    min-height: 140px;
 }
 
 .replybutton {

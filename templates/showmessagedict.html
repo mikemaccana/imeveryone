@@ -1,6 +1,6 @@
 
 <em class="date"><a href="/discuss/{{ message['_id'] }}"> {{message['posttime']}}</a></em>
-<h2><a href="/discuss/{{ message['_id'] }}">{{ escape(message['posttext'])}}</a></h2>
+<h2><a href="/discuss/{{ message['_id'] }}">{{ escape(message['headline'])}}</a></h2>
 
 {% if 'intro' in message %}
 	{% if message['intro'] %}  

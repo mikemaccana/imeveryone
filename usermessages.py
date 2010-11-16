@@ -13,7 +13,8 @@ import logging
 import time
 import uuid
 from time import gmtime, strftime
-
+import random
+import ipdb
 
 def startakismet(akismetcfg):
     return Akismet(key=akismetcfg['apikey'], agent=akismetcfg['clientname'])
@@ -84,31 +85,96 @@ def buildtree(master,messagedb):
 
 class Message(object):
     '''Submitted message'''
-    def __init__(self,messagedata,config,antispam,_id,localfile=None):
+    def __init__(self,config,antispam,_id,parentid=None,localfile=None,handler=None,messagedata=None):
         '''Create message based on body of PUT form data'''
-        self.posttime = messagedata['posttime']
-        self._id = _id
         
+        # Info that's common across all messages
+        self.posttime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        self._id = _id        
         self.localfile = localfile
-        self.preview = None
-        
-        self.author = messagedata['author']
-        self.posttext = messagedata['posttext']
-        self.challenge = messagedata['challenge']
-        self.response = messagedata['response']
-        self.ip = messagedata['ip']
-        self.useragent = messagedata['useragent']
-        self.referer = messagedata['referer']
-        self.imagedata = messagedata['imagedata']
-        self.host = messagedata['host']
-        self.article = messagedata['article']
-        self.useralerts = []
-        self.headline = None
-        self.intro = None
-        self.comments = []
-        self.embeds = []
-        self.intro = None
+        self.preview, self.headline, self.intro, self.thread = None, None, None, None
+        self.useralerts, self.comments, self.embeds = [], [], []
         self.score = 1
+        
+        if messagedata:
+            # Preconfigured data
+            self.author = messagedata['author']
+            self.posttext = messagedata['posttext']
+            self.challenge = messagedata['challenge']
+            self.response = messagedata['response']
+            self.ip = messagedata['ip']
+            self.useragent = messagedata['useragent']
+            self.referer = messagedata['referer']
+            self.imagedata = messagedata['imagedata']
+            self.host = messagedata['host']
+            self.article = messagedata['article']
+        elif handler:
+            # Create message from handler data
+            self.author = 'Anonymous'
+            self.posttext = handler.get_argument('posttext')
+            self.ip = handler.request.remote_ip
+            self.useragent = handler.request.headers['User-Agent']
+            self.referer = handler.request.headers['Referer']
+            self.host = handler.request.headers['Host']
+            # Add capctha info if enabled
+            if handler.application.config['captcha'].as_bool('enabled'):
+                self.challenge = handler.get_argument('recaptcha_challenge_field')
+                self.response = handler.get_argument('recaptcha_response_field')
+            else:
+                self.challenge,self.response = None, None
+            # Add image data if enabled
+            if 'image' in handler.request.files:
+                self.imagedata = handler.request.files['image']
+            else:
+                self.imagedata = None    
+        else:   
+            logging.warn('No handler and no messagedata specified!')        
+        
+        # Are we an article or a reply
+        self.parentid = parentid
+        if not parentid:
+            # We're an article
+            logging.info('Creating new article '+str(self._id))
+            # Available avatars for replies - copy of config.
+            self.availavatars = list(config['posting']['avatars'])
+            random.shuffle(self.availavatars)
+            # Grab an avatar from my own list!
+            self.avatar = self.availavatars.pop()
+            # Thread is myself
+            self.thread = self._id
+        else:
+            # We're a reply
+            logging.info('Creating new reply '+str(self._id))
+            
+
+            # Add our new comment ID as a child of parent, increment parents score            
+            parent = handler.application.dbconnect.messages.find_one({'_id':int(parentid)})
+            if parentid:
+                parent['comments'].append(_id)
+
+                # Increment parent score for message
+                parent['score'] += config['scoring'].as_int('comment')
+                
+                # Every reply copies its 'thread' from its parent, which points back to the original post 
+                self.thread = parent['thread']
+
+                # Take an avatar from the thread's list
+                ancestor = handler.application.dbconnect.messages.find_one({'_id':int(self.thread)})
+                self.avatar = ancestor['availavatars'].pop()
+                handler.application.dbconnect.messages.save(ancestor)
+                
+                
+                logging.info('Got avatar: '+self.avatar)
+
+                
+                logging.info('Adding comment '+str(_id)+' as child of parent '+str(parentid))
+                handler.application.dbconnect.messages.save(parent)
+
+                # No avail avatars in comments!
+                self.availavatars = None                
+            else:    
+                logging.warn('Error! No parent found with parentid '+str(parentid))
+                
         
         
         # If there's no local image file, save image from web url
@@ -118,7 +184,8 @@ class Message(object):
         # Make preview            
         if self.localfile is not None and config['images'].as_bool('enabled'):
             self.makepreviewpic(self.localfile,config['images'])
-            
+        
+        # Validate the users input    
         #self.getimagetext(self.localfile,config['images'])
         self.checktext(config)
         self.checkcaptcha(config)
@@ -126,7 +193,6 @@ class Message(object):
         self.checklinksandembeds(config)
         self.checkporn(config)
         self.makeintro(config['posting'])
-
         
         # Override existing links
         self.link = '/discuss/'+str(self._id)
@@ -313,13 +379,6 @@ class Message(object):
         return 
 
     def getscore(views, hoursold, gravity=1.8):
-        '''Get score for moessage. Based on
+        '''Get score for message. Based on
         http://amix.dk/blog/post/19574'''
         return (views - 1) / pow((hoursold+2), gravity)
-
-
-
-
-
-
-

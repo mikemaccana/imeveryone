@@ -72,6 +72,7 @@ class Application(tornado.web.Application):
                 biggest = sortedids[0]   
             return biggest  
         self.currentid = getstartid()
+
     def getnextid(self):
         '''Return next avail comment/reply ID'''
         self.currentid += 1
@@ -108,55 +109,15 @@ class BaseHandler(tornado.web.RequestHandler):
             self.application.useralerts[mycookie] = []
         return
     def messagemaker(self,parentid=None):
-        '''Get a request, return a message (used for both new posts and comments)
-        FIXME: maybe move to usermessages, rename to requesttomessage? '''
-        messagedata = {
-            'top':False,
-            'posttime':strftime("%Y-%m-%d %H:%M:%S", gmtime()),
-            'author':'Anonymous',
-            'posttext':self.get_argument('posttext'),
-            'ip':self.request.remote_ip,
-            'useragent':self.request.headers['User-Agent'],
-            'referer':self.request.headers['Referer'],
-            'host':self.request.headers['Host'],
-        }  
-
-        # Add image data if enabled
-        if 'image' in self.request.files:
-            messagedata['imagedata'] = self.request.files['image']
-        else:
-            messagedata['imagedata'] = None
-
-        # Add capctha info if enabled
-        if self.application.config['captcha'].as_bool('enabled'):
-            messagedata['challenge'] = self.get_argument('recaptcha_challenge_field')
-            messagedata['response'] = self.get_argument('recaptcha_response_field')
-        else:
-            messagedata['challenge'],messagedata['response'] = None, None
-
-        if self.request.path == '/a/message/new':
-            messagedata['article'] = True
-        else:
-            messagedata['article'] = False
-
+        '''Get a request, return a message (used for both new posts and comments)'''
         _id = self.application.getnextid()
 
-        # Add our new comment ID as a child of parent, increment parents score
-        if parentid:
-            parent = self.application.dbconnect.messages.find_one({'_id':int(parentid)})
-            parent['comments'].append(_id)
-
-            # Increment score for message
-            parent['score']+=self.application.config['scoring'].as_int('view')
-
-            logging.info('Adding comment '+str(_id)+' as child of parent '+str(parentid))
-            self.application.dbconnect.messages.save(parent)
-
         message = usermessages.Message(
-            messagedata,
             self.application.config,
             antispam,
-            _id
+            _id,
+            handler=self,
+            parentid=parentid
         )   
         return message           
 
