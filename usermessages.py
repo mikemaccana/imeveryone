@@ -14,7 +14,7 @@ import time
 import uuid
 from time import gmtime, strftime
 import random
-import ipdb
+#import ipdb
 
 def startakismet(akismetcfg):
     return Akismet(key=akismetcfg['apikey'], agent=akismetcfg['clientname'])
@@ -92,7 +92,7 @@ class Message(object):
         self.posttime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
         self._id = _id        
         self.localfile = localfile
-        self.preview, self.headline, self.intro, self.thread = None, None, None, None
+        self.preview, self.headline, self.intro, self.thread, self.availavatars = None, None, None, None, None
         self.useralerts, self.comments, self.embeds = [], [], []
         self.score = 1
         
@@ -108,6 +108,7 @@ class Message(object):
             self.imagedata = messagedata['imagedata']
             self.host = messagedata['host']
             self.article = messagedata['article']
+            self.sessionid = '1'
         elif handler:
             # Create message from handler data
             self.author = 'Anonymous'
@@ -127,29 +128,36 @@ class Message(object):
                 self.imagedata = handler.request.files['image']
             else:
                 self.imagedata = None    
+            self.sessionid = handler.get_cookie('sessionid')    
         else:   
             logging.warn('No handler and no messagedata specified!')        
         
         # Are we an article or a reply
         self.parentid = parentid
         if not parentid:
-            # We're an article
+            # We're a top-level article
             logging.info('Creating new article '+str(self._id))
-            # Available avatars for replies - copy of config.
+            # Available avatars for sessions - copy of config.
             self.availavatars = list(config['posting']['avatars'])
             random.shuffle(self.availavatars)
-            # Grab an avatar from my own list!
-            self.avatar = self.availavatars.pop()
+            # Create dict of session / avatar matchings
+            self.sessionavatars = {}
+
             # Thread is myself
             self.thread = self._id
+            
+            # Grab an avatar from my own list!
+            self.sessionavatars[self.sessionid] = self.availavatars.pop()
+            self.avatar = self.sessionavatars[self.sessionid]
+            
         else:
             # We're a reply
-            logging.info('Creating new reply '+str(self._id))
-            
+            logging.info('Creating new reply '+str(self._id))   
 
             # Add our new comment ID as a child of parent, increment parents score            
             parent = handler.application.dbconnect.messages.find_one({'_id':int(parentid)})
             if parentid:
+                # We're a reply
                 parent['comments'].append(_id)
 
                 # Increment parent score for message
@@ -157,26 +165,24 @@ class Message(object):
                 
                 # Every reply copies its 'thread' from its parent, which points back to the original post 
                 self.thread = parent['thread']
+                logging.info('Thread is '+str(self.thread))
 
-                # Take an avatar from the thread's list
+                # Take an avatar from the sessions avatar/dict in ancestor
                 ancestor = handler.application.dbconnect.messages.find_one({'_id':int(self.thread)})
-                self.avatar = ancestor['availavatars'].pop()
-                handler.application.dbconnect.messages.save(ancestor)
-                
-                
-                logging.info('Got avatar: '+self.avatar)
-
-                
-                logging.info('Adding comment '+str(_id)+' as child of parent '+str(parentid))
+                if self.sessionid not in ancestor['sessionavatars']:
+                    # This is the first time this sessionid has commented
+                    ancestor['sessionavatars'][self.sessionid] = ancestor['availavatars'].pop()
+                    handler.application.dbconnect.messages.save(ancestor)
+                self.avatar = ancestor['sessionavatars'][self.sessionid]
+                logging.info('Assigned new avatar: '+self.avatar+' for message '+str(self._id))    
+                                
+                logging.info('Adding comment '+str(self._id)+' as child of parent '+str(parentid))
                 handler.application.dbconnect.messages.save(parent)
-
-                # No avail avatars in comments!
-                self.availavatars = None                
+                                
             else:    
-                logging.warn('Error! No parent found with parentid '+str(parentid))
+                logging.warn('Error! Could not find parent with parentid '+str(parentid)+' in DB')
                 
-        
-        
+
         # If there's no local image file, save image from web url
         if self.localfile is None:
             self.saveimages(config)
