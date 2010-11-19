@@ -225,7 +225,7 @@ input {
     font-weight:bold;    
 }
 
-/* about page */
+/* about section */
 .about {
     font: 14px Georgia,"Times New Roman",Times,sans-serif;
     margin: 10px;
@@ -259,19 +259,19 @@ hr {
 
 /* navigation */
 #nav {
-	width:549px;
+	width:960px;
 	list-style:none;
 	margin:0 0 27px;
 	padding:17px 20px 21px 45px;
 	text-align:center;
-	border-bottom:2px solid #ddc;
-	font-size:14px;
+	background: #F9F8F3 url("/static/images/underline-flourish.png") no-repeat scroll bottom;
+	font-size:24px;
 	line-height:25px;
-	font-weight:bold;
+	font-style: italic;
 }
 #nav li {
 	display:inline;
-	padding:0 15px 0 18px;
+	padding: 0 20px 0 38px;
 	background:url(../images/nav-separator.gif) no-repeat 0 3px;
 	color:#181818;
 }
@@ -286,10 +286,9 @@ hr {
 .date {
 	display:block;
 	width:549px;
-	font-size:14px;
+	font-size:18px;
 	line-height:21px;
-	font-style:normal;
-	font-weight:bold;
+	font-style:italic;
 	padding:2px 0 8px 30px;
 }
 
@@ -369,13 +368,15 @@ hr {
 	line-height:33px;
 	font-weight:normal;
 	text-align:center;
-	font-variant:small-caps;
+	font-style:italic;
 }
 #sidebar h3 span {
 	display:block;
+	font-variant:small-caps;
 	font-size:46px;
 	line-height:50px;
 	padding-top:2px;
+	font-style:normal;
 }
 /* form form-write-us */
 .form-write-us ul {

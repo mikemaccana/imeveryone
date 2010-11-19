@@ -141,6 +141,7 @@ class TopHandler(BaseHandler):
             pagetitle = '''Today's top losers - I'm Everyone''',
             captcha = self.application.config['captcha'].as_bool('enabled'),
             readmore = True,
+            sidebar=True,
             )
         
 class AdminHandler(BaseHandler):
@@ -198,6 +199,7 @@ class DiscussHandler(BaseHandler):
             commenttree=commenttree,
             nexturl=self.request.uri,
             readmore=False,
+            sidebar=None
             )
             
     def post(self,parentid):
@@ -244,6 +246,7 @@ class AboutHandler(BaseHandler):
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Who Is Responsible for this Mess? - I'm Everyone''',
             captcha = self.application.config['captcha'].as_bool('enabled'),
+            sidebar=True,
             )
             
 
@@ -281,6 +284,7 @@ class LiveHandler(BaseHandler):
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Live - I'm Everyone''',
             captcha = self.application.config['captcha'].as_bool('enabled'),
+            sidebar=True,
             )
         self.clearalerts() 
 
