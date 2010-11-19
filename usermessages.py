@@ -15,7 +15,7 @@ import uuid
 from time import gmtime, strftime
 import random
 from datetime import datetime
-#import ipdb
+import ipdb
 
 def startakismet(akismetcfg):
     return Akismet(key=akismetcfg['apikey'], agent=akismetcfg['clientname'])
@@ -256,15 +256,23 @@ class Message(object):
     
     def checktext(self,config):
         '''Ensure they're ranting enough, but not too much!'''
+        postwords = self.posttext.strip()
+        wordlist = postwords.split()
+        uniquewords = set(wordlist)
         # Zero sized posts
-        if len(self.posttext.strip()) == 0:
+        if len(postwords) == 0:
             self.useralerts.append(config['alerts']['zero'])
         else:
             # Check text isn't full of dupes
-            totalwords = len(self.posttext.split())
-            uniquewords = len(set(self.posttext.split()))
-            if uniquewords / totalwords < config['posting'].as_float('threshhold'):
-                self.useralerts.append(config['alerts']['lame'])
+            totalwords = len(wordlist)
+            totaluniquewords = len(uniquewords)
+            # Float so our answer is a float 
+            if totaluniquewords / float(totalwords) < config['posting'].as_float('threshhold'):
+                self.useralerts.append(config['alerts']['notunique'])
+            # Check post doesnt mention banned words
+            for bannedword in config['posting']['bannedwords']:
+                if bannedword in uniquewords:
+                    self.useralerts.append(config['alerts']['bannedwords'])
         return    
     
     def checkcaptcha(self,config):
@@ -364,10 +372,11 @@ class Message(object):
     def makeintro(self,postingconfig):
         '''Reduce the headline text in very long posts if needed'''
         postwords = self.posttext.split()
-        longpost = postingconfig.as_int('longpost')
+        leeway = postingconfig.as_int('leeway')
         choplen = postingconfig.as_int('choplen')
         longpost = postingconfig.as_int('longpost')
-        if len(postwords) < longpost:
+        #ipdb.set_trace()
+        if len(postwords) < leeway:
             self.headline = self.posttext
         else:
             self.headline = ' '.join(postwords[:choplen])+'...'
