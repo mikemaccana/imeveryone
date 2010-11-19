@@ -1,5 +1,8 @@
 
 <em class="date"><a href="/discuss/{{ message['_id'] }}"> {{ message['prettydate'] }}</a></em>
+
+<img src="/static/images/avatars/{{ message['avatar'] }}.png"/><br/>
+
 <h2><a href="/discuss/{{ message['_id'] }}">{{ escape(message['headline'])}}</a></h2>
 
 {% if 'intro' in message %}

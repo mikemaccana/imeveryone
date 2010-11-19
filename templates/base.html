@@ -34,6 +34,14 @@
 		<div class="inner">
 			<!-- header -->
 			<div id="header">
+				<!-- alerts if any -->
+				<div alerts>
+					{% if len(alerts) %}
+						<div id='alerts'>
+							<p>{{ alerts[0] }}</p>
+						</div>	
+					{% end %}
+				</div>	
 				<h1><a href="/">I'm Everyone</a></h1>				
 			</div>
 

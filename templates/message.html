@@ -1,5 +1,8 @@
 <div class="post hyphenate">
 	<em class="date"><a href="{{ message.link }}"> {{ message.prettydate }} </a></em>
+	
+	<img src="/static/images/avatars/{{ message.avatar }}.png"/><br/>
+	
 	<h2><a href="{{ message.link }}">{{ escape(message.headline)}}</a></h2>
 	
 	{% if message.intro %}  
@@ -19,6 +22,7 @@
 			<a href="{{ message.link }}" target="_blank"><img src="{{ message.preview }}" alt="image description" /></a>
 		</div>
 	{% end %}
+
 		
 	<div class="read-more">
 		<a href='/discuss/{{message._id}}' class="more">
