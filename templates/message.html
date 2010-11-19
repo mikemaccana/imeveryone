@@ -1,8 +1,6 @@
 <div class="post hyphenate">
 	<em class="date"><a href="{{ message.link }}"> {{ message.prettydate }} </a></em>
 	
-	<img src="/static/images/avatars/{{ message.avatar }}.png"/><br/>
-	
 	<h2><a href="{{ message.link }}">{{ escape(message.headline)}}</a></h2>
 	
 	{% if message.intro %}  

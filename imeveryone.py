@@ -141,7 +141,8 @@ class TopHandler(BaseHandler):
             pagetitle = '''Today's top losers - I'm Everyone''',
             captcha = self.application.config['captcha'].as_bool('enabled'),
             readmore = True,
-            sidebar=True,
+            sidebar = True,
+            avatars = False,
             )
         
 class AdminHandler(BaseHandler):
@@ -196,10 +197,11 @@ class DiscussHandler(BaseHandler):
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Discuss - I'm Everyone''',
-            commenttree=commenttree,
-            nexturl=self.request.uri,
-            readmore=False,
-            sidebar=None
+            commenttree = commenttree,
+            nexturl = self.request.uri,
+            readmore = False,
+            sidebar = None,
+            avatars = True,
             )
             
     def post(self,parentid):
