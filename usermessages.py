@@ -100,6 +100,7 @@ class Message(object):
             'minute':now.minute, 
             'second':now.second
         }
+        self.prettydate = self.getprettydate()
         
         self._id = _id        
         self.localfile = localfile
@@ -395,9 +396,9 @@ class Message(object):
                 pass
         return 
         
-    def getposttimedt(self, datedict):
+    def getposttimedt(self):
         '''Return a datetime version of 'posttime' style dictionary '''
-        return datetime(datedict['year'], datedict['month'], datedict['day'], datedict['hour'], datedict['minute'], datedict['second'])   
+        return datetime(self.posttime['year'], self.posttime['month'], self.posttime['day'], self.posttime['hour'], self.posttime['minute'], self.posttime['second'])   
 
     def getrank(self, views, hoursold, GRAVITY=1.8):
         '''Get rank for message. Based on http://amix.dk/blog/post/19574'''
@@ -408,9 +409,9 @@ class Message(object):
         rank = (self.score - 1) / pow((hoursold+2), GRAVITY)
         return rank  
     
-    def getprettydate(self, datedict):
+    def getprettydate(self):
         '''Return pretty printed date'''
-        posttimedt = self.getposttimedt(datedict)
+        posttimedt = self.getposttimedt()
         daysuffixes = ['st','nd','rd'] + 17*['th'] + ['st','nd','rd'] + 7*['th'] + ['st'] 
         prettystring = posttimedt.strftime("%I:%M %p %d")+daysuffixes[int(posttimedt.strftime("%d"))]+posttimedt.strftime(" %B %Y")
         return prettystring

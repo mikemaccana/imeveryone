@@ -1,5 +1,5 @@
 
-<em class="date"><a href="/discuss/{{ message['_id'] }}"> {{message['posttime']}}</a></em>
+<em class="date"><a href="/discuss/{{ message['_id'] }}"> {{ message['prettydate'] }}</a></em>
 <h2><a href="/discuss/{{ message['_id'] }}">{{ escape(message['headline'])}}</a></h2>
 
 {% if 'intro' in message %}
@@ -31,7 +31,7 @@
 <div class="read-more">
     <a href='/discuss/{{message['_id']}}'
 		{% if readmore %}
-		class="more"> Read more... <img src="/static/images/hand.jpg"/>
+		class="more"> Read more... <img src="/static/images/hand.png"/>
 		{% else %}
 			class="addcomment">
 	        {% if len(message['comments']) %}
