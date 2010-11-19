@@ -227,7 +227,34 @@ input {
 
 /* about page */
 .about {
-    font: 24px Georgia,"Times New Roman",Times,sans-serif
+    font: 14px Georgia,"Times New Roman",Times,sans-serif;
+    margin: 10px;
+}
+
+p.dropcap:first-letter {
+    font-size : 300%;
+    float : left;
+    width : 1em;
+    color : #ce0919;
+}
+
+.features {
+    width: 600px;
+    clear: both;
+}
+
+.featurebox {
+    width: 185px;
+    height: 100px;
+    float: left;
+    text-align: left;
+    margin: 5px;
+}
+
+hr {
+    height: 15px;
+    background: #F9F8F3 url("/static/images/underline-flourish.png") no-repeat scroll center;
+    border:0;
 }
 
 /* navigation */
@@ -331,6 +358,7 @@ input {
 .smallcaps {
     font-variant: small-caps;
     text-align: center;
+    letter-spacing:1px;
     text-shadow: 0px 1px 0px #e5e5ee;
 }
 

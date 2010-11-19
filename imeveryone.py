@@ -380,7 +380,8 @@ class QueueToWaitingClients(MessageMixin, threading.Thread):
         while True:
             message = self.queue.get()
             logging.info('Preparing to send message ID: '+str(message._id)+' to clients.')
-            message.html = render_template('message.html', message=message)
+            prettydate = message.getprettydate(message.posttime)
+            message.html = render_template('message.html', message=message, prettydate=prettydate)
             self.send_messages([message])
 
 class ViewerUpdateHandler(BaseHandler, MessageMixin):

@@ -14,6 +14,7 @@ import time
 import uuid
 from time import gmtime, strftime
 import random
+from datetime import datetime
 #import ipdb
 
 def startakismet(akismetcfg):
@@ -89,7 +90,17 @@ class Message(object):
         '''Create message based on body of PUT form data'''
         
         # Info that's common across all messages
-        self.posttime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        # Note we store a list as it's JSON serializable. A native datetime object isn't.
+        now = datetime.utcnow()
+        self.posttime = {
+            'year':now.year, 
+            'month':now.month, 
+            'day':now.day, 
+            'hour':now.hour, 
+            'minute':now.minute, 
+            'second':now.second
+        }
+        
         self._id = _id        
         self.localfile = localfile
         self.preview, self.headline, self.intro, self.thread, self.availavatars = None, None, None, None, None
@@ -97,7 +108,7 @@ class Message(object):
         self.score = 1
         
         if messagedata:
-            # Preconfigured data
+            # Preconfigured data from injector
             self.author = messagedata['author']
             self.posttext = messagedata['posttext']
             self.challenge = messagedata['challenge']
@@ -383,8 +394,25 @@ class Message(object):
             except:
                 pass
         return 
+        
+    def getposttimedt(self, datedict):
+        '''Return a datetime version of 'posttime' style dictionary '''
+        return datetime(datedict['year'], datedict['month'], datedict['day'], datedict['hour'], datedict['minute'], datedict['second'])   
 
-    def getscore(views, hoursold, gravity=1.8):
-        '''Get score for message. Based on
-        http://amix.dk/blog/post/19574'''
-        return (views - 1) / pow((hoursold+2), gravity)
+    def getrank(self, views, hoursold, GRAVITY=1.8):
+        '''Get rank for message. Based on http://amix.dk/blog/post/19574'''
+        posttimedt = getposttimedt()
+        age = posttimedt - datetime.utcnow()
+        hoursold = (age.days * 24) + age.seconds / 3600
+        
+        rank = (self.score - 1) / pow((hoursold+2), GRAVITY)
+        return rank  
+    
+    def getprettydate(self, datedict):
+        '''Return pretty printed date'''
+        posttimedt = self.getposttimedt(datedict)
+        daysuffixes = ['st','nd','rd'] + 17*['th'] + ['st','nd','rd'] + 7*['th'] + ['st'] 
+        prettystring = posttimedt.strftime("%I:%M %p %d")+daysuffixes[int(posttimedt.strftime("%d"))]+posttimedt.strftime(" %B %Y")
+        return prettystring
+        
+           
