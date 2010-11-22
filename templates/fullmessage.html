@@ -1,12 +1,14 @@
 <div class="post">
-	<em class="date"><a href="{{ message.link }}"> {{ message.prettydate }} </a></em>
+	<em class="date">{{ message.prettydate }}</em>
+	
+	<img src="/static/images/avatars/{{ message.avatar }}.png"/><br/>
 		
 	<div class="posttext">
-		<h2><a href="/discuss/{{ message._id }}">{{ escape(message.headline)}}</a></h2>
+		<h2>{{ escape(message.headline)}}</h2>
 
 		{% if message.intro %}
 		    <div class="text-box hyphenate">
-				<a href="{{ message.link }}">{{escape (message.intro)}}</a>
+				{{escape (message.posttext)}}
 			</div>	    
 		{% end %}
 	</div>
@@ -26,7 +28,13 @@
 	{% end %}
 
 	<div class="read-more">
-	    <a href='{{ message.link }}' class="more"> Read more <img src="/static/images/hand.png"/></a>
+	    <a href='{{ message.link }}' class="addcomment">
+	        {% if len(message.comments) %}
+	            Add comment...
+	        {% else %}
+	            Be the first to comment
+	        {% end %}  
+	    </a>
 	    <div class="rightalign">
 	        <em>{{ message._id }}</em>
 	    </div>

@@ -72,7 +72,6 @@ class Application(tornado.web.Application):
                 biggest = sortedids[0]   
             return biggest  
         self.currentid = getstartid()
-
     def getnextid(self):
         '''Return next avail comment/reply ID'''
         self.currentid += 1
@@ -111,7 +110,6 @@ class BaseHandler(tornado.web.RequestHandler):
     def messagemaker(self,parentid=None):
         '''Get a request, return a message (used for both new posts and comments)'''
         _id = self.application.getnextid()
-
         message = usermessages.Message(
             config=self.application.config,
             antispam=antispam,
@@ -126,13 +124,19 @@ class TopHandler(BaseHandler):
     def get(self):
         limit = self.application.config['scoring'].as_int('toplimit')
         topmessages=[]
+        messagedicts=[]
+        
+        
         descending = -1
-        for message in self.application.dbconnect.messages.find({'article':True},limit=limit).sort('score', descending):
-            topmessages.append(message)
-      
-        #for topmessage in topmessages:
-        #    usermessages.Message() topmessage.    
+        # Get out Mongo docs
+        for messagedict in self.application.dbconnect.messages.find({'article':True},limit=limit).sort('score', descending):
+            messagedicts.append(messagedict)
+        # Turn the Mongo docs back into Message objects
+        for messagedict in messagedicts:
+            topmessages.append(usermessages.Message(dehydrated=messagedict))
         alerts = self.showalerts()
+
+        
         self.render(
             "top.html",
             topmessages = topmessages,
@@ -140,11 +144,11 @@ class TopHandler(BaseHandler):
             heading = self.pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
-            pagetitle = '''Today's top losers - I'm Everyone''',
+            pagetitle = self.application.config['presentation']['top'],
             captcha = self.application.config['captcha'].as_bool('enabled'),
-            readmore = True,
             sidebar = True,
-            avatars = False,
+            readmore = True,
+            avatars = True,
             )
         
 class AdminHandler(BaseHandler):
@@ -175,34 +179,39 @@ class DiscussHandler(BaseHandler):
         '''Show discussion for a thread'''
         messageid = int(messageid)
         captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])
-        mymessage = self.application.dbconnect.messages.find_one({'_id':messageid})
+        mymessagedict = self.application.dbconnect.messages.find_one({'_id':messageid})
         
         # Check for discussion of invalid items
-        if mymessage is None:
+        if mymessagedict is None:
             self.redirect('/notfound')
         
         # Increment score for message
-        mymessage['score']+=self.application.config['scoring'].as_int('view')
-        self.application.dbconnect.messages.save(mymessage)
+        mymessagedict['score']+=self.application.config['scoring'].as_int('view')
+        self.application.dbconnect.messages.save(mymessagedict)
         
-        # Create a tree of comments
-        commenttree = usermessages.buildtree(mymessage,messagedb=self.application.dbconnect.messages)
+        # Create a tree of comments 9this should reqlly be a Message method)
+        commenttree = usermessages.buildtree(mymessagedict,messagedb=self.application.dbconnect.messages)
         
         alerts = self.showalerts()
         
+        # Create message objects from our dictionary
+        mymessage = usermessages.Message(dehydrated=mymessagedict)
+        
+
+        
         self.render(
             "discuss.html",
-            message=mymessage,
-            captcha=captchahtml,
+            message = mymessage,
+            captcha = captchahtml,
             alerts = alerts,
-            heading= self.pick_one(self.application.config['presentation']['heading']),
+            heading = self.pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Discuss - I'm Everyone''',
             commenttree = commenttree,
             nexturl = self.request.uri,
-            readmore = False,
             sidebar = None,
+            readmore = True,
             avatars = True,
             )
             
@@ -279,8 +288,9 @@ class LiveHandler(BaseHandler):
         
         # Show the messages and any alerts
         alerts = self.showalerts()
+        
         self.render(
-            "index.html",
+            "live.html",
             messages = sortedmessages,
             alerts = alerts,
             heading = self.pick_one(self.application.config['presentation']['heading']),
@@ -288,7 +298,9 @@ class LiveHandler(BaseHandler):
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
             pagetitle = '''Live - I'm Everyone''',
             captcha = self.application.config['captcha'].as_bool('enabled'),
-            sidebar=True,
+            sidebar = True,
+            readmore = True,
+            avatars = True,
             )
         self.clearalerts() 
 
@@ -367,10 +379,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
     # Just in case someone tries to access this URL via a GET
     def get(self):
         self.redirect('/')
-
-
-        
-        
+  
 def render_template(template_name, **kwargs):
     '''Render a template (independent of requests)'''
     loader = template.Loader(os.path.join(os.path.dirname(__file__), "templates"))

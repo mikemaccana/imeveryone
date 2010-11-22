@@ -5,9 +5,7 @@
 		<p>I'm Everyone has just had it's database recreated. New top messages will appear in a moment.</p>
 	{% else %}
 		{% for message in topmessages %}
-			<div class="post">
-				{% include 'showmessagedict.html' %}			
-			</div>
+			{% include 'message.html' %}			
 		{% end %}
 	{% end %}
 {% end %}	
