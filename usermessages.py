@@ -87,7 +87,7 @@ def buildtree(master,messagedb):
 class Message(object):
     '''Submitted message'''
     def __init__(self,config,antispam,_id,parentid=None,localfile=None,handler=None,messagedata=None):
-        '''Create message based on body of PUT form data'''
+        '''Create message'''
         
         # Info that's common across all messages
         # Note we store a list as it's JSON serializable. A native datetime object isn't.
@@ -408,21 +408,26 @@ class Message(object):
     def getposttimedt(self):
         '''Return a datetime version of 'posttime' style dictionary '''
         return datetime(self.posttime['year'], self.posttime['month'], self.posttime['day'], self.posttime['hour'], self.posttime['minute'], self.posttime['second'])   
-
-    def getrank(self, views, hoursold, GRAVITY=1.8):
-        '''Get rank for message. Based on http://amix.dk/blog/post/19574'''
-        posttimedt = getposttimedt()
-        age = posttimedt - datetime.utcnow()
-        hoursold = (age.days * 24) + age.seconds / 3600
-        
-        rank = (self.score - 1) / pow((hoursold+2), GRAVITY)
-        return rank  
     
     def getprettydate(self):
         '''Return pretty printed date'''
         posttimedt = self.getposttimedt()
         daysuffixes = ['st','nd','rd'] + 17*['th'] + ['st','nd','rd'] + 7*['th'] + ['st'] 
-        prettystring = posttimedt.strftime("%I:%M %p %d")+daysuffixes[int(posttimedt.strftime("%d"))]+posttimedt.strftime(" %B %Y")
+        prettystring = posttimedt.strftime("%I:%M %p %d")+daysuffixes[int(posttimedt.strftime("%d"))+1]+posttimedt.strftime(" %B %Y")
         return prettystring
         
-           
+    def getrank(self, views, hoursold, GRAVITY=1.8):
+        '''Get rank for message. Based on http://amix.dk/blog/post/19574'''
+        posttimedt = getposttimedt()
+        age = posttimedt - datetime.utcnow()
+        hoursold = (age.days * 24) + age.seconds / 3600
+
+        rank = (self.score - 1) / pow((hoursold+2), GRAVITY)
+        return rank           
+
+class Struct(object):
+    '''See http://stackoverflow.com/questions/1305532/convert-python-dict-to-object. Run 
+    Struct(**mydict) to create.'''
+    def __init__(self, entries=None):
+        if entries: 
+            self.__dict__.update(entries)
