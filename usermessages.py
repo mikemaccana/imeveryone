@@ -86,8 +86,27 @@ def buildtree(master,messagedb):
 
 class Message(object):
     '''Submitted message'''
-    def __init__(self,config,antispam,_id,parentid=None,localfile=None,handler=None,messagedata=None):
+    def __init__(self,config=None,antispam=None,_id=None,parentid=None,localfile=None,handler=None,messagedata=None,dehydrated=None):
         '''Create message'''
+        
+
+        if dehydrated: 
+            # Recreate from a dict
+            # See http://stackoverflow.com/questions/1305532/convert-python-dict-to-object
+            self.__dict__.update(dehydrated)     
+            return   
+        
+        # FIXME: combine
+        if config is None:
+            logging.error('Please provide config when creating new messages')
+            return
+        if antispam is None:
+            logging.error('Please provide antispam info when creating new messages')
+            return
+        if _id is None:
+            logging.error('Please provide _id info when creating new messages')
+            return
+
         
         # Info that's common across all messages
         # Note we store a list as it's JSON serializable. A native datetime object isn't.
@@ -425,9 +444,4 @@ class Message(object):
         rank = (self.score - 1) / pow((hoursold+2), GRAVITY)
         return rank           
 
-class Struct(object):
-    '''See http://stackoverflow.com/questions/1305532/convert-python-dict-to-object. Run 
-    Struct(**mydict) to create.'''
-    def __init__(self, entries=None):
-        if entries: 
-            self.__dict__.update(entries)
+

@@ -113,9 +113,9 @@ class BaseHandler(tornado.web.RequestHandler):
         _id = self.application.getnextid()
 
         message = usermessages.Message(
-            self.application.config,
-            antispam,
-            _id,
+            config=self.application.config,
+            antispam=antispam,
+            _id=_id,
             handler=self,
             parentid=parentid
         )   
@@ -129,8 +129,10 @@ class TopHandler(BaseHandler):
         descending = -1
         for message in self.application.dbconnect.messages.find({'article':True},limit=limit).sort('score', descending):
             topmessages.append(message)
+      
+        #for topmessage in topmessages:
+        #    usermessages.Message() topmessage.    
         alerts = self.showalerts()
-                
         self.render(
             "top.html",
             topmessages = topmessages,
@@ -297,7 +299,7 @@ class MessageMixin(object):
     cache = []
     cache_size = 10 
     # FIXME - should be from global config
-    #cache_size = config['newclients'].as_int('cachesize')
+    # cache_size = self.application.config['newclients'].as_int('cachesize')
     
     def wait_for_messages(self, callback, cursor=None):
         '''Add new clients to waiters list'''
