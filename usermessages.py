@@ -19,7 +19,7 @@ def startakismet(akismetcfg):
 
 # Oembed + Oohembed
 consumer = oembed.OEmbedConsumer()
-consumer.addEndpoint(oembed.OEmbedEndpoint('http://api.embed.ly/oembed/api/v1', [
+consumer.addEndpoint(oembed.OEmbedEndpoint('http://api.embed.ly/1/oembed', [
 'http://www.5min.com/Video/*',
     'http://*.viddler.com/explore/*/videos/*',
     'http://qik.(ly|com)/video/*',
@@ -240,7 +240,7 @@ class Message(object):
                 # Save image data to local file
                 imagefile = self.imagedata[0]
                 logging.info('Saving image: '+imagefile['filename'])
-                self.localfile = config['images']['cachedir']+self._id+'.'+imagefile['filename'].split('.')[-1]
+                self.localfile = config['images']['cachedir']+str(self._id)+'.'+imagefile['filename'].split('.')[-1]
                 open(self.localfile,'wb').write(imagefile['body'])
                 # Set self.imagedata to None now we've saved our image data
                 self.imagedata = None
