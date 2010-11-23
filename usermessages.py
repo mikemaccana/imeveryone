@@ -279,7 +279,7 @@ class Message(object):
         if len(postwords) == 0:
             self.useralerts.append(config['alerts']['zero'])
         # Overlong posts    
-        elif len(postwords) > config['posting'].as_float('longpost'):     
+        elif len(wordlist) > config['posting'].as_float('longpost'):     
             self.useralerts.append(config['alerts']['overlong'])
         else:
             # Check text isn't full of dupes
