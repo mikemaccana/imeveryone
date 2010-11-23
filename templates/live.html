@@ -1,9 +1,16 @@
 {% extends "base.html" %}
 
 {% block mainarea %}
-	{% for message in messages %}
-	    {% include "message.html" %}
-	{% end %}
+	<div id="content">
+		<!-- main-block -->		
+		<div id="messages">
+			{% for message in messages %}
+			    {% include "message.html" %}
+			{% end %}
+		</div>
+		<!-- block -->
+	</div>
+
 {% end %}	
 
 {% block endofbody %}	

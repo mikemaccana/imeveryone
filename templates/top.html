@@ -1,11 +1,17 @@
 {% extends "base.html" %}
 
 {% block mainarea %}
-	{% if len(topmessages) == 0 %}
-		<p>I'm Everyone has just had it's database recreated. New top messages will appear in a moment.</p>
-	{% else %}
-		{% for message in topmessages %}
-			{% include 'message.html' %}			
-		{% end %}
-	{% end %}
+	<div id="content">
+		<!-- main-block -->		
+		<div id="messages">
+			{% if len(topmessages) == 0 %}
+				<p>I'm Everyone has just had it's database recreated. New top messages will appear in a moment.</p>
+			{% else %}
+				{% for message in topmessages %}
+					{% include 'message.html' %}			
+				{% end %}
+			{% end %}
+		</div>
+		<!-- block -->
+	</div>
 {% end %}	

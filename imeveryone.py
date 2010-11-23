@@ -149,7 +149,7 @@ class TopHandler(BaseHandler):
             sidebar = True,
             readmore = True,
             avatars = True,
-            )
+        )
         
 class AdminHandler(BaseHandler):
     '''Handle admin'''
@@ -267,7 +267,7 @@ class CatchAllHandler(BaseHandler):
     def get(self,url):
         '''404'''
         logging.warn('Bad URL: '+url)
-        self.render('notfound.html',pagetitle='Not Found!',heading='Oops',prompt1='Doesnt Exist Heh?',prompt2='Make It',badurl=url)
+        self.render('notfound.html',pagetitle='Not Found!',heading='Oops',prompt1='Doesnt Exist Heh?',prompt2='Make It',badurl=url,alerts=[],sidebar=False)
         raise tornado.web.HTTPError(404)
 
 
@@ -365,12 +365,13 @@ class NewPostHandler(BaseHandler, MessageMixin):
             self.application.useralerts[sessionid].extend(message.useralerts)    
         else:
             logging.info('Good post.')
-            messageQueue.put(message)
-        
-        # Add alerts to dict and save dict to DB
-        # FIXME - imagedata not being set to zero in usermessages, non-encoded so screwing mongo up.
-        message.__dict__['imagedata'] = []
-        self.application.dbconnect.messages.save(message.__dict__)
+            # Add alerts to dict and save dict to DB
+            # FIXME - imagedata not being set to zero in usermessages, non-encoded so screwing mongo up.
+            message.__dict__['imagedata'] = []
+            self.application.dbconnect.messages.save(message.__dict__)
+            if not message.parentid:
+                # Put top-level posts onto the live queue.
+                messageQueue.put(message)        
         
         # We're done - sent the user back to wherever 'next' input pointed to.
         if self.get_argument("next", None):

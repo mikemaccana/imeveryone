@@ -1,83 +1,46 @@
-<!DOCTYPE HTML>
-<html lang="en">
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<title>{{ pagetitle }}</title>
-	<meta name="Description" content="{% block description %}I'm Everyone. Realtime, anonymous.{% end %}">
-	<link rel="apple-touch-icon" href="/static/images/apple-touch-icon.png">
-	<link rel="shortcut icon" href="/static/images/favicon.ico">
-	<link rel="stylesheet" type="text/css" href="{{ static_url("css/all.css") }}" />
-	<link rel="stylesheet" type="text/css" href="{{ static_url("css/opacity.css") }}" />
-	<!--[if lt IE 8]><link rel="stylesheet" type="text/css" href="{{ static_url("css/lt8.css") }}" media="screen"/><![endif]-->
-	{% block css %}
-	{% end %}
-	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js" ></script>	
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/jquery-ui.min.js" ></script>
-	{% block js %}
-	{% end %}
-	<script type="text/javascript" src="{{ static_url("js/input-type-file.js") }}" ></script>
-	<script type="text/javascript" src="{{ static_url("js/hyphenate.js") }}" ></script>
-	<script type="text/javascript">
-	            Hyphenator.run();
-	</script>
-	<script>
-	var RecaptchaOptions = {
-		theme : 'custom',
-    	custom_theme_widget: 'recaptcha_widget',
-		tabindex : 2
-	};
-	</script>
-</head>
+{% extends "base.html" %}
 
-<body>
-	<div id="wrapper">
-		<div class="inner">
-			<!-- header -->
-			<div id="header">
-				<h1><a href="/">I'm Everyone</a></h1>
-				<strong class="subtitle">404 File Not Found</strong>
-			</div>
-			<!-- main -->
-			<div id="main">
-				
-				<div class="twocolumns">
-						<!-- content -->
-					<div id="content">
-					
-						<!-- main-block -->
-					
-						<div id="messages">
-							<h1 class="smallcaps">
-								Oh dear. We can't find that.
-							</h1>			
-						
-							<p>Hi there. </p>
-						
-							<p>Some bad news: we can't find what whatever it is that you are looking for at '<em>{{ badurl }}</em>' </p>
+<!-- need to modify title and description  -->
 
-							<p>It might be our doing - we get rid of some less interesting posts. Also, we do mess up from time to time. Sorry!</p>
+{% block css %}
+{% end %}
 
-							<p>Alternatively, you may have made a typo, or be looking for something that just isn't here. 	</p>
+{% block js %}
+{% end %}
 
-							<p>But that's OK! Just go home and check out the new stuff, or see our top comments. You'll find something way more interesting. </p>
-						
-							<p>Thanks for your patience!</p>
+{% block mainarea %}
 
-						
-							<p>I'm Everyone Staff.</p>
-						
 
-						</div>
-						<!-- block -->
-					</div>
-				</div>
-					
-			</div>
-			<!-- footer -->
-			<div id="footer">
-				<p>(C) 2010 I'm Everyone. </p>
-			</div>
+	<div id="contentwide">
+		<!-- main-block -->		
+		<div id="messages">
+			<h1 class="smallcaps">
+				Oh dear. We can't find that.
+			</h1>			
+		
+			<p>Hi there. </p>
+		
+			<p>Some bad news: we can't find what whatever it is that you are looking for at '<em>{{ badurl }}</em>' </p>
+
+			<p>It might be our doing - we get rid of some less interesting posts. Also, we do mess up from time to time. Sorry!</p>
+
+			<p>Alternatively, you may have made a typo, or be looking for something that just isn't here. 	</p>
+
+			<p>But that's OK! Just go home and check out the new stuff, or see our top comments. You'll find something way more interesting. </p>
+		
+			<p>Thanks for your patience!</p>
+
+		
+			<p>I'm Everyone Staff.</p>
+		
+
 		</div>
+		<!-- block -->
 	</div>
-</body>
-</html>
+
+
+	
+{% end %}	
+
+
+

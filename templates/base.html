@@ -6,7 +6,7 @@
 	<meta name="Description" content="{% block description %}I'm Everyone. Realtime, anonymous.{% end %}">
 	<link rel="apple-touch-icon" href="/static/images/apple-touch-icon.png">
 	<link rel="shortcut icon" href="/static/images/favicon.ico">
-	<link rel="stylesheet" type="text/css" href="{{ static_url("css/all.css") }}" />
+	<link rel="stylesheet" type="text/css" href="{{ static_url("css/style.css") }}" />
 	<link rel="stylesheet" type="text/css" href="{{ static_url("css/opacity.css") }}" />
 	<!--[if lt IE 8]><link rel="stylesheet" type="text/css" href="{{ static_url("css/lt8.css") }}" media="screen"/><![endif]-->
 	{% block css %}
@@ -59,17 +59,10 @@
 				</ul>
 				
 				<div class="twocolumns">
-					<!-- content -->
-					<div id="content">
-						<!-- main-block -->
-						
-						<div id="messages">
-							{% block mainarea %}
-								Default mainarea
-							{% end %}
-						</div>
-						<!-- block -->
-					</div>
+					<!-- content -->					
+					{% block mainarea %}
+						Default mainarea
+					{% end %}
 					<!-- sidebar -->
 					{% if sidebar %}
 						{% include 'submitcontent.html' %}

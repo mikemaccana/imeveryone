@@ -36,43 +36,50 @@
 
 {% block mainarea %}
 
-<div class="post">
-	<div class="topmessage">
-		{% include 'fullmessage.html' %}	
-	</div>
-	<div id="commentarea">
-		<ul id="commenttree">	
-			{% for item in commenttree %}
-				{% if item == 'in' %}
-					<ul>
-				{% elif item == 'out' %}
-					</ul>
-					</li>
-				{% else %}
-					<li>
-						<div class="comment">
-							<div class="commentheading">
-								{{ item['prettydate'] }}
-							</div>
-							<div class='message'>
-								<img class='floatleft' src="/static/images/avatars/{{ item['avatar'] }}.png"/>
-								<div class="commenttext">
-									<p class="hyphenate">{{ item['posttext'] }}</p>
+
+	<div id="contentwide">
+		<!-- main-block -->		
+		<div class="post">
+			<div class="topmessage">
+				{% include 'fullmessage.html' %}	
+			</div>
+			<div id="commentarea">
+				<ul id="commenttree">	
+					{% for item in commenttree %}
+						{% if item == 'in' %}
+							<ul>
+						{% elif item == 'out' %}
+							</ul>
+							</li>
+						{% else %}
+							<li>
+								<div class="comment">
+									<div class="commentheading">
+										{{ item['prettydate'] }}
+									</div>
+									<div class='message'>
+										<img class='floatleft' src="/static/images/avatars/{{ item['avatar'] }}.png"/>
+										<div class="commenttext">
+											<p class="hyphenate">{{ item['posttext'] }}</p>
+										</div>	
+										<a href='/discuss/{{item['_id']}}' class="addcomment">Reply</a>
+										<div class='rightalign'><em>{{ item['_id'] }}</em></div>
+									</div>
 								</div>	
-								<a href='/discuss/{{item['_id']}}' class="addcomment">Reply</a>
-								<div class='rightalign'><em>{{ item['_id'] }}</em></div>
-							</div>
-						</div>	
-					<!-- only close if there are no replies-->	
-					{% if not len(item['comments']) %}
-						</li>
+							<!-- only close if there are no replies-->	
+							{% if not len(item['comments']) %}
+								</li>
+							{% end %}
+						{% end %}							
 					{% end %}
-				{% end %}							
-			{% end %}
-		</ul>
+				</ul>
+			</div>
+
+		</div>
+		<!-- block -->
 	</div>
-	
-</div>
+
+
 	
 {% end %}	
 

@@ -15,7 +15,7 @@ import uuid
 from time import gmtime, strftime
 import random
 from datetime import datetime
-import ipdb
+#import ipdb
 
 def startakismet(akismetcfg):
     return Akismet(key=akismetcfg['apikey'], agent=akismetcfg['clientname'])
@@ -281,6 +281,9 @@ class Message(object):
         # Zero sized posts
         if len(postwords) == 0:
             self.useralerts.append(config['alerts']['zero'])
+        # Overlong posts    
+        elif len(postwords) > config['posting'].as_float('longpost'):     
+            self.useralerts.append(config['alerts']['overlong'])
         else:
             # Check text isn't full of dupes
             totalwords = len(wordlist)
@@ -338,10 +341,15 @@ class Message(object):
         linkre = re.compile(r"(http://[^ ]+)")
         self.embeds = []
         for link in linkre.findall(self.posttext):
+            logging.info('Getting embed data for link: '+link)
+            #ipdb.set_trace()
             try:
                 embed = getembeddata(link,config)
                 if embed:
+                    logging.info('Embed data found!')
                     message.embeds.append(embed)
+                else:
+                    logging.info('Embed data not found!')    
             except:
                 pass
         self.original = self.posttext
@@ -394,7 +402,6 @@ class Message(object):
         leeway = postingconfig.as_int('leeway')
         choplen = postingconfig.as_int('choplen')
         longpost = postingconfig.as_int('longpost')
-        #ipdb.set_trace()
         if len(postwords) < leeway:
             self.headline = self.posttext
         else:

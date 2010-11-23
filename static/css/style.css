@@ -106,7 +106,17 @@ form, fieldset {
 	overflow:hidden;
 }
 
+
+
 /* discussion comments */
+
+#contentwide {
+	width:920px;
+	float:left;
+	text-align:center;
+	padding-bottom:8px;
+	overflow:hidden;
+}
 
 .button, .addcomment {
     -moz-box-shadow:0 0 5px #9a9a8e; 
@@ -276,7 +286,7 @@ hr {
 	color:#181818;
 }
 #nav li:first-child {background:none;}
-#content h2 {
+#content h2, #contentwide h2 {
 	margin:0 0 14px;
 	font:bold 36px/41px FranklinGothicFSDemiCondensed, Arial, Helvetica, sans-serif;
 	padding:0 0 0 18px;
@@ -285,7 +295,6 @@ hr {
 }
 .date {
 	display:block;
-	width:549px;
 	font-size:18px;
 	line-height:21px;
 	font-style:italic;
@@ -314,7 +323,6 @@ hr {
 	margin:0 auto;
 }
 .read-more {
-	width:555px;
 	padding:7px 34px 0 25px;
 	text-align:left;
 	font-size:14px;

@@ -1,45 +1,42 @@
-<div class="post">
-	<em class="date">{{ message.prettydate }}</em>
-	
-	<img src="/static/images/avatars/{{ message.avatar }}.png"/><br/>
-		
-	<div class="posttext">
-		<h2>{{ escape(message.headline)}}</h2>
+<em class="date">{{ message.prettydate }}</em>
 
-		{% if message.intro %}
-		    <div class="text-box hyphenate">
-				{{escape (message.posttext)}}
-			</div>	    
-		{% end %}
-	</div>
+<img class="floatleft" src="/static/images/avatars/{{ message.avatar }}.png"/>
 	
-	
-	
-	{% for embed in message.embeds %}
-		{% if 'html' in embed %}
-			{{ embed['html'] }}<br/>
-		{% end %}	
-	{% end %}
-	
-	{% if message.preview is not None %}
-		<div class="visual">
-			<a href="{{ message.link }}" target="_blank"><img src="{{ message.preview }}" alt="User uploaded image" /></a>
-		</div>
-	{% end %}
+<div class="posttext">
+	<h2>{{ escape(message.headline)}}</h2>
 
-	<div class="read-more">
-	    <a href='{{ message.link }}' class="addcomment">
-	        {% if len(message.comments) %}
-	            Add comment...
-	        {% else %}
-	            Be the first to comment
-	        {% end %}  
-	    </a>
-	    <div class="rightalign">
-	        <em>{{ message._id }}</em>
-	    </div>
+	{% if message.intro %}
+	    <div class="text-box hyphenate">
+			{{escape (message.posttext)}}
+		</div>	    
+	{% end %}
+</div>
+
+
+
+{% for embed in message.embeds %}
+	{% if 'html' in embed %}
+		{{ embed['html'] }}<br/>
+	{% end %}	
+{% end %}
+
+{% if message.preview is not None %}
+	<div class="visual">
+		<a href="{{ message.link }}" target="_blank"><img src="{{ message.preview }}" alt="User uploaded image" /></a>
 	</div>
-	
+{% end %}
+
+<div class="read-more">
+    <a href='{{ message.link }}' class="addcomment">
+        {% if len(message.comments) %}
+            Add comment...
+        {% else %}
+            Be the first to comment
+        {% end %}  
+    </a>
+    <div class="rightalign">
+        <em>{{ message._id }}</em>
+    </div>
 </div>
 
 
