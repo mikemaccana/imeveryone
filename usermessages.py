@@ -1,9 +1,6 @@
 #!/usr/bin/env python2.6
 import re
 from PIL import Image, ImageOps
-import sys
-sys.path.append('lib/python2.6/site-packages/pytesser')
-import pytesser
 import urllib2
 import oembed
 from recaptcha.client import captcha
@@ -342,7 +339,6 @@ class Message(object):
         self.embeds = []
         for link in linkre.findall(self.posttext):
             logging.info('Getting embed data for link: '+link)
-            #ipdb.set_trace()
             try:
                 embed = getembeddata(link,config)
                 if embed:
@@ -351,6 +347,7 @@ class Message(object):
                 else:
                     logging.info('Embed data not found!')    
             except:
+                logging.warn('Getting embed data for link failed - most likely embedly 404')
                 pass
         self.original = self.posttext
         self.posttext = linkre.sub('', self.posttext)
@@ -413,23 +410,6 @@ class Message(object):
         '''Get user country - currently unused'''
         gi = GeoIP.new(GeoIP.GEOIP_MEMORY_CACHE)
         print gi.country_code_by_addr(ip)
-
-    def getimagetext(self,imagefile):
-        '''Recieve an image, return the text'''
-        if config['images'].as_bool('enabled') and message.localfile and config['images']['ocr']:
-            # PIL is flaky.
-            try:
-                image = Image.open(imagefile)
-                # Convert to black and white
-                if image.mode != "L":
-                    image = image.convert("L")
-                # Now let's do this shit
-                imagetext = pytesser.image_to_string(image)
-                self.imagetext = None
-                return
-            except:
-                pass
-        return 
         
     def getposttimedt(self):
         '''Return a datetime version of 'posttime' style dictionary '''
