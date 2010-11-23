@@ -1,0 +1,45 @@
+#!/bin/bash 
+
+apt-get install python-dev python-pip python-virtualenv virtualenvwrapper mongodb python-pymongo varnish git nginx unzip libcurl4-openssl-dev
+
+mkdir -p /var/virtualenvs
+export WORKON_HOME=/var/virtualenvs
+echo 'export WORKON_HOME=/var/virtualenvs' >> /root/.bashrc
+
+Add ssh keys
+scp -rv -p 443 .ssh/id_rsa* root@imeveryone.com:.ssh
+
+# Creating Reo 
+cd /var/virtualenvs
+git clone git@github.com:mikemaccana/imeveryone.git
+
+# Updating Repo
+cd imeveryone
+git pull origin master
+
+mkvirtualenv imeveryone
+
+git pull origin master
+ln -s imeveryone-prod.conf imeveryone.conf
+
+imeveryone $ scp -rv db/* root@microsites.net:/var/virtualenvs/imeveryone/db
+
+pip install tornado configobj
+env ARCHFLAGS="-arch x86_64" pip install pycurl
+
+(imeveryone)root@microsites:/var/virtualenvs/imeveryone/static/js# mkdir jqueryhashchange
+(imeveryone)root@microsites:/var/virtualenvs/imeveryone/static/js# cd jqueryhashchange
+(imeveryone)root@microsites:/var/virtualenvs/imeveryone/static/js/jqueryhashchange# wget http://github.com/cowboy/jquery-hashchange/raw/v1.3/jquery.ba-hashchange.min.js
+
+543  wget http://github.com/tdreyno/iphone-style-checkboxes/zipball/master
+544  unzip tdreyno-iphone-style-checkboxes-bb5542d.zip 
+545  mv tdreyno-iphone-style-checkboxes-bb5542d iphonecheckboxes
+
+wget http://download.cksource.com/CKEditor/CKEditor/CKEditor%203.4.1/ckeditor_3.4.1.tar.gz
+  254  tar -xf ckeditor_3.4.1.tar.gz
+
+imeveryone.conf
+/usr/bin/mongod
+
+:/var/virtualenvs/imeveryone/static/jqueryui185# cp development-bundle/themes/start/im
+ages/* css/start/images/
