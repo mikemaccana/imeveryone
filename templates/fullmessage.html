@@ -22,7 +22,7 @@
 
 {% if message.preview is not None %}
 	<div class="visual">
-		<a href="{{ message.link }}" target="_blank"><img src="{{ message.preview }}" alt="User uploaded image" /></a>
+		<a href="{{ message.link }}" target="_blank"><img src="/{{ message.preview }}" alt="User uploaded image" /></a>
 	</div>
 {% end %}
 
