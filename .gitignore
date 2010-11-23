@@ -3,6 +3,7 @@ cleanmeout
 lib
 share
 mongodb
+include
 .*pyc
 static/cache
 static/thumbs
