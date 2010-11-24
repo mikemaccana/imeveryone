@@ -12,53 +12,33 @@ import uuid
 from time import gmtime, strftime
 import random
 from datetime import datetime
+import urllib
+import simplejson as json
 import ipdb
+
 
 def startakismet(akismetcfg):
     return Akismet(key=akismetcfg['apikey'], agent=akismetcfg['clientname'])
 
-# Oembed + Oohembed
-consumer = oembed.OEmbedConsumer()
-consumer.addEndpoint(oembed.OEmbedEndpoint('http://api.embed.ly/1/oembed', [
-'http://www.5min.com/Video/*',
-    'http://*.viddler.com/explore/*/videos/*',
-    'http://qik.(ly|com)/video/*',
-    'http://qik.(ly|com)/*',
-    'http://www.hulu.com/watch/*',
-    'http://*.revision3.com/*',
-    'http://*nfb.ca/film/*',
-    'http://*.dailymotion.com/video/*',
-    'http://blip.tv/file/*',
-    'http://*.scribd.com/doc/*',
-    'http://*.movieclips.com/watch/*',
-    'http://screenr.com/.+',
-    'http://twitpic.com/*',
-    'http://*.youtube.com/watch*',
-    'http://yfrog.*/*',
-    'http://*amazon.*/gp/product/*',
-    'http://*amazon.*/*/dp/*',
-    'http://*flickr.com/*',
-    'http://www.vimeo.com/groups/*/videos/*',
-    'http://www.vimeo.com/*',
-    'http://tweetphoto.com/*',
-    'http://www.collegehumor.com/video:*',
-    'http://www.funnyordie.com/videos/*',
-    'http://video.google.com/videoplay?*',
-    'http://www.break.com/*/*',
-    'http://www.slideshare.net/*/*',
-    'http://www.ustream.tv/recorded/*',
-    'http://www.ustream.tv/channel/*',
-    'http://www.twitvid.com/*',
-    'http://www.justin.tv/clip/*',
-    'http://www.justin.tv/*',
-    'http://vids.myspace.com/index.cfm\?fuseaction=vids.individual&videoid*',
-    'http://www.metacafe.com/watch/*',
-    'http://*crackle.com/c/*',
-    'http://www.veoh.com/*/watch/*',
-    'http://www.fancast.com/(tv|movies)/*/videos',
-    'http://*imgur.com/*',
-    'http://*.posterous.com/*',
-    ]))
+
+def getembedcode(url, **kwargs):
+    '''Oembed + Oohembed. Accept a URL and one of the arguments below, return dict with JSON.
+    From sample on http://api.embed.ly/docs/oembed'''
+    api_url = 'http://api.embed.ly/1/oembed?'
+    ACCEPTED_ARGS = ['maxwidth', 'maxheight', 'format']
+    params = {'url':url }
+
+    for key, value in kwargs.items():
+        if key not in ACCEPTED_ARGS:
+            raise ValueError("Invalid Argument %s" % key)
+        params[key] = value
+
+    oembed_call = "%s%s" % (api_url, urllib.urlencode(params))
+    result = json.loads(urllib2.urlopen(oembed_call).read())
+    if 'html' in result:
+        return result['html']
+    else:    
+        return None
 
 
 
@@ -120,8 +100,8 @@ class Message(object):
         
         self._id = _id        
         self.localfile = localfile
-        self.preview, self.headline, self.intro, self.thread, self.availavatars = None, None, None, None, None
-        self.useralerts, self.comments, self.embeds = [], [], []
+        self.preview, self.embedcode, self.headline, self.intro, self.thread, self.availavatars = None, None, None, None, None, None
+        self.useralerts, self.comments = [], []
         self.score = 1
         
         if messagedata:
@@ -210,7 +190,9 @@ class Message(object):
             else:    
                 logging.warn('Error! Could not find parent with parentid '+str(parentid)+' in DB')
                 
-
+        # Process embeds (FIXME - must come before saveimages due to check for existing embeds in saveimages)
+        self.checklinksandembeds(config)
+      
         # If there's no local image file, save image from web url
         if self.localfile is None:
             self.saveimages(config)
@@ -221,14 +203,13 @@ class Message(object):
             logging.info('Made preview picture.')
         else:    
             logging.warn('Not making image as local file not specified or images disabled.')
-        logging.info('Preview pic is: '+self.preview)
+        logging.info('Preview pic is: '+str(self.preview))
         
         # Validate the users input    
         #self.getimagetext(self.localfile,config['images'])
         self.checktext(config)
         self.checkcaptcha(config)
         self.checkspam(config,antispam)
-        self.checklinksandembeds(config)
         self.checkporn(config)
         self.makeintro(config['posting'])
         
@@ -238,16 +219,19 @@ class Message(object):
     def saveimages(self,config):
         '''Save images for original posts'''
         if config['images'].as_bool('enabled'):
-            if self.imagedata is None and len(self.embeds) < 1:
-                self.useralerts.append(config['alerts']['noimage'])
-            else:
+            if self.imagedata is None and self.embedcode is None:
+                self.useralerts.append(config['alerts']['noimageorembed'])
+            elif self.imagedata is not None:
                 # Save image data to local file
                 imagefile = self.imagedata[0]
                 logging.info('Saving image: '+imagefile['filename'])
                 self.localfile = config['images']['cachedir']+str(self._id)+'.'+imagefile['filename'].split('.')[-1]
                 open(self.localfile,'wb').write(imagefile['body'])
-                # Set self.imagedata to None now we've saved our image data
+                # Set self.imagedata to None now we've saved our image data to a file.
                 self.imagedata = None
+            else:
+                # We have no image data as we're an embed only post
+                return    
         return
     
     def makepreviewpic(self,imagefile,imageconfig):
@@ -327,28 +311,16 @@ class Message(object):
     
     def checklinksandembeds(self,config):
         '''Process any links in the text'''
-        def getembeddata(link,config):
-            '''Get embed codes for links'''
-            global consumer
-            options = {
-                'maxwidth':config['images'].as_int('maxwidth'),
-                'maxheight':config['images'].as_int('maxheight'),
-            }
-            response = consumer.embed(link, format='json', )
-            data = response.getData()
-            if data:
-                return data
-            else:
-                return None
+        maxwidth = config['images'].as_int('maxwidth')
+        maxheight = config['images'].as_int('maxheight')
         linkre = re.compile(r"(http://[^ ]+)")
-        self.embeds = []
         for link in linkre.findall(self.posttext):
+            # lopp through links gettng embeds
             logging.info('Getting embed data for link: '+link)
             try:
-                embed = getembeddata(link,config)
-                if embed:
+                self.embedcode = getembedcode(link, maxwidth=maxwidth, maxheight=maxheight)
+                if self.embedcode:
                     logging.info('Embed data found!')
-                    message.embeds.append(embed)
                 else:
                     logging.info('Embed data not found!')    
             except:
@@ -386,7 +358,7 @@ class Message(object):
                 if response['result']:
                     logging.warn('message submission '+str(self._id)+' with image '+self.localfile+' is porn.')
                     # Make a greyscale version and use that instead
-                    if config['images']['adultaction'] == 'gray' or config['images']['adultaction'] == 'grey':
+                    if config['images']['adultaction'] in ['gray','grey']:
                         savegrayscale(self.localfile)
                         logging.info('Saving greyscale version...')
                     else:
