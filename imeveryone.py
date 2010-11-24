@@ -374,7 +374,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
         # Check for errors
         if len(message.useralerts) > 0:
             # Add an alert to show once redirected
-            ipdb.set_trace()
+            
             logging.info('Bad post!: '+' '.join(message.useralerts))      
             self.application.useralerts[sessionid].extend(message.useralerts)    
             self.application.textprefill[sessionid] = message.posttext 

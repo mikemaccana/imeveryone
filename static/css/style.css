@@ -59,6 +59,12 @@ form, fieldset {
 	width:1010px;
 	margin:0 auto;
 }
+
+#addingpost {
+    text-align: center;
+    margin: 10px;
+}
+
 /* header */
 #header {
     padding:7px 0 13px 20px;
@@ -141,16 +147,18 @@ form, fieldset {
 }
 
 .redbutton {
+    box-shadow: 0 0 5px #d00000; 
     -moz-box-shadow:0 0 5px #d00000; 
+    -webkit-box-shadow: 0 0 5px #d00000; 
     background-color:#b70000;
     background-image:url("/static/images/buttonred.gif"); 
     background-position:0 0;
     border-color:#b70000; 
     color:#FFFFFF !important;
     text-shadow:-1px -1px 0 #d00000;
-    -webkit-border-radius: 20px;
-    -moz-border-radius: 20px;
     border-radius: 20px;
+    -moz-border-radius: 20px;
+    -webkit-border-radius: 20px;
     border-style:solid;
     border-width:1px;
     cursor:pointer;
@@ -387,18 +395,18 @@ hr {
 	font-style:normal;
 }
 /* form form-write-us */
-.form-write-us ul {
+#somethingtosay ul {
 	list-style:none;
 	margin:0;
 	padding:0;
 }
-.form-write-us label {display:block;}
-.form-write-us li {padding-bottom:14px;}
-.form-write-us .container {
+#somethingtosay label {display:block;}
+#somethingtosay li {padding-bottom:14px;}
+#somethingtosay .container {
 	width:297px;
 	padding:15px 0 0 19px;
 }
-.form-write-us .text-field {
+#somethingtosay .text-field {
 	width:320px;
 	height:206px;
 	padding:3px;
@@ -406,7 +414,7 @@ hr {
 	border:1px solid #b1a57d;
 	overflow:hidden;
 }
-.form-write-us .text-field textarea {
+#somethingtosay .text-field textarea {
 	float:left;
 	width:320px;
 	max-width:320px;
@@ -419,7 +427,7 @@ hr {
 	border:0;
 	overflow:auto;
 }
-.form-write-us .submit {
+#somethingtosay .submit {
 	margin:0 3px 0 6px;
 	float:left;
 	position:relative;
@@ -429,14 +437,14 @@ hr {
 	width:325px;
 	overflow:hidden;
 }
-.form-write-us .browse {
+#somethingtosay .browse {
 	background:none;
 	border-style:none;
 	float:left;
 	padding:4px;
 	width:185px;
 }
-.form-write-us .submit input {
+#somethingtosay .submit input {
 	position:absolute;
 	right:-3px;
 	top:-5px;
@@ -447,27 +455,27 @@ hr {
 	float:left;
 }
 
-.form-write-us .submit a {
+#somethingtosay .submit a {
 } 
 
-.form-write-us input {
+#somethingtosay input {
 	margin:0;
 	padding:0;
 }
 /* captcha width */
-.form-write-us .text {
+#somethingtosay .text {
 	width:365px;
 	padding:0 0 0 4px;
 	overflow:hidden;
 }
-.form-write-us .text input {
+#somethingtosay .text input {
 	float:left;
 	margin:0;
 	padding:0 3px;
 	width:289px;
 	border:1px solid #b1a57d;
 }
-.form-write-us .info {
+#somethingtosay .info {
 	display:block;
 	padding:6px 0 2px 30px;
 	font-size:10px;
@@ -509,7 +517,7 @@ hr {
 	width: 105px;
 }
 
-.form-write-us em {
+#somethingtosay em {
 	display:block;
 	padding:10px 19px 0 0;
 	text-align:center;

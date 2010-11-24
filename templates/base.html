@@ -20,12 +20,20 @@
 	<script type="text/javascript">
 	            Hyphenator.run();
 	</script>
-	<script>
+	<script type="text/javascript">
 	var RecaptchaOptions = {
 		theme : 'custom',
     	custom_theme_widget: 'recaptcha_widget',
 		tabindex : 2
 	};
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function() {	
+			$('#somethingtosay').submit(function() {
+				ajaxloader = $('<div id="addingpost"><h2>Adding your post...</h2><img alt="Loading icon" src="/static/images/ajax-loader.gif"><div class="smallcaps"><p>One moment please</p></div></div>').hide();
+				ajaxloader.appendTo("#sidebarcontents").slideDown();
+			});	
+		});
 	</script>
 </head>
 

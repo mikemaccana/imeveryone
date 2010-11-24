@@ -14,10 +14,8 @@
 
 
 
-{% for embed in message.embeds %}
-	{% if 'html' in embed %}
-		{{ embed['html'] }}<br/>
-	{% end %}	
+{% if message.embedcode is not None %}
+	{{ message.embedcode }}
 {% end %}
 
 {% if message.preview is not None %}
