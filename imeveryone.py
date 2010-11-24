@@ -146,7 +146,14 @@ class TopHandler(BaseHandler):
         # Turn the Mongo docs back into Message objects
         for messagedict in messagedicts:
             topmessages.append(usermessages.Message(dehydrated=messagedict))
-            
+        
+        # DEBUG
+        for message in topmessages: 
+            if hasattr(message, 'embedcode'): 
+                print 'woo'
+            else:
+                ipdb.set_trace()
+                
         alerts = self.showalerts()
         
         self.render(
