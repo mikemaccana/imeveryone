@@ -1,10 +1,12 @@
 #!/usr/bin/env python
+'''Quickly drop DB - eg, ./quickdb.py dev'''
 from database import Database
 from configobj import ConfigObj
 import time
-
+import sys
 config = ConfigObj('imeveryone.conf')
-db = Database(config['database'])
+stage = sys.argv[1]
+db = Database(config,stage=stage)
 
 db.start()
 db.dbclient()
@@ -15,7 +17,7 @@ print('_')*80
 print('_')*80
 print('_')*80
 print('_')*80
-#raw_input('DROPPING DATABASE. Press enter to destroy data, or Ctrl C to cancel')
-#time.sleep(3)
+#raw_input('DROPPING DATABASE IN 3 SECONDS. Press enter to destroy data, or Ctrl C to cancel')
+time.sleep(3)
 
 db.connection.messages.drop()

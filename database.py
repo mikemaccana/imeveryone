@@ -7,8 +7,8 @@ import time
 
 class Database(object):
     '''MongoDB object'''
-    def __init__(self,dbconfig):
-        self.config = dbconfig
+    def __init__(self,config,stage):
+        self.config = config['database'][stage]
         self.pid = None
         self.connection = None
         

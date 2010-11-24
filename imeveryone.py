@@ -39,7 +39,7 @@ def stoplogging():
  
 
 class Application(tornado.web.Application):
-    def __init__(self,config,database):
+    def __init__(self,config,database,stage='dev'):
         # These handlers always get provided with the application, request and any transforms by Tornado
         handlers = [
             (r"/", LiveHandler),
@@ -54,10 +54,12 @@ class Application(tornado.web.Application):
             (r"/admin/content", AdminContentHandler),
             (r"/(.*)", CatchAllHandler),
         ]
+        self.stage = stage
+                 
         self.config = config
         self.useralerts = {}
         self.textprefill = {}
-        settings = config['application']
+        settings = config['application'][stage]
         tornado.web.Application.__init__(self, handlers, **settings)
         self.dbconnect = database.connection
         def getstartid():
@@ -146,8 +148,6 @@ class TopHandler(BaseHandler):
             topmessages.append(usermessages.Message(dehydrated=messagedict))
             
         alerts = self.showalerts()
-
-        textprefill = self.gettextprefill()
         
         self.render(
             "top.html",
@@ -162,7 +162,7 @@ class TopHandler(BaseHandler):
             readmore = True,
             avatars = True,
             textprefill = self.gettextprefill(),
-            emptydb = self.application.config['alerts']['emptydb']
+            emptydb = self.application.config['alerts']['emptydb'],
         )
         
 class AdminHandler(BaseHandler):
@@ -272,6 +272,7 @@ class AboutHandler(BaseHandler):
             pagetitle = '''Who Is Responsible for this Mess? - I'm Everyone''',
             captcha = self.application.config['captcha'].as_bool('enabled'),
             sidebar=True,
+            textprefill = self.gettextprefill(),
             )
             
 
@@ -483,17 +484,28 @@ def dbclient(dbconfig):
 
 def main():
     '''Separate main for unittesting and calling from other modules'''
+    # FIXME global should be app property
     global messageQueue
+    
+    def getstage():
+        '''Determine whether prod or dev'''
+        stage = 'dev'
+        if len(sys.argv) > 1: 
+            if sys.argv[1] == 'prod':
+                stage = 'prod'
+        return stage
+    stage = getstage()    
+    
     try:
         tornado.options.parse_command_line()
         messageQueue = Queue.Queue(0)
         config = ConfigObj('imeveryone.conf')
         # Start MongoDB server and client.
-        database = Database(config['database'])
+        database = Database(config,stage)
         database.start()
         database.dbclient()
         # Start web app
-        app = Application(config,database=database)
+        app = Application(config,database=database,stage=stage)
         http_server = tornado.httpserver.HTTPServer(app)
         http_server.listen(config['server'].as_int('port'))
         print '_'*80        
