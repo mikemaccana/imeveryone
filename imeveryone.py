@@ -28,7 +28,7 @@ from subprocess import Popen
 from pymongo import Connection
 from database import Database
 import random
-#import ipdb
+import ipdb
 
 antispam = usermessages.startakismet(ConfigObj('imeveryone.conf')['posting']['akismet'])
 
@@ -118,7 +118,7 @@ class BaseHandler(tornado.web.RequestHandler):
             _id=_id,
             handler=self,
             parentid=parentid
-        )   
+        )
         return message           
     def gettextprefill(self):
         '''Get previous text, to allow user to correct their old errors'''
@@ -147,7 +147,7 @@ class TopHandler(BaseHandler):
             topmessages.append(usermessages.Message(dehydrated=messagedict))
         alerts = self.showalerts()
 
-        textprefill = gettextprefill(self)
+        textprefill = self.gettextprefill()
         
         self.render(
             "top.html",

@@ -12,7 +12,7 @@ import uuid
 from time import gmtime, strftime
 import random
 from datetime import datetime
-#import ipdb
+import ipdb
 
 def startakismet(akismetcfg):
     return Akismet(key=akismetcfg['apikey'], agent=akismetcfg['clientname'])
@@ -218,6 +218,10 @@ class Message(object):
         # Make preview            
         if self.localfile is not None and config['images'].as_bool('enabled'):
             self.makepreviewpic(self.localfile,config['images'])
+            logging.info('Made preview picture.')
+        else:    
+            logging.warn('Not making image as local file not specified or images disabled.')
+        logging.info('Preview pic is: '+self.preview)
         
         # Validate the users input    
         #self.getimagetext(self.localfile,config['images'])
@@ -256,7 +260,8 @@ class Message(object):
         maxsize = (maxwidth,maxheight)
         # Don't bother if image is already smaller
         if width < maxwidth and height < maxheight:
-            return imagefile
+            logging.info('Small image, using existing pic at: '+imagefile)
+            self.preview = imagefile
         # Resize, save, return preview file name
         else:
             myimage.thumbnail(maxsize,Image.ANTIALIAS)
