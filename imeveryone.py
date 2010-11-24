@@ -150,9 +150,9 @@ class TopHandler(BaseHandler):
         # FIXME - DEBUG for occasional prod issue
         for message in topmessages: 
             if not hasattr(message, 'embedcode'): 
-                logging.warn('Note, message ID '+message['_id']+' is missing embedcode in DB')
+                logging.warn('Note, message ID '+str(message._id)+' is missing embedcode in DB')
             else:
-                logging.info('Note, message ID '+message['_id']+' embedcode is OK.')    
+                logging.info('Note, message ID '+str(message._id)+' embedcode is OK.')    
                 
                 
         alerts = self.showalerts()
