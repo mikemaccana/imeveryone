@@ -56,6 +56,7 @@ class Application(tornado.web.Application):
         ]
         self.config = config
         self.useralerts = {}
+        self.textprefill = {}
         settings = config['application']
         tornado.web.Application.__init__(self, handlers, **settings)
         self.dbconnect = database.connection
@@ -93,19 +94,20 @@ class BaseHandler(tornado.web.RequestHandler):
         return alist[random.randrange(0,len(alist))]     
     def showalerts(handler):
         '''Show alerts for session''' 
-        mycookie = handler.get_cookie('sessionid')
-        if mycookie in handler.application.useralerts:
-            alerts = handler.application.useralerts[mycookie]
+        # FIXME self.sessionid perhaps?
+        sessionid = handler.get_cookie('sessionid')
+        if sessionid in handler.application.useralerts:
+            alerts = handler.application.useralerts[sessionid]
             if len(alerts) > 0:
-                logging.info('About to show user alerts for cookie user: '+mycookie)
+                logging.info('About to show user alerts for cookie user: '+sessionid)
         else:
             alerts = []
         return alerts    
     def clearalerts(self):
         '''Clear alerts for session''' 
-        mycookie = self.get_cookie('sessionid')
-        if mycookie in self.application.useralerts:
-            self.application.useralerts[mycookie] = []
+        sessionid = self.get_cookie('sessionid')
+        if sessionid in self.application.useralerts:
+            self.application.useralerts[sessionid] = []
         return
     def messagemaker(self,parentid=None):
         '''Get a request, return a message (used for both new posts and comments)'''
@@ -118,7 +120,16 @@ class BaseHandler(tornado.web.RequestHandler):
             parentid=parentid
         )   
         return message           
-
+    def gettextprefill(self):
+        '''Get previous text, to allow user to correct their old errors'''
+        sessionid = self.get_cookie('sessionid')
+        if sessionid in self.application.textprefill:
+            textprefill = self.application.textprefill[sessionid]
+            self.application.textprefill[sessionid] = ''
+            return textprefill
+        else:
+            return ''
+            
 class TopHandler(BaseHandler):
     '''Top handler''' 
     def get(self):
@@ -136,6 +147,7 @@ class TopHandler(BaseHandler):
             topmessages.append(usermessages.Message(dehydrated=messagedict))
         alerts = self.showalerts()
 
+        textprefill = gettextprefill(self)
         
         self.render(
             "top.html",
@@ -149,6 +161,7 @@ class TopHandler(BaseHandler):
             sidebar = True,
             readmore = True,
             avatars = True,
+            textprefill = self.gettextprefill(),
         )
         
 class AdminHandler(BaseHandler):
@@ -196,8 +209,6 @@ class DiscussHandler(BaseHandler):
         
         # Create message objects from our dictionary
         mymessage = usermessages.Message(dehydrated=mymessagedict)
-        
-
         
         self.render(
             "discuss.html",
@@ -301,6 +312,7 @@ class LiveHandler(BaseHandler):
             sidebar = True,
             readmore = True,
             avatars = True,
+            textprefill = self.gettextprefill(),
             )
         self.clearalerts() 
 
@@ -359,11 +371,14 @@ class NewPostHandler(BaseHandler, MessageMixin):
         # Make message
         message = self.messagemaker() 
     
-        # If there are no errors, add to queue
+        # Check for errors
         if len(message.useralerts) > 0:
+            # Add an alert to show once redirected
             logging.info('Bad post!: '+' '.join(message.useralerts))      
             self.application.useralerts[sessionid].extend(message.useralerts)    
+            self.application.textprefill[sessionid] = message.posttext 
         else:
+            # No errors, add to queue
             logging.info('Good post.')
             # Add alerts to dict and save dict to DB
             # FIXME - imagedata not being set to zero in usermessages, non-encoded so screwing mongo up.
