@@ -147,12 +147,13 @@ class TopHandler(BaseHandler):
         for messagedict in messagedicts:
             topmessages.append(usermessages.Message(dehydrated=messagedict))
         
-        # DEBUG
+        # FIXME - DEBUG for occasional prod issue
         for message in topmessages: 
-            if hasattr(message, 'embedcode'): 
-                print 'woo'
+            if not hasattr(message, 'embedcode'): 
+                logging.warn('Note, message ID '+message['_id']+' is missing embedcode in DB')
             else:
-                ipdb.set_trace()
+                logging.info('Note, message ID '+message['_id']+' embedcode is OK.')    
+                
                 
         alerts = self.showalerts()
         
