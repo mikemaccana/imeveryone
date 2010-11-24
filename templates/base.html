@@ -30,7 +30,7 @@
 	<script type="text/javascript">
 		$(document).ready(function() {	
 			$('#somethingtosay').submit(function() {
-				ajaxloader = $('<div id="addingpost"><h2>Adding your post...</h2><img alt="Loading icon" src="/static/images/ajax-loader.gif"><div class="smallcaps"><p>One moment please</p></div></div>').hide();
+				ajaxloader = $('<div id="addingpost" class="smallcaps"><h2>Adding your post...</h2><img src="/static/images/ajax-loader.gif" alt="Loading icon" /><p>One moment please</p></div>').hide();
 				ajaxloader.appendTo("#sidebarcontents").slideDown();
 			});	
 		});

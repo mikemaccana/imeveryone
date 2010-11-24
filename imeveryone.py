@@ -137,14 +137,14 @@ class TopHandler(BaseHandler):
         topmessages=[]
         messagedicts=[]
         
-        
         descending = -1
         # Get out Mongo docs
-        for messagedict in self.application.dbconnect.messages.find({'article':True},limit=limit).sort('score', descending):
+        for messagedict in self.application.dbconnect.messages.find({'parentid':None},limit=limit).sort('score', descending):
             messagedicts.append(messagedict)
         # Turn the Mongo docs back into Message objects
         for messagedict in messagedicts:
             topmessages.append(usermessages.Message(dehydrated=messagedict))
+            
         alerts = self.showalerts()
 
         textprefill = self.gettextprefill()
@@ -162,6 +162,7 @@ class TopHandler(BaseHandler):
             readmore = True,
             avatars = True,
             textprefill = self.gettextprefill(),
+            emptydb = self.application.config['alerts']['emptydb']
         )
         
 class AdminHandler(BaseHandler):
