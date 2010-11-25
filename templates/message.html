@@ -10,7 +10,6 @@
 			</div>	    
 		{% end %}
 	</div>
-	
 
 	{% if message.embedcode is not None %}
 		{{ message.embedcode }}
@@ -23,7 +22,16 @@
 	{% end %}
 
 	<div class="read-more">
-	    <a href='{{ message.link }}' class="more"> Read more <img src="/static/images/hand.png"/></a>
+	    <a href='{{ message.link }}' class="more"> 
+			{% if len(message.comments) > 1 %}
+				{{ len(message.comments) }} comments...
+			{% elif len(message.comments) == 1 %}
+				1 comment...
+			{% else %}
+				Read more 
+			{% end %}
+			<img src="/static/images/hand.png"/>
+		</a>
 	    <div class="rightalign">
 	        <em>{{ message._id }}</em>
 	    </div>

@@ -121,8 +121,12 @@ class Message(object):
             # Create message from handler data
             self.author = 'Anonymous'
             self.posttext = handler.get_argument('posttext')
-            self.ip = handler.request.remote_ip
             self.useragent = handler.request.headers['User-Agent']
+            # nginx real IP
+            if 'X-Real-Ip' in handler.request.headers:
+                self.ip = handler.request.headers['X-Real-Ip'] 
+            else:
+                self.ip = handler.request.remote_ip
             self.referer = handler.request.headers['Referer']
             self.host = handler.request.headers['Host']
             # Add capctha info if enabled
