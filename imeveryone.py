@@ -98,12 +98,13 @@ class BaseHandler(tornado.web.RequestHandler):
         '''Show alerts for session''' 
         # FIXME self.sessionid perhaps?
         sessionid = handler.get_cookie('sessionid')
-        if sessionid in handler.application.useralerts:
-            alerts = handler.application.useralerts[sessionid]
-            if len(alerts) > 0:
-                logging.info('About to show user alerts for cookie user: '+sessionid)
-        else:
-            alerts = []
+        # None would be for new clients
+        alerts = []
+        if sessionid is not None:
+            if sessionid in handler.application.useralerts:
+                alerts = handler.application.useralerts[sessionid]
+                if len(alerts) > 0:
+                    logging.info('About to show user alerts for cookie user: '+str(sessionid))
         return alerts    
     def clearalerts(self):
         '''Clear alerts for session''' 
