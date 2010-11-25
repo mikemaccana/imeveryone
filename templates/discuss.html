@@ -60,7 +60,7 @@
 									<div class='message'>
 										<img class='floatleft' src="/static/images/avatars/{{ item['avatar'] }}.png"/>
 										<div class="commenttext">
-											<p class="hyphenate">{{ item['posttext'] }}</p>
+											<p class="hyphenate">{{escape (item['posttext'])}}</p>
 										</div>	
 										<a href='/discuss/{{item['_id']}}' class="addcomment">Reply</a>
 										<div class='rightalign'><em>{{ item['_id'] }}</em></div>
