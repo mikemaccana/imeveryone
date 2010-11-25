@@ -42,14 +42,14 @@ class Application(tornado.web.Application):
     def __init__(self,config,database,stage='dev'):
         # These handlers always get provided with the application, request and any transforms by Tornado
         handlers = [
-            (r"/", LiveHandler),
+            (r"/", TopHandler),
             (r"/auth/login", AuthLoginHandler),
             (r"/auth/logout", AuthLogoutHandler),
             (r"/a/message/new", NewPostHandler),
             (r"/a/message/updates", ViewerUpdateHandler),
             (r"/discuss/([0-9\-]+)", DiscussHandler),
             (r"/about", AboutHandler),
-            (r"/top", TopHandler),
+            (r"/live", LiveHandler),
             (r"/admin", AdminHandler),
             (r"/admin/content", AdminContentHandler),
             (r"/(.*)", CatchAllHandler),
@@ -151,8 +151,8 @@ class TopHandler(BaseHandler):
         for message in topmessages: 
             if not hasattr(message, 'embedcode'): 
                 logging.warn('Note, message ID '+str(message._id)+' is missing embedcode in DB')
-            else:
-                logging.info('Note, message ID '+str(message._id)+' embedcode is OK.')    
+            #else:
+            #    logging.info('Note, message ID '+str(message._id)+' embedcode is OK.')    
                 
                 
         alerts = self.showalerts()
@@ -205,6 +205,7 @@ class DiscussHandler(BaseHandler):
         
         # Check for discussion of invalid items
         if mymessagedict is None:
+            logging.warn('Request for non existent message id: '+str(messageid))
             self.redirect('/notfound')
         
         # Increment score for message
