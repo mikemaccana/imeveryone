@@ -1,0 +1,64 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<script type="text/javascript">var _sf_startpt=(new Date()).getTime()</script>	
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>{{ pagetitle }}</title>
+	<meta name="Description" content="{% block description %}I'm Everyone. Realtime, anonymous.{% end %}">
+	<link rel="apple-touch-icon" href="/static/images/apple-touch-icon.png">
+	<link rel="shortcut icon" href="/static/images/favicon.ico">
+	<link rel="stylesheet" type="text/css" href="{{ static_url("css/style.css") }}" />
+	<link rel="stylesheet" type="text/css" href="{{ static_url("css/opacity.css") }}" />
+	<!--[if lt IE 8]><link rel="stylesheet" type="text/css" href="{{ static_url("css/lt8.css") }}" media="screen"/><![endif]-->
+	{% block css %}
+	{% end %}
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js" ></script>	
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/jquery-ui.min.js" ></script>
+
+</head>
+
+<body>
+	<div id="wrapper">
+		<div class="inner">
+			<!-- header -->
+			<div id="header">
+				<h1><a href="/">I'm Everyone</a></h1>				
+			</div>
+
+			
+			<!-- main -->
+			<div id="main">
+				
+				<div class="about subtitle smallcaps"><img src="/static/images/littleline.png" />{{ heading }}<img src="/static/images/littleline.png" /></div>
+				
+				<!-- navigation -->				
+				<div class="twocolumns">
+					<!-- content -->			
+					
+					<div id="contentwide">
+						<!-- main-block -->		
+						<div id="messages">
+							<h1 class="smallcaps">
+								We're working on stuff!
+							</h1>			
+
+							<p>Sometimes you plan. Sometimes you wing it. Everything went better than expected. I'm Everyone is down for now while we improve a few things - thanks to all the feedback, especially from the news.yc crowd.</p>
+
+							<p>I'm Everyone Staff.</p>
+
+
+						</div>
+						<!-- block -->
+					</div>
+
+				</div>
+			</div>
+			<!-- footer -->
+			<div id="footer">
+				<p>(C) 2010 I'm Everyone. </p>
+			</div>
+		</div>
+	</div>
+
+</body>
+</html>
