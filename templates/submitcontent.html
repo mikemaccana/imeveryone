@@ -5,6 +5,15 @@
 		<div class="about subtitle smallcaps"><img src="/static/images/littleline.png" />Say it to <strong>348</strong> people instantly.<img src="/static/images/littleline.png" /></div>
 		<!-- form form-write-us -->
 		<form enctype='multipart/form-data' method='post' action='/a/message/new' id="somethingtosay">
+			<!-- alerts if any -->
+			<div alerts>
+				{% if len(alerts) %}
+					<div id='alerts'>
+						<p>{{ alerts[0] }}</p>
+					</div>	
+				{% end %}
+			</div>
+			<!-- end alerts-->
 			<fieldset>
 				<ul>
 					<li>
