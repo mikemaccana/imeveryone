@@ -14,7 +14,6 @@ import random
 from datetime import datetime
 import urllib
 import simplejson as json
-import ipdb
 
 
 def startakismet(akismetcfg):
@@ -146,7 +145,6 @@ class Message(object):
                 # new clients have no sessionid, so we can't save the sessionid avatar 
                 # mapping in their ancestor.
                 logging.error('No session ID was set!')
-                ipdb.set_trace()
             else:
                 logging.warn('Session ID set OK, session id'+self.sessionid)    
 
@@ -198,6 +196,8 @@ class Message(object):
                     ancestor['sessionavatars'][self.sessionid] = self.avatar
                     handler.application.dbconnect.messages.save(ancestor)
                     
+                    # This find_one *may* be the solution to the avatar repetition bug. I need to investigate.
+                    # But I'll push now anyway.
                     if self.avatar in handler.application.dbconnect.messages.find_one({'_id':int(self.thread)})['sessionavatars']:
                         logging.error('WHOA. We just popped this avatar from the ancestor. WTFsicle? ')              
                     
