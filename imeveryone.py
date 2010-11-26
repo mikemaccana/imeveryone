@@ -79,7 +79,21 @@ class Application(tornado.web.Application):
         '''Return next avail comment/reply ID'''
         self.currentid += 1
         nextid = self.currentid
-        return nextid
+        return nextid    
+    def getusercount(self):    
+        '''Generate user count'''
+        hour = time.gmtime()[3]
+        # change user count very 3 mins
+        minutecache = time.gmtime()[4]/3
+        minimum = self.config['usercount'].as_int('minimum')
+        # FIXME should be actual user count in future!
+        actual = self.config['usercount'].as_int('actual')
+        multiplier = self.config['usercount'].as_int('multiplier')
+
+        # Convert hours to peak multiplier
+        peakhour = [3,2,1,1,1,5,6,7,8,9,10,10,10,10,10,10,9,8,9,10,10,10,10,7][hour]
+        users = minimum + (peakhour * actual * multiplier) + minutecache
+        return users
 
 class BaseHandler(tornado.web.RequestHandler):
     '''Generic class for all URL handlers to inherit from'''
@@ -105,10 +119,10 @@ class BaseHandler(tornado.web.RequestHandler):
                 alerts = handler.application.useralerts[sessionid]
                 if len(alerts) > 0:
                     logging.info('About to show user alerts for cookie user: '+str(sessionid))
-        return alerts    
+        return alerts
     def clearalerts(self):
         '''Clear alerts for session''' 
-        sessionid = self.get_cookie('sessionid')
+        sessionid = self.getorsetsessionid()
         if sessionid in self.application.useralerts:
             self.application.useralerts[sessionid] = []
         return
@@ -125,17 +139,26 @@ class BaseHandler(tornado.web.RequestHandler):
         return message           
     def gettextprefill(self):
         '''Get previous text, to allow user to correct their old errors'''
-        sessionid = self.get_cookie('sessionid')
+        sessionid = self.getorsetsessionid()
         if sessionid in self.application.textprefill:
             textprefill = self.application.textprefill[sessionid]
             self.application.textprefill[sessionid] = ''
             return textprefill
         else:
             return ''
+    def getorsetsessionid(self): 
+        # Each user has a sessionid - we use this to present success / failure messages etc when posting
+        if not self.get_cookie('sessionid'):
+            self.set_cookie('sessionid', str(uuid.uuid4()))
+        sessionid = self.get_cookie('sessionid')    
+        return sessionid
             
 class TopHandler(BaseHandler):
     '''Top handler''' 
     def get(self):
+        # Always set a sessionID for first time visitors
+        sessionid = self.getorsetsessionid()
+        
         limit = self.application.config['scoring'].as_int('toplimit')
         topmessages=[]
         messagedicts=[]
@@ -172,6 +195,7 @@ class TopHandler(BaseHandler):
             avatars = True,
             textprefill = self.gettextprefill(),
             emptydb = self.application.config['alerts']['emptydb'],
+            usercount = self.application.getusercount(),
         )
         
 class AdminHandler(BaseHandler):
@@ -200,6 +224,9 @@ class AdminContentHandler(BaseHandler):
 class DiscussHandler(BaseHandler):
     def get(self,messageid):
         '''Show discussion for a thread'''
+        # Always set a sessionID for first time visitors
+        sessionid = self.getorsetsessionid()
+        
         messageid = int(messageid)
         captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])
         mymessagedict = self.application.dbconnect.messages.find_one({'_id':messageid})
@@ -242,7 +269,7 @@ class DiscussHandler(BaseHandler):
         logging.info('New comment request')
       
         # Clear alerts from previous posts
-        sessionid = self.get_cookie('sessionid')
+        sessionid = self.getorsetsessionid()
         self.application.useralerts[sessionid] = []        
         
         # Make message
@@ -268,6 +295,9 @@ class DiscussHandler(BaseHandler):
 class AboutHandler(BaseHandler):
     '''Handle conversations'''
     def get(self):
+        # Always set a sessionID for first time visitors
+        self.getorsetsessionid()
+
         captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])     
         
         alerts = self.showalerts()
@@ -283,6 +313,7 @@ class AboutHandler(BaseHandler):
             captcha = self.application.config['captcha'].as_bool('enabled'),
             sidebar=True,
             textprefill = self.gettextprefill(),
+            usercount = self.application.getusercount(),
             )
             
 
@@ -297,10 +328,8 @@ class CatchAllHandler(BaseHandler):
 class LiveHandler(BaseHandler):
     '''Handle request for our front page'''
     def get(self):
-        # Each user has a sessionid - we use this to present success / failure messages etc when posting
-        if not self.get_cookie('sessionid'):
-            self.set_cookie('sessionid', str(uuid.uuid4()))
-        sessionid = self.get_cookie('sessionid')
+        # Always set a sessionID for first time visitors
+        sessionid = self.getorsetsessionid()
         if not sessionid in self.application.useralerts:
             self.application.useralerts[sessionid] = []
         
@@ -325,6 +354,7 @@ class LiveHandler(BaseHandler):
             readmore = True,
             avatars = True,
             textprefill = self.gettextprefill(),
+            usercount = self.application.getusercount(),
             )
         self.clearalerts() 
 
@@ -377,7 +407,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
         global messageQueue
         logging.info("Post recieved from user!")        
         # Clear alerts from previous posts
-        sessionid = self.get_cookie('sessionid')
+        sessionid = self.getorsetsessionid()
         self.application.useralerts[sessionid] = []        
         
         # Make message

@@ -140,7 +140,16 @@ class Message(object):
                 self.imagedata = handler.request.files['image']
             else:
                 self.imagedata = None    
-            self.sessionid = handler.get_cookie('sessionid')    
+            # FIXME debug code, we can remove logging and tracing later
+            self.sessionid = handler.getorsetsessionid()
+            if not self.sessionid:
+                # new clients have no sessionid, so we can't save the sessionid avatar 
+                # mapping in their ancestor.
+                logging.error('No session ID was set!')
+                ipdb.set_trace()
+            else:
+                logging.warn('Session ID set OK, session id'+self.sessionid)    
+
         else:   
             logging.warn('No handler and no messagedata specified!')        
         
@@ -183,10 +192,23 @@ class Message(object):
                 ancestor = handler.application.dbconnect.messages.find_one({'_id':int(self.thread)})
                 if self.sessionid not in ancestor['sessionavatars']:
                     # This is the first time this sessionid has commented
-                    ancestor['sessionavatars'][self.sessionid] = ancestor['availavatars'].pop()
+                    # Grab and available avatar from the ancestor to use for this sessionid
+                    logging.info('This is the first time sessionid '+self.sessionid+' has commented in this thread')
+                    self.avatar = ancestor['availavatars'].pop()
+                    ancestor['sessionavatars'][self.sessionid] = self.avatar
                     handler.application.dbconnect.messages.save(ancestor)
-                self.avatar = ancestor['sessionavatars'][self.sessionid]
-                logging.info('Assigned new avatar: '+self.avatar+' for message '+str(self._id))    
+                    
+                    if self.avatar in handler.application.dbconnect.messages.find_one({'_id':int(self.thread)})['sessionavatars']:
+                        logging.error('WHOA. We just popped this avatar from the ancestor. WTFsicle? ')              
+                    
+                    # self.sessionid is None
+                    logging.info('Assigned new avatar: '+self.avatar+' for message '+str(self._id))        
+                    
+                else: 
+                    self.avatar = ancestor['sessionavatars'][self.sessionid]
+                    logging.info('This sessionid '+self.sessionid+' has commented in this thread before, using existing avatar '+ancestor['sessionavatars'][self.sessionid])        
+                    
+                    
                                 
                 logging.info('Adding comment '+str(self._id)+' as child of parent '+str(parentid))
                 handler.application.dbconnect.messages.save(parent)
