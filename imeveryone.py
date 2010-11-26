@@ -171,6 +171,14 @@ class TopHandler(BaseHandler):
         for messagedict in messagedicts:
             topmessages.append(usermessages.Message(dehydrated=messagedict))
         
+        # Now get ranks, and make a ranked list of messages
+        rankedmessages = []
+        for topmessage in topmessages:
+            topmessage.rank = topmessage.getrank()
+            rankedmessages.append(topmessage)
+        rankedmessages.sort(key=lambda x: x.rank, reverse=True)
+                
+             
         # FIXME - DEBUG for occasional prod issue
         for message in topmessages: 
             if not hasattr(message, 'embedcode'): 
@@ -183,7 +191,7 @@ class TopHandler(BaseHandler):
         
         self.render(
             "top.html",
-            topmessages = topmessages,
+            topmessages = rankedmessages,
             alerts = alerts,
             heading = self.pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
@@ -196,6 +204,7 @@ class TopHandler(BaseHandler):
             textprefill = self.gettextprefill(),
             emptydb = self.application.config['alerts']['emptydb'],
             usercount = self.application.getusercount(),
+            witticism = self.pick_one(self.application.config['presentation']['witticism']),
         )
         
 class AdminHandler(BaseHandler):
@@ -262,7 +271,8 @@ class DiscussHandler(BaseHandler):
             sidebar = None,
             readmore = True,
             avatars = True,
-            )
+            witticism = self.pick_one(self.application.config['presentation']['witticism']),
+        )
             
     def post(self,parentid):
         '''Add a new child comment'''
@@ -314,7 +324,8 @@ class AboutHandler(BaseHandler):
             sidebar=True,
             textprefill = self.gettextprefill(),
             usercount = self.application.getusercount(),
-            )
+            witticism = self.pick_one(self.application.config['presentation']['witticism']),
+        )
             
 
 class CatchAllHandler(BaseHandler):
@@ -355,7 +366,8 @@ class LiveHandler(BaseHandler):
             avatars = True,
             textprefill = self.gettextprefill(),
             usercount = self.application.getusercount(),
-            )
+            witticism = self.pick_one(self.application.config['presentation']['witticism']),
+        )
         self.clearalerts() 
 
 class MessageMixin(object):

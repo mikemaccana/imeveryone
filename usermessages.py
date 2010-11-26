@@ -425,13 +425,14 @@ class Message(object):
         prettystring = posttimedt.strftime("%I:%M %p %d")+daysuffixes[int(posttimedt.strftime("%d"))+1]+posttimedt.strftime(" %B %Y")
         return prettystring
         
-    def getrank(self, views, hoursold, GRAVITY=1.8):
+    def getrank(self, GRAVITY=1.8):
         '''Get rank for message. Based on http://amix.dk/blog/post/19574'''
-        posttimedt = getposttimedt()
-        age = posttimedt - datetime.utcnow()
+        posttimedt = self.getposttimedt()
+        age = datetime.utcnow() - posttimedt
         hoursold = (age.days * 24) + age.seconds / 3600
+        logging.info(str(hoursold)+' hours old')
 
-        rank = (self.score - 1) / pow((hoursold+2), GRAVITY)
+        rank = (self.score) / pow((hoursold+2), GRAVITY)
         return rank           
 
 
