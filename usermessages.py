@@ -430,7 +430,6 @@ class Message(object):
         posttimedt = self.getposttimedt()
         age = datetime.utcnow() - posttimedt
         hoursold = (age.days * 24) + age.seconds / 3600
-        logging.info(str(hoursold)+' hours old')
 
         rank = (self.score) / pow((hoursold+2), GRAVITY)
         return rank           

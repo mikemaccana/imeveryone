@@ -276,24 +276,32 @@ hr {
 }
 
 /* navigation */
-#nav {
-	width:960px;
+.nav {
 	list-style:none;
 	margin:0 0 27px;
 	padding:17px 20px 21px 45px;
 	text-align:center;
-	background: #F9F8F3 url("/static/images/underline-flourish.png") no-repeat scroll bottom;
-	font-size:24px;
-	line-height:25px;
 	font-style: italic;
 }
-#nav li {
+
+.wideunderscore {
+    width:960px;
+    background: #F9F8F3 url("/static/images/underline-flourish.png") no-repeat scroll bottom;
+	font-size:24px;
+	line-height:25px;
+    
+}
+
+.nav li {
 	display:inline;
 	padding: 0 20px 0 38px;
 	background:url(../images/nav-separator.gif) no-repeat 0 3px;
 	color:#181818;
 }
-#nav li:first-child {background:none;}
+
+.nav li:first-child {
+    background:none;
+}
 #content h2, #contentwide h2 {
 	margin:0 0 14px;
 	font:bold 36px/41px FranklinGothicFSDemiCondensed, Arial, Helvetica, sans-serif;

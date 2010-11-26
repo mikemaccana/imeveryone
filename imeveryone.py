@@ -42,7 +42,7 @@ class Application(tornado.web.Application):
     def __init__(self,config,database,stage='dev'):
         # These handlers always get provided with the application, request and any transforms by Tornado
         handlers = [
-            (r"/", TopHandler),
+            (r"/(page/[1-5])?", TopHandler),
             (r"/auth/login", AuthLoginHandler),
             (r"/auth/logout", AuthLogoutHandler),
             (r"/a/message/new", NewPostHandler),
@@ -155,9 +155,18 @@ class BaseHandler(tornado.web.RequestHandler):
             
 class TopHandler(BaseHandler):
     '''Top handler''' 
-    def get(self):
+    def get(self,page):
         # Always set a sessionID for first time visitors
         sessionid = self.getorsetsessionid()
+        
+        if page is None:
+            page = 1
+        else:
+            page = int(page.split('/')[1])
+        
+        
+        
+        itemsperpage = self.application.config['scoring'].as_int('itemsperpage')
         
         limit = self.application.config['scoring'].as_int('toplimit')
         topmessages=[]
@@ -177,7 +186,12 @@ class TopHandler(BaseHandler):
             topmessage.rank = topmessage.getrank()
             rankedmessages.append(topmessage)
         rankedmessages.sort(key=lambda x: x.rank, reverse=True)
-                
+        
+        # Show subset of rankedmessages for page
+        start = (page-1)*itemsperpage  
+        end = start + itemsperpage
+        logging.warn('page is: '+str(page)+' woo, showing items '+str(start)+' to '+str(end))
+        rankedmessages = rankedmessages[start:end]        
              
         # FIXME - DEBUG for occasional prod issue
         for message in topmessages: 
@@ -332,7 +346,16 @@ class CatchAllHandler(BaseHandler):
     def get(self,url):
         '''404'''
         logging.warn('Bad URL: '+url)
-        self.render('notfound.html',pagetitle='Not Found!',heading='Oops',prompt1='Doesnt Exist Heh?',prompt2='Make It',badurl=url,alerts=[],sidebar=False)
+        self.render('notfound.html',
+            pagetitle='Not Found!',
+            heading='Oops',
+            prompt1='Doesnt Exist Heh?',
+            prompt2='Make It',
+            badurl=url,
+            alerts=[],
+            sidebar=False,
+            witticism = self.pick_one(self.application.config['presentation']['witticism']),
+        )
         raise tornado.web.HTTPError(404)
 
 
