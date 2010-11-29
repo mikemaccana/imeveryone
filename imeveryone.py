@@ -81,7 +81,8 @@ class Application(tornado.web.Application):
         nextid = self.currentid
         return nextid    
     def getusercount(self):    
-        '''Generate user count'''
+        '''Generate user count
+        In future: len(MessageMixin.waiters) provides an accurate measure'''
         hour = time.gmtime()[3]
         # change user count very 3 mins
         minutecache = time.gmtime()[4]/3
@@ -163,8 +164,7 @@ class TopHandler(BaseHandler):
             page = 1
         else:
             page = int(page.split('/')[1])
-        
-        
+
         
         itemsperpage = self.application.config['scoring'].as_int('itemsperpage')
         
@@ -173,7 +173,7 @@ class TopHandler(BaseHandler):
         messagedicts=[]
         
         descending = -1
-        # Get out Mongo docs
+        # Get our Mongo docs
         for messagedict in self.application.dbconnect.messages.find({'parentid':None},limit=limit).sort('score', descending):
             messagedicts.append(messagedict)
         # Turn the Mongo docs back into Message objects
@@ -190,7 +190,7 @@ class TopHandler(BaseHandler):
         # Show subset of rankedmessages for page
         start = (page-1)*itemsperpage  
         end = start + itemsperpage
-        logging.warn('page is: '+str(page)+' woo, showing items '+str(start)+' to '+str(end))
+        logging.info('page is: '+str(page)+' woo, showing items '+str(start)+' to '+str(end))
         rankedmessages = rankedmessages[start:end]        
              
         # FIXME - DEBUG for occasional prod issue
@@ -367,8 +367,12 @@ class LiveHandler(BaseHandler):
         if not sessionid in self.application.useralerts:
             self.application.useralerts[sessionid] = []
         
-        # Ensure messages are ordered corrrectly on initial connect
-        sortedmessages = sorted(MessageMixin.cache, key=lambda message: message._id, reverse=True)
+        # Ensure messages are ordered correctly on initial connect
+        # should become a DB query
+        sortedmessages = []
+        descending = -1
+        for sortedmessage in self.application.dbconnect.messages.find({'parentid':None},limit=50).sort('_id', descending):
+            sortedmessages.append(usermessages.Message(dehydrated=sortedmessage))
         
         captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])
         
@@ -406,8 +410,9 @@ class MessageMixin(object):
         '''Add new clients to waiters list'''
         if cursor:
             index = 0
-            for i in xrange(len(MessageMixin.cache)):
-                index = len(MessageMixin.cache) - i - 1
+            # Loops each numbered message in the cache
+            for num in xrange(len(MessageMixin.cache)):
+                index = len(MessageMixin.cache) - num - 1
                 logging.info('Cache index is %s', index)
                 # Note cursor is unicode not int
                 # Converting unicode to int seems to mysteriously break comparison!
@@ -519,7 +524,7 @@ class ViewerUpdateHandler(BaseHandler, MessageMixin):
                 'preview':newmessage.preview,
                 'id':newmessage._id,
                 'html':newmessage.html,
-                })  
+            })  
         # We send a dict with one key, 'messages', which is the jsonmessages list
         self.finish(dict(messages=jsonmessages))
 

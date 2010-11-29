@@ -320,19 +320,20 @@ class Message(object):
 
     def checkspam(self,config,antispam):
         '''Check for spam using Akismet'''
-        try:
-            spam = antispam.comment_check(self.posttext,data = {
-            'user_ip':self.ip,
-            'user_agent':self.useragent,
-            'referrer':self.referer,
-            'SERVER_ADDR':self.host
-        }, build_data=True, DEBUG=False)
-        # Python Akismet library can fail on some types of unicode
-        except UnicodeEncodeError:
-            spam = True
-        if spam:
-            self.useralerts.append(config['alerts']['spam'])
-            self.spam = True
+        if config['posting']['akismet'].as_bool('enabled'):
+            try:
+                spam = antispam.comment_check(self.posttext,data = {
+                'user_ip':self.ip,
+                'user_agent':self.useragent,
+                'referrer':self.referer,
+                'SERVER_ADDR':self.host
+            }, build_data=True, DEBUG=False)
+            # Python Akismet library can fail on some types of unicode
+            except UnicodeEncodeError:
+                spam = True
+            if spam:
+                self.useralerts.append(config['alerts']['spam'])
+                self.spam = True
         return
     
     def checklinksandembeds(self,config):
