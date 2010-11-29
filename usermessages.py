@@ -426,7 +426,7 @@ class Message(object):
         prettystring = str(int(posttimedt.strftime("%I")))+':'+posttimedt.strftime("%M %p %d")+daysuffixes[int(posttimedt.strftime("%d"))-1]+posttimedt.strftime(" %B %Y")
         return prettystring
         
-    def getrank(self, GRAVITY=1.8):
+    def getrank(self, GRAVITY=4):
         '''Get rank for message. Based on http://amix.dk/blog/post/19574'''
         posttimedt = self.getposttimedt()
         age = datetime.utcnow() - posttimedt
