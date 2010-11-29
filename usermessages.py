@@ -423,7 +423,7 @@ class Message(object):
         '''Return pretty printed date'''
         posttimedt = self.getposttimedt()
         daysuffixes = ['st','nd','rd'] + 17*['th'] + ['st','nd','rd'] + 7*['th'] + ['st'] 
-        prettystring = str(int(posttimedt.strftime("%I")))+':'+posttimedt.strftime("%M %p %d")+daysuffixes[int(posttimedt.strftime("%d"))+1]+posttimedt.strftime(" %B %Y")
+        prettystring = str(int(posttimedt.strftime("%I")))+':'+posttimedt.strftime("%M %p %d")+daysuffixes[int(posttimedt.strftime("%d"))-1]+posttimedt.strftime(" %B %Y")
         return prettystring
         
     def getrank(self, GRAVITY=1.8):
