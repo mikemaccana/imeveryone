@@ -271,6 +271,8 @@ class DiscussHandler(BaseHandler):
         # Create message objects from our dictionary
         mymessage = usermessages.Message(dehydrated=mymessagedict)
         
+        pagetitle = '''I'm Everyone - '''+' '.join(mymessage.posttext.split()[0:15])+'...'
+        
         self.render(
             "discuss.html",
             message = mymessage,
@@ -279,7 +281,7 @@ class DiscussHandler(BaseHandler):
             heading = self.pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
-            pagetitle = '''Discuss - I'm Everyone''',
+            pagetitle = pagetitle,
             commenttree = commenttree,
             nexturl = self.request.uri,
             sidebar = None,
