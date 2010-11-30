@@ -148,11 +148,15 @@ class BaseHandler(tornado.web.RequestHandler):
         else:
             return ''
     def getorsetsessionid(self): 
-        # Each user has a sessionid - we use this to present success / failure messages etc when posting
+        '''Each user has a sessionid - we use this to present success / failure messages etc when posting'''
         if not self.get_cookie('sessionid'):
             self.set_cookie('sessionid', str(uuid.uuid4()))
         sessionid = self.get_cookie('sessionid')    
         return sessionid
+    def updatetreecounts(self,messages,db):
+        '''Update the 'replies' count on a list of messageids'''
+        for message in messages:
+            message.updatetreecount(db)     
             
 class TopHandler(BaseHandler):
     '''Top handler''' 
@@ -187,10 +191,12 @@ class TopHandler(BaseHandler):
             rankedmessages.append(topmessage)
         rankedmessages.sort(key=lambda x: x.rank, reverse=True)
         
+        # Update the treecount for all the messages
+        self.updatetreecounts(rankedmessages,self.application.dbconnect)
+        
         # Show subset of rankedmessages for page
         start = (page-1)*itemsperpage  
         end = start + itemsperpage
-        logging.info('page is: '+str(page)+' woo, showing items '+str(start)+' to '+str(end))
         rankedmessages = rankedmessages[start:end]        
              
         # FIXME - DEBUG for occasional prod issue

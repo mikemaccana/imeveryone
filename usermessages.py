@@ -99,7 +99,7 @@ class Message(object):
         
         self._id = _id        
         self.localfile = localfile
-        self.preview, self.embedcode, self.headline, self.intro, self.thread, self.availavatars = None, None, None, None, None, None
+        self.preview, self.embedcode, self.headline, self.intro, self.thread, self.availavatars, self.treecount = None, None, None, None, None, None, None
         self.useralerts, self.comments = [], []
         self.score = 1
         
@@ -448,5 +448,27 @@ class Message(object):
         rank = round(order + sign * seconds / 45000, 7)
         return rank
         
+        count = 0
 
+    def updatetreecount(self,db):
+        '''Get total of children and grandchildren'''
+        
+        
+        def addchildrentototal(item):
+            '''Add children of a post recursively'''
+            if len(item.comments) == 0:
+                self.treecount +=1
+                return
+            else:
+                for commentid in item.comments:
+                    commentdoc = db.messages.find_one(commentid)
+                    # Some docs have been deleted from the DB
+                    if commentdoc is not None:
+                        comment = Message(dehydrated=commentdoc)
+                        self.treecount += 1
+                        addchildrentototal(comment)
+    
+        self.treecount = 0
+        addchildrentototal(self)
+        
 
