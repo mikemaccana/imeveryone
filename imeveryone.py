@@ -580,6 +580,8 @@ def main():
         tornado.options.parse_command_line()
         messageQueue = Queue.Queue(0)
         config = ConfigObj('imeveryone.conf')
+        # Set up logging
+        logging.basicConfig(level=logging.DEBUG, filename=config['application'][stage]['logfile'])
         # Start MongoDB server and client.
         database = Database(config,stage)
         database.start()

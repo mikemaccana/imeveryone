@@ -169,6 +169,22 @@ class Message(object):
             self.sessionavatars[self.sessionid] = self.availavatars.pop()
             self.avatar = self.sessionavatars[self.sessionid]
             
+            # Currently only top level messages can have links, pictures or embeds
+            # Process embeds (FIXME - must come before saveimages due to check for existing embeds in saveimages)
+            self.checklinksandembeds(config)
+
+            # If there's no local image file, save image from web url
+            if self.localfile is None:
+                self.saveimages(config)
+
+            # Make preview            
+            if self.localfile is not None and config['images'].as_bool('enabled'):
+                self.makepreviewpic(self.localfile,config['images'])
+                logging.info('Made preview picture.')
+            else:    
+                logging.warn('Not making image as local file not specified or images disabled.')
+            logging.info('Preview pic is: '+str(self.preview))
+            
         else:
             # We're a reply
             logging.info('Creating new reply '+str(self._id))   
@@ -216,20 +232,7 @@ class Message(object):
             else:    
                 logging.warn('Error! Could not find parent with parentid '+str(parentid)+' in DB')
                 
-        # Process embeds (FIXME - must come before saveimages due to check for existing embeds in saveimages)
-        self.checklinksandembeds(config)
-      
-        # If there's no local image file, save image from web url
-        if self.localfile is None:
-            self.saveimages(config)
         
-        # Make preview            
-        if self.localfile is not None and config['images'].as_bool('enabled'):
-            self.makepreviewpic(self.localfile,config['images'])
-            logging.info('Made preview picture.')
-        else:    
-            logging.warn('Not making image as local file not specified or images disabled.')
-        logging.info('Preview pic is: '+str(self.preview))
         
         # Validate the users input    
         #self.getimagetext(self.localfile,config['images'])
