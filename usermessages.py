@@ -14,7 +14,7 @@ import random
 from datetime import datetime
 import urllib
 import simplejson as json
-
+from math import log
 
 def startakismet(akismetcfg):
     return Akismet(key=akismetcfg['apikey'], agent=akismetcfg['clientname'])
@@ -426,13 +426,24 @@ class Message(object):
         prettystring = str(int(posttimedt.strftime("%I")))+':'+posttimedt.strftime("%M %p %d")+daysuffixes[int(posttimedt.strftime("%d"))-1]+posttimedt.strftime(" %B %Y")
         return prettystring
         
-    def getrank(self, GRAVITY=4):
-        '''Get rank for message. Based on http://amix.dk/blog/post/19574'''
+    def getrankOLD(self, GRAVITY=4):
+        '''Get rank for message. Based on http://amix.dk/blog/post/19574
+        HN style'''
         posttimedt = self.getposttimedt()
         age = datetime.utcnow() - posttimedt
         hoursold = (age.days * 24) + age.seconds / 3600
 
         rank = (self.score) / pow((hoursold+2), GRAVITY)
         return rank           
+        
+    def getrank(self):
+        '''Get rank for message. Based on http://amix.dk/blog/post/19574 (Reddit style)
+        '''
+        order = log(max(abs(self.score), 1), 10)
+        sign = 1 if self.score > 0 else -1 if self.score < 0 else 0
+        seconds =  time.mktime(self.getposttimedt().timetuple()) - 1134028003
+        rank = round(order + sign * seconds / 45000, 7)
+        return rank
+        
 
 
