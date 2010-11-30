@@ -269,7 +269,7 @@ class DiscussHandler(BaseHandler):
         mymessagedict['score']+=self.application.config['scoring'].as_int('view')
         self.application.dbconnect.messages.save(mymessagedict)
         
-        # Create a tree of comments 9this should reqlly be a Message method)
+        # Create a tree of comments (this should really be a Message method)
         commenttree = usermessages.buildtree(mymessagedict,messagedb=self.application.dbconnect.messages)
         
         alerts = self.showalerts()
@@ -383,6 +383,9 @@ class LiveHandler(BaseHandler):
             sortedmessages.append(usermessages.Message(dehydrated=sortedmessage))
         
         captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])
+        
+        # Update the treecount for all the messages
+        self.updatetreecounts(sortedmessages,self.application.dbconnect)
         
         # Show the messages and any alerts
         alerts = self.showalerts()
