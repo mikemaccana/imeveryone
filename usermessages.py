@@ -456,8 +456,10 @@ class Message(object):
         
         def addchildrentototal(item):
             '''Add children of a post recursively'''
+            # Only count down level posts, not top level 
+            if item.parentid:
+                self.treecount += 1
             if len(item.comments) == 0:
-                self.treecount +=1
                 return
             else:
                 for commentid in item.comments:
@@ -465,7 +467,6 @@ class Message(object):
                     # Some docs have been deleted from the DB
                     if commentdoc is not None:
                         comment = Message(dehydrated=commentdoc)
-                        self.treecount += 1
                         addchildrentototal(comment)
     
         self.treecount = 0
