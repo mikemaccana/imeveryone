@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 
+{% block description %}
+	{{escape (message.posttext) }}
+{% end %}
+
+
 {% block css %}
 {% end %}
 
@@ -45,29 +50,35 @@
 			</div>
 			<div id="commentarea">
 				<ul id="commenttree">	
-					{% for item in commenttree %}
-						{% if item == 'in' %}
+					{% for comment in commenttree %}
+						{% if comment == 'in' %}
 							<ul>
-						{% elif item == 'out' %}
+						{% elif comment == 'out' %}
 							</ul>
 							</li>
 						{% else %}
 							<li>
 								<div class="comment">
 									<div class="commentheading">
-										{{ item['prettydate'] }}
+										{{ comment['prettydate'] }}
 									</div>
 									<div class='message'>
-										<img class='floatleft' src="/static/images/avatars/{{ item['avatar'] }}.png"/>
+										<img class='floatleft' src=
+											{% if comment['sessionid'] in message.sessionavatars %}
+												"/static/images/avatars/{{ message.sessionavatars[comment['sessionid']] }}.png"
+											{% else %}
+												"/static/images/avatars/snail.png"
+											{% end %}
+										/>
 										<div class="commenttext">
-											<p class="hyphenate">{{escape (item['posttext'])}}</p>
+											<p class="hyphenate">{{escape (comment['posttext'])}}</p>
 										</div>	
-										<a href='/discuss/{{item['_id']}}' class="addcomment">Reply</a>
-										<div class='rightalign'><em>{{ item['_id'] }}</em></div>
+										<a href='/discuss/{{comment['_id']}}' class="addcomment">Reply</a>
+										<div class='rightalign'><em>{{ comment['_id'] }}</em></div>
 									</div>
 								</div>	
 							<!-- only close if there are no replies-->	
-							{% if not len(item['comments']) %}
+							{% if not len(comment['comments']) %}
 								</li>
 							{% end %}
 						{% end %}							

@@ -138,18 +138,11 @@ class Message(object):
             if 'image' in handler.request.files:
                 self.imagedata = handler.request.files['image']
             else:
-                self.imagedata = None    
-            # FIXME debug code, we can remove logging and tracing later
+                self.imagedata = None
             self.sessionid = handler.getorsetsessionid()
-            if not self.sessionid:
-                # new clients have no sessionid, so we can't save the sessionid avatar 
-                # mapping in their ancestor.
-                logging.error('No session ID was set!')
-            else:
-                logging.warn('Session ID set OK, session id'+self.sessionid)    
 
         else:   
-            logging.warn('No handler and no messagedata specified!')        
+            logging.error('No handler specified, and not dehydrated! Cannot create message')        
         
         # Are we an article or a reply
         self.parentid = parentid
@@ -167,7 +160,6 @@ class Message(object):
             
             # Grab an avatar from my own list!
             self.sessionavatars[self.sessionid] = self.availavatars.pop()
-            self.avatar = self.sessionavatars[self.sessionid]
             
             # Currently only top level messages can have links, pictures or embeds
             # Process embeds (FIXME - must come before saveimages due to check for existing embeds in saveimages)
@@ -202,32 +194,23 @@ class Message(object):
                 self.thread = parent['thread']
                 logging.info('Thread is '+str(self.thread))
 
+                # Save parent now
+                # Note that 'ancestor' (later) may be the same comment, so we need to save this now.
+                logging.info('Adding comment '+str(self._id)+' as child of parent '+str(parentid))
+                handler.application.dbconnect.messages.save(parent)
+
                 # Take an avatar from the sessions avatar/dict in ancestor
                 ancestor = handler.application.dbconnect.messages.find_one({'_id':int(self.thread)})
                 if self.sessionid not in ancestor['sessionavatars']:
                     # This is the first time this sessionid has commented
                     # Grab and available avatar from the ancestor to use for this sessionid
-                    logging.info('This is the first time sessionid '+self.sessionid+' has commented in this thread')
-                    self.avatar = ancestor['availavatars'].pop()
-                    ancestor['sessionavatars'][self.sessionid] = self.avatar
+                    myavatar = ancestor['availavatars'].pop()
+                    ancestor['sessionavatars'][self.sessionid] = myavatar
+                    logging.info('Sessionid '+self.sessionid+' has commented in this thread for the first time. Assigned '+myavatar+' for message '+str(self._id))
                     handler.application.dbconnect.messages.save(ancestor)
-                    
-                    # This find_one *may* be the solution to the avatar repetition bug. I need to investigate.
-                    # But I'll push now anyway.
-                    if self.avatar in handler.application.dbconnect.messages.find_one({'_id':int(self.thread)})['sessionavatars']:
-                        logging.error('WHOA. We just popped this avatar from the ancestor. WTFsicle? ')              
-                    
-                    # self.sessionid is None
-                    logging.info('Assigned new avatar: '+self.avatar+' for message '+str(self._id))        
-                    
+                    # Here ancestor is saved to db with correct info, but it gets overridden later                    
                 else: 
-                    self.avatar = ancestor['sessionavatars'][self.sessionid]
                     logging.info('This sessionid '+self.sessionid+' has commented in this thread before, using existing avatar '+ancestor['sessionavatars'][self.sessionid])        
-                    
-                    
-                                
-                logging.info('Adding comment '+str(self._id)+' as child of parent '+str(parentid))
-                handler.application.dbconnect.messages.save(parent)
                                 
             else:    
                 logging.warn('Error! Could not find parent with parentid '+str(parentid)+' in DB')
@@ -423,21 +406,12 @@ class Message(object):
         return datetime(self.posttime['year'], self.posttime['month'], self.posttime['day'], self.posttime['hour'], self.posttime['minute'], self.posttime['second'])   
     
     def getprettydate(self):
-        '''Return pretty printed date'''
+        '''Return pretty printed date, with suffixes (st, nd) and no leading zeros'''
         posttimedt = self.getposttimedt()
+        prettytime = str(int(posttimedt.strftime("%I")))+':'+posttimedt.strftime("%M %p")
         daysuffixes = ['st','nd','rd'] + 17*['th'] + ['st','nd','rd'] + 7*['th'] + ['st'] 
-        prettystring = str(int(posttimedt.strftime("%I")))+':'+posttimedt.strftime("%M %p %d")+daysuffixes[int(posttimedt.strftime("%d"))-1]+posttimedt.strftime(" %B %Y")
-        return prettystring
-        
-    def getrankOLD(self, GRAVITY=4):
-        '''Get rank for message. Based on http://amix.dk/blog/post/19574
-        HN style'''
-        posttimedt = self.getposttimedt()
-        age = datetime.utcnow() - posttimedt
-        hoursold = (age.days * 24) + age.seconds / 3600
-
-        rank = (self.score) / pow((hoursold+2), GRAVITY)
-        return rank           
+        prettydate = str(int(posttimedt.strftime("%d")))+daysuffixes[int(posttimedt.strftime("%d"))-1]+posttimedt.strftime(" %B %Y")
+        return prettytime+' '+prettydate   
         
     def getrank(self):
         '''Get rank for message. Based on http://amix.dk/blog/post/19574 (Reddit style)

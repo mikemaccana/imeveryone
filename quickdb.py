@@ -36,8 +36,14 @@ def setscore(id):
     return
 
 def updateallitems():
+    '''Update dates and remove old avatar variable'''
     for doc in db.connection.messages.find():
         message = usermessages.Message(dehydrated=doc)
         message.prettydate = message.getprettydate()
         doc = message.__dict__
+        try:
+            del doc['avatar']
+        except:
+            pass
         db.connection.messages.save(doc)
+        

@@ -1,6 +1,6 @@
 <em class="date">{{ message.prettydate }}</em>
 
-<img class="floatleft" src="/static/images/avatars/{{ message.avatar }}.png"/>
+<img class="floatleft" src="/static/images/avatars/{{ message.sessionavatars[message.sessionid] }}.png"/>
 	
 <div class="posttext">
 	<h2>{{ escape(message.headline)}}</h2>
