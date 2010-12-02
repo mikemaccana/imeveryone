@@ -1,18 +1,26 @@
 @font-face {
 	font-family: 'FranklinGothicFSDemiCondensed';
-	src: url('../fonts/FranklinGothic-DemiCd-webfont.eot');
+	src: url('/static/fonts/FranklinGothic-DemiCd-webfont.eot');
 	src: local(' '),
-	url('../fonts/FranklinGothic-DemiCd-webfont.woff') format('woff'),
-	url('../fonts/FranklinGothic-DemiCd-webfont.ttf') format('truetype'),
-	url('../fonts/FranklinGothic-DemiCd-webfont.svg#webfont') format('svg');
+	url('/static/fonts/FranklinGothic-DemiCd-webfont.woff') format('woff'),
+	url('/static/fonts/FranklinGothic-DemiCd-webfont.ttf') format('truetype'),
+	url('/static/fonts/FranklinGothic-DemiCd-webfont.svg#webfont') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }
 
 @font-face {
 	font-family: 'BaskervilleNormalRegular';
-	src: url('../fonts/baskerville-normal-webfont.eot');
-	src: local('☺'), url('../fonts/baskerville-normal-webfont.woff') format('woff'), url('../fonts/baskerville-normal-webfont.ttf') format('truetype'), url('../fonts/baskerville-normal-webfont.svg#webfontDDa9Hej1') format('svg');
+	src: url('/static/fonts/baskerville-normal-webfont.eot');
+	src: local('☺'), url('/static/fonts/baskerville-normal-webfont.woff') format('woff'), url('/static/fonts/baskerville-normal-webfont.ttf') format('truetype'), url('/static/fonts/baskerville-normal-webfont.svg#webfontDDa9Hej1') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'LeagueGothicRegular';
+	src: url('/static/fonts/League_Gothic-webfont.eot');
+	src: local('☺'), url('/static/fonts/League_Gothic-webfont.woff') format('woff'), url('/static/fonts/League_Gothic-webfont.ttf') format('truetype'), url('/static/fonts/League_Gothic-webfont.svg#webfontOTINA1xY') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }
@@ -23,6 +31,7 @@ html, body {
 	width:100%;
 	min-width:960px;
 }
+
 body {
 	margin:0;
 	display:table-cell;
@@ -74,7 +83,7 @@ form, fieldset {
 }
 #header h1 {
     margin:0 0 -4px;
-    font:bold 72px/80px FranklinGothicFSDemiCondensed, Arial, Helvetica, sans-serif;
+    font:bold 72px/80px LeagueGothicRegular, Arial, Helvetica, sans-serif;
     position:relative;
     text-transform:uppercase;
 }
@@ -122,6 +131,10 @@ form, fieldset {
 	text-align:center;
 	padding-bottom:8px;
 	overflow:hidden;
+}
+
+#commenttitle {
+    letter-spacing: 10px;
 }
 
 .button, .addcomment {
@@ -304,10 +317,11 @@ hr {
 }
 #content h2, #contentwide h2 {
 	margin:0 0 14px;
-	font:bold 36px/41px FranklinGothicFSDemiCondensed, Arial, Helvetica, sans-serif;
+	font: 44px/46px LeagueGothicRegular, Arial, Helvetica, sans-serif;
 	padding:0 0 0 18px;
 	word-spacing:3px;
 	text-transform:uppercase;
+	text-shadow: 1px 1px #DDDDDD;
 }
 .date {
 	display:block;

@@ -7,12 +7,10 @@
 
 	{% if message.intro %}
 	    <div class="text-box hyphenate">
-			{{escape (message.intro)}}
+			{{escape (message.intro)}} ✝
 		</div>	    
 	{% end %}
 </div>
-
-
 
 {% if message.embedcode is not None %}
 	{{ message.embedcode }}

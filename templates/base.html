@@ -4,7 +4,7 @@
 	<script type="text/javascript">var _sf_startpt=(new Date()).getTime()</script>	
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>{{ pagetitle }}</title>
-	<meta name="Description" content="{% block description %}A live, anonymous place to confess, to have witness, to express misery, and make mirth.{% end %}">
+	<meta name="Description" content="{% block description %}{{ heading }}{% end %}">
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
 	<meta name="viewport" content="user-scalable=no, width=device-width" />
@@ -24,7 +24,7 @@
 	<script type="text/javascript" src="{{ static_url("js/input-type-file.js") }}" ></script>
 	<script type="text/javascript" src="{{ static_url("js/hyphenate.js") }}" ></script>
 	<script type="text/javascript">
-	            Hyphenator.run();
+		Hyphenator.run();
 	</script>
 	<script type="text/javascript">
 	var RecaptchaOptions = {
@@ -67,7 +67,9 @@
 			<!-- main -->
 			<div id="main">
 				
-				<div class="about subtitle smallcaps"><img src="/static/images/littleline.png" />{{ heading }}<img src="/static/images/littleline.png" /></div>
+				<div class="about subtitle smallcaps">
+					<p><img src="/static/images/littleline.png" />{{ witticism }}<img src="/static/images/littleline.png" /></p>
+				</div>
 				
 				<!-- navigation -->
 				<ul class="nav wideunderscore smallcaps">
@@ -89,7 +91,6 @@
 			</div>
 			<!-- footer -->
 			<div id="footer" class="smallcaps">
-				<p>{{ witticism }}</p>
 				<p>(C) 2010 I'm Everyone. </p>
 			</div>
 		</div>
