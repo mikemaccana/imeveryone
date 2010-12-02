@@ -485,10 +485,12 @@ class NewPostHandler(BaseHandler, MessageMixin):
         # We're done - sent the user back to wherever 'next' input pointed to.
         if self.get_argument("next", None):
             self.redirect(self.get_argument("next"))
+        else:
+            self.redirect('/live')    
         
     # Just in case someone tries to access this URL via a GET
     def get(self):
-        self.redirect('/')
+        self.redirect('/live')
   
 def render_template(template_name, **kwargs):
     '''Render a template (independent of requests)'''
