@@ -157,6 +157,32 @@ class BaseHandler(tornado.web.RequestHandler):
         '''Update the 'replies' count on a list of messageids'''
         for message in messages:
             message.updatetreecount(db)     
+
+    def getrankedmessages(self,limit):
+        '''Get messages sorted by interaction'''
+        descending = -1
+        messagedicts, topmessages, rankedmessages = [], [], []
+        # Get our Mongo docs
+        for messagedict in self.application.dbconnect.messages.find({'parentid':None},limit=limit).sort('score', descending):
+            messagedicts.append(messagedict)
+        # Turn the Mongo docs back into Message objects
+        for messagedict in messagedicts:
+            topmessages.append(usermessages.Message(dehydrated=messagedict))
+
+        # Now get ranks, and make a ranked list of messages
+        for topmessage in topmessages:
+            topmessage.rank = topmessage.getrank()
+            rankedmessages.append(topmessage)
+        rankedmessages.sort(key=lambda x: x.rank, reverse=True)
+
+        # Update the treecount for all the messages
+        self.updatetreecounts(rankedmessages,self.application.dbconnect)
+
+        # Show subset of rankedmessages for page
+        start = (page-1)*itemsperpage  
+        end = start + itemsperpage
+        rankedmessages = rankedmessages[start:end]        
+        return rankedmessages            
             
 class TopHandler(BaseHandler):
     '''Top handler''' 
@@ -168,44 +194,10 @@ class TopHandler(BaseHandler):
             page = 1
         else:
             page = int(page.split('/')[1])
-
         
         itemsperpage = self.application.config['scoring'].as_int('itemsperpage')
-        
         limit = self.application.config['scoring'].as_int('toplimit')
-        topmessages=[]
-        messagedicts=[]
-        
-        descending = -1
-        # Get our Mongo docs
-        for messagedict in self.application.dbconnect.messages.find({'parentid':None},limit=limit).sort('score', descending):
-            messagedicts.append(messagedict)
-        # Turn the Mongo docs back into Message objects
-        for messagedict in messagedicts:
-            topmessages.append(usermessages.Message(dehydrated=messagedict))
-        
-        # Now get ranks, and make a ranked list of messages
-        rankedmessages = []
-        for topmessage in topmessages:
-            topmessage.rank = topmessage.getrank()
-            rankedmessages.append(topmessage)
-        rankedmessages.sort(key=lambda x: x.rank, reverse=True)
-        
-        # Update the treecount for all the messages
-        self.updatetreecounts(rankedmessages,self.application.dbconnect)
-        
-        # Show subset of rankedmessages for page
-        start = (page-1)*itemsperpage  
-        end = start + itemsperpage
-        rankedmessages = rankedmessages[start:end]        
-             
-        # FIXME - DEBUG for occasional prod issue
-        for message in topmessages: 
-            if not hasattr(message, 'embedcode'): 
-                logging.warn('Note, message ID '+str(message._id)+' is missing embedcode in DB')
-            #else:
-            #    logging.info('Note, message ID '+str(message._id)+' embedcode is OK.')    
-                
+        rankedmessages = self.getrankedmessages(limit)        
                 
         alerts = self.showalerts()
         
@@ -226,6 +218,7 @@ class TopHandler(BaseHandler):
             usercount = self.application.getusercount(),
             witticism = self.pick_one(self.application.config['presentation']['witticism']),
         )
+
         
 class AdminHandler(BaseHandler):
     '''Handle admin'''
