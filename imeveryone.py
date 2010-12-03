@@ -158,7 +158,7 @@ class BaseHandler(tornado.web.RequestHandler):
         for message in messages:
             message.updatetreecount(db)     
 
-    def getrankedmessages(self,limit):
+    def getrankedmessages(self,limit,itemsperpage,page):
         '''Get messages sorted by interaction'''
         descending = -1
         messagedicts, topmessages, rankedmessages = [], [], []
@@ -197,7 +197,8 @@ class TopHandler(BaseHandler):
         
         itemsperpage = self.application.config['scoring'].as_int('itemsperpage')
         limit = self.application.config['scoring'].as_int('toplimit')
-        rankedmessages = self.getrankedmessages(limit)        
+        
+        rankedmessages = self.getrankedmessages(limit,itemsperpage,page)        
                 
         alerts = self.showalerts()
         
