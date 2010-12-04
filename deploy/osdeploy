@@ -1,6 +1,6 @@
 #!/bin/bash 
 
-apt-get install python-dev python-pip python-virtualenv virtualenvwrapper mongodb python-pymongo varnish git nginx unzip libcurl4-openssl-dev screen libxml2-dev libxslt1-dev psmisc libjpeg8-dev libfreetype6-dev lsof
+apt-get install python-dev python-pip python-virtualenv virtualenvwrapper mongodb python-pymongo varnish git nginx unzip libcurl4-openssl-dev screen libxml2-dev libxslt1-dev psmisc libjpeg8-dev libfreetype6-dev lsof bind
 
 mkdir -p /var/virtualenvs
 export WORKON_HOME=/var/virtualenvs

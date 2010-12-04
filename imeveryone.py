@@ -218,6 +218,7 @@ class TopHandler(BaseHandler):
             emptydb = self.application.config['alerts']['emptydb'],
             usercount = self.application.getusercount(),
             witticism = self.pick_one(self.application.config['presentation']['witticism']),
+            instructions = '''Top views and comments.''',
         )
 
         
@@ -288,6 +289,7 @@ class DiscussHandler(BaseHandler):
             readmore = True,
             avatars = True,
             witticism = self.pick_one(self.application.config['presentation']['witticism']),
+            instructions = '''Discuss the post. Each animal is unique to the poster. Click the picture for a full version.''',
         )
             
     def post(self,parentid):
@@ -341,6 +343,7 @@ class AboutHandler(BaseHandler):
             textprefill = self.gettextprefill(),
             usercount = self.application.getusercount(),
             witticism = self.pick_one(self.application.config['presentation']['witticism']),
+            instructions = '''Here's how it works.''',
         )
             
 
@@ -399,6 +402,7 @@ class LiveHandler(BaseHandler):
             textprefill = self.gettextprefill(),
             usercount = self.application.getusercount(),
             witticism = self.pick_one(self.application.config['presentation']['witticism']),
+            instructions = '''Sit back and watch things unfold. Or work up the courage to say something yourself.''',
         )
         self.clearalerts() 
 
