@@ -44,13 +44,14 @@ class Application(tornado.web.Application):
             (r"/(page/[1-5])?", TopHandler),
             (r"/auth/login", AuthLoginHandler),
             (r"/auth/logout", AuthLogoutHandler),
-            (r"/a/message/new", NewPostHandler),
-            (r"/a/message/updates", ViewerUpdateHandler),
+            (r"/message/new", NewPostHandler),
+            (r"/message/updates", ViewerUpdateHandler),
             (r"/discuss/([0-9\-]+)", DiscussHandler),
             (r"/about", AboutHandler),
             (r"/live", LiveHandler),
-            (r"/admin", AdminHandler),
-            (r"/admin/content", AdminContentHandler),
+            (r"/store", StoreHandler),
+            #(r"/admin", AdminHandler),
+            #(r"/admin/content", AdminContentHandler),
             (r"/(.*)", CatchAllHandler),
         ]
         self.stage = stage
@@ -223,6 +224,21 @@ class TopHandler(BaseHandler):
             page = page,
         )
 
+
+class StoreHandler(BaseHandler):
+    '''Amazon store handler''' 
+    def get(self):
+        # Always set a sessionID for first time visitors
+        sessionid = self.getorsetsessionid()
+
+        self.render(
+            "store.html",
+            heading = self.pick_one(self.application.config['presentation']['heading']),
+            witticism = self.pick_one(self.application.config['presentation']['witticism']),
+            instructions = '''Items to help you contemplate and celebrate.''',
+            pagetitle = '''I'm Everyone Store''',
+            sidebar=False,
+        )
         
 class AdminHandler(BaseHandler):
     '''Handle admin'''

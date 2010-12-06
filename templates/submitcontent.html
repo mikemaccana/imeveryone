@@ -7,7 +7,7 @@
 		<div class="about subtitle smallcaps shadow centertext"><img src="/static/images/littleline.png" />Say it to <strong>{{ usercount }}</strong> people instantly.<img src="/static/images/littleline.png" />
 		</div>
 		<!-- form form-write-us -->
-		<form enctype='multipart/form-data' method='post' action='/a/message/new' id="somethingtosay">
+		<form enctype='multipart/form-data' method='post' action='/message/new' id="somethingtosay">
 			<!-- alerts if any -->
 			<div alerts>
 				{% if len(alerts) %}
@@ -87,6 +87,6 @@
 				{{ xsrf_form_html() }}
 			</fieldset>
 		</form>
-
+		{% include 'webstore.html' %}
 	</div>
 </div>
