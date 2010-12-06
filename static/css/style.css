@@ -276,7 +276,7 @@ hr {
 /* navigation */
 .nav {
 	list-style:none;
-	margin:0 0 27px;
+	margin:0 0 12px;
 	padding:17px 20px 21px 45px;
 	text-align:center;
 	font-style: italic;
@@ -286,8 +286,7 @@ hr {
     width:960px;
     background: #F9F8F3 url("/static/images/underline-flourish.png") no-repeat scroll bottom;
 	font-size:24px;
-	line-height:25px;
-    
+	height:45px;
 }
 
 .nav li {
