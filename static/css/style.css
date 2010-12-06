@@ -1,26 +1,15 @@
 @font-face {
-	font-family: 'FranklinGothicFSDemiCondensed';
-	src: url('/static/fonts/FranklinGothic-DemiCd-webfont.eot');
-	src: local(' '),
-	url('/static/fonts/FranklinGothic-DemiCd-webfont.woff') format('woff'),
-	url('/static/fonts/FranklinGothic-DemiCd-webfont.ttf') format('truetype'),
-	url('/static/fonts/FranklinGothic-DemiCd-webfont.svg#webfont') format('svg');
-	font-weight: normal;
-	font-style: normal;
-}
-
-@font-face {
-	font-family: 'BaskervilleNormalRegular';
-	src: url('/static/fonts/baskerville-normal-webfont.eot');
-	src: local('☺'), url('/static/fonts/baskerville-normal-webfont.woff') format('woff'), url('/static/fonts/baskerville-normal-webfont.ttf') format('truetype'), url('/static/fonts/baskerville-normal-webfont.svg#webfontDDa9Hej1') format('svg');
-	font-weight: normal;
-	font-style: normal;
-}
-
-@font-face {
 	font-family: 'LeagueGothicRegular';
 	src: url('/static/fonts/League_Gothic-webfont.eot');
 	src: local('☺'), url('/static/fonts/League_Gothic-webfont.woff') format('woff'), url('/static/fonts/League_Gothic-webfont.ttf') format('truetype'), url('/static/fonts/League_Gothic-webfont.svg#webfontOTINA1xY') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'NewBaskervilleFSRegular';
+	src: url('/static/fonts/NewBaskerville-Regular-webfont.eot');
+	src: local('☺'), url('/static/fonts/NewBaskerville-Regular-webfont.woff') format('woff'), url('/static/fonts/NewBaskerville-Regular-webfont.ttf') format('truetype'), url('/static/fonts/NewBaskerville-Regular-webfont.svg#webfontDgDPc4Qo') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }
@@ -37,7 +26,7 @@ body {
 	display:table-cell;
 	vertical-align:middle;
 	color:#000;
-	font:18px Georgia, "Times New Roman", Times, sans-serif;
+	font:18px 'NewBaskervilleFSRegular', Georgia, "Times New Roman", Times, sans-serif;
 	background:#000;
 }
 img {border-style:none;}
