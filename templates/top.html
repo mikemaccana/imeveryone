@@ -10,13 +10,24 @@
 				{% for message in topmessages %}
 					{% include 'message.html' %}			
 				{% end %}
-				<ul class="smallcaps nav">
-					<li><a href="/">1</a></li>
-					<li><a href="/page/2">2</a></li>
-					<li><a href="/page/3">3</a></li>
-					<li><a href="/page/4">4</a></li>
-					<li><a href="/page/5">5</a></li>
-				</ul>
+				
+				<div class="read-more smallcaps nav">
+					{% if page < 5 %}
+				    	<a href="/page/{{ page + 1 }}" style="text-decoration: underline;"><span style="font-size: 24px;">&laquo;</span> OLDER</a>
+					{% end %}
+					
+					{% if page >= 2 %}	
+					    <div class="rightalign">
+							{% if page == 2 %}
+								<a href="/" style="text-decoration: underline;">NEWER <span style="font-size: 24px;">&raquo;</span></a>
+							{% elif page <= 5 %}
+								<a href="/page/{{ page - 1 }}" style="text-decoration: underline;">NEWER <span style="font-size: 24px;">&raquo;</span></a>
+							{% end %}
+					    </div>
+					{% end %}
+
+				</div>
+				
 			{% end %}
 		</div>
 		<!-- block -->

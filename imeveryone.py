@@ -13,7 +13,6 @@ import tornado.web
 import os.path
 import uuid
 import advertising
-import fourchan
 import threading
 import Queue
 import sys
@@ -75,11 +74,13 @@ class Application(tornado.web.Application):
                 biggest = sortedids[0]   
             return biggest  
         self.currentid = getstartid()
+        
     def getnextid(self):
         '''Return next avail comment/reply ID'''
         self.currentid += 1
         nextid = self.currentid
-        return nextid    
+        return nextid
+        
     def getusercount(self):    
         '''Generate user count
         In future: len(MessageMixin.waiters) provides an accurate measure'''
@@ -219,6 +220,7 @@ class TopHandler(BaseHandler):
             usercount = self.application.getusercount(),
             witticism = self.pick_one(self.application.config['presentation']['witticism']),
             instructions = '''Top views and comments.''',
+            page = page,
         )
 
         
@@ -290,6 +292,7 @@ class DiscussHandler(BaseHandler):
             avatars = True,
             witticism = self.pick_one(self.application.config['presentation']['witticism']),
             instructions = '''Discuss the post. Each animal is unique to the poster. Click the picture for a full version.''',
+            sessionid = sessionid,
         )
             
     def post(self,parentid):

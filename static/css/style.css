@@ -6,14 +6,6 @@
 	font-style: normal;
 }
 
-@font-face {
-	font-family: 'NewBaskervilleFSRegular';
-	src: url('/static/fonts/NewBaskerville-Regular-webfont.eot');
-	src: local('☺'), url('/static/fonts/NewBaskerville-Regular-webfont.woff') format('woff'), url('/static/fonts/NewBaskerville-Regular-webfont.ttf') format('truetype'), url('/static/fonts/NewBaskerville-Regular-webfont.svg#webfontDgDPc4Qo') format('svg');
-	font-weight: normal;
-	font-style: normal;
-}
-
 html, body {
 	display:table;
 	height:100%;
@@ -26,7 +18,7 @@ body {
 	display:table-cell;
 	vertical-align:middle;
 	color:#000;
-	font:18px 'NewBaskervilleFSRegular', Georgia, "Times New Roman", Times, sans-serif;
+	font:18px Georgia, "Times New Roman", Times, sans-serif;
 	background:#000;
 }
 img {border-style:none;}
@@ -126,7 +118,7 @@ form, fieldset {
     letter-spacing: 10px;
 }
 
-.button, .addcomment {
+.button, .addcomment, .editcomment {
     -moz-box-shadow:0 0 5px #9a9a8e; 
     background-color:#9a9a8e;
     background-image:url("/static/images/button.gif"); 
@@ -192,6 +184,9 @@ form, fieldset {
     margin: 5px;
 }
 
+.clearboth {
+    clear: both;
+}
 
 .commentinput {
     width: 98%;
@@ -203,15 +198,16 @@ input {
 	border: 1px solid #B1A57D;    
 }
 
-.addcommentbox {
+.addcommentbox .editpostbox {
     background:none repeat scroll 0 0 #DDDDCC;    
 	padding: 5px;
     -webkit-border-radius: 6px;
     -moz-border-radius: 6px;
     border-radius: 6px;        
     margin: 5px;  
-    clear: both;
 }
+
+
 
 .comment {
     background:none repeat scroll 0 0 #F9F8F3;
@@ -338,7 +334,6 @@ hr {
 }
 .visual {padding:0 0 12px 0;}
 .visual img {
-	display:block;
 	margin:0 auto;
 }
 .read-more {
@@ -382,9 +377,15 @@ hr {
 
 .smallcaps {
     font-variant: small-caps;
-    text-align: center;
     letter-spacing:1px;
+}
+
+.shadow {
     text-shadow: 0px 1px 0px #e5e5ee;
+}
+    
+.centertext {
+    text-align: center;
 }
 
 #sidebar h3 {

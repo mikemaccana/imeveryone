@@ -36,7 +36,7 @@
 	<script type="text/javascript">
 		$(document).ready(function() {	
 			$('#somethingtosay').submit(function() {
-				ajaxloader = $('<div id="addingpost" class="smallcaps"><h2>Adding your post...</h2><img src="/static/images/ajax-loader.gif" alt="Loading icon" /><p>One moment please</p></div>').hide();
+				ajaxloader = $('<div id="addingpost" class="smallcaps shadow centertext"><h2>Adding your post...</h2><img src="/static/images/ajax-loader.gif" alt="Loading icon" /><p>One moment please</p></div>').hide();
 				ajaxloader.appendTo("#sidebarcontents").slideDown();
 			});	
 		});
@@ -65,18 +65,18 @@
 			<!-- main -->
 			<div id="main">
 				
-				<div class="about subtitle smallcaps">
+				<div class="about subtitle smallcaps shadow centertext">
 					<p><img src="/static/images/littleline.png" />{{ heading }}<img src="/static/images/littleline.png" /></p>
 				</div>
 				
 				<!-- navigation -->
-				<ul class="nav wideunderscore smallcaps">
+				<ul class="nav wideunderscore smallcaps shadow centertext">
 					<li><a href="/">Top</a></li>
 					<li><a href="/live">Live</a></li>
 					<li><a href="/about">About</a><sup style=color:#CE0919>New</sup></li>
 				</ul>
 
-				<div class="about subtitle smallcaps">
+				<div class="about subtitle smallcaps shadow centertext">
 					<p>
 						{{ instructions }}
 					</p>
@@ -94,7 +94,7 @@
 				</div>
 			</div>
 			<!-- footer -->
-			<div id="footer" class="smallcaps">
+			<div id="footer" class="smallcaps centertext">
 				<p>(C) 2010 I'm Everyone. </p>
 				<p>{{ witticism }}</p>
 			</div>
