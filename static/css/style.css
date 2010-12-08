@@ -107,7 +107,7 @@ form, fieldset {
 /* discussion comments */
 
 #contentwide {
-	width:920px;
+	width: 100%;
 	float:left;
 	text-align:center;
 	padding-bottom:8px;
@@ -312,7 +312,7 @@ hr {
 	font-size:18px;
 	line-height:21px;
 	font-style:italic;
-	padding:2px 0 8px 30px;
+	padding:2px 0 8px 0;
 }
 
 .date, .date a {
@@ -320,15 +320,16 @@ hr {
 }
 
 /* block post */
+
 .post {
 	
 	padding:0 0 22px 17px;
 	margin:0 12px 24px 6px;
 	border-bottom:1px dotted #c7c6c2;
 }
-.text-box {
+.text-box, .posttext {
 	width:420px;
-	padding:0 48px 0 35px;
+	padding:0 10px 0 10px;
 	margin:0 auto 30px;
 }
 .visual {padding:0 0 12px 0;}
