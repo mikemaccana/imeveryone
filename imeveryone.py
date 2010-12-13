@@ -292,9 +292,9 @@ class DiscussHandler(BaseHandler):
         
         pagetitle = '''I'm Everyone - '''+' '.join(mymessage.posttext.split()[0:15])+'...'
         
-		# FIXME - debug code for occasional prod issue
-		if not hasattr(mymessage, 'sessionavatars'):
-		    logging.error('Message '+str(mymessagea._id)' is missing sessionavatars. Please investigate!') 
+        # FIXME - debug code for occasional prod issue
+        if not hasattr(mymessage, 'sessionavatars'):
+            logging.error('Message '+str(mymessagea._id)+' is missing sessionavatars. Please investigate!') 
 
         self.render(
             "discuss.html",
