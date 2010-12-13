@@ -277,6 +277,13 @@ class DiscussHandler(BaseHandler):
         if mymessagedict is None:
             logging.warn('Request for non existent message id: '+str(messageid))
             self.redirect('/notfound')
+            return
+            
+        # Ensure we're discussing a parent thread, not a child.
+        if not mymessagedict['thread'] == mymessagedict['_id']:
+            logging.warn('Request to discuss child message ID: '+str(messageid))
+            self.redirect('/discuss/'+str(mymessagedict['thread']))
+            return
         
         # Increment score for message
         mymessagedict['score']+=self.application.config['scoring'].as_int('view')
@@ -292,10 +299,6 @@ class DiscussHandler(BaseHandler):
         
         pagetitle = '''I'm Everyone - '''+' '.join(mymessage.posttext.split()[0:15])+'...'
         
-        # FIXME - debug code for occasional prod issue
-        if not hasattr(mymessage, 'sessionavatars'):
-            logging.error('Message '+str(mymessage._id)+' is missing sessionavatars. Please investigate!') 
-
         self.render(
             "discuss.html",
             message = mymessage,
@@ -383,6 +386,7 @@ class CatchAllHandler(BaseHandler):
             alerts=[],
             sidebar=False,
             witticism = self.pick_one(self.application.config['presentation']['witticism']),
+            instructions = '404 not found',
         )
         raise tornado.web.HTTPError(404)
 
