@@ -294,7 +294,7 @@ class DiscussHandler(BaseHandler):
         
         # FIXME - debug code for occasional prod issue
         if not hasattr(mymessage, 'sessionavatars'):
-            logging.error('Message '+str(mymessagea._id)+' is missing sessionavatars. Please investigate!') 
+            logging.error('Message '+str(mymessage._id)+' is missing sessionavatars. Please investigate!') 
 
         self.render(
             "discuss.html",
