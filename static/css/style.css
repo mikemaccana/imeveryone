@@ -388,6 +388,19 @@ hr {
     text-align: center;
 }
 
+.line {
+	border-bottom: 1px solid #bcbbb8;
+	height: 1em;
+}
+
+.line p {
+	background: none repeat scroll 0 0 #F9F8F3;
+	top: -0.5em;
+	position: relative;
+	display: inline-block;
+	padding: 0 8px;
+}
+
 #sidebar h3 {
 	margin:0 0 18px;
 	width: 100%;
