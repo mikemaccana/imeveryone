@@ -279,7 +279,7 @@ class DiscussHandler(BaseHandler):
             self.redirect('/notfound')
             return
             
-        # Ensure we're discussing a parent thread, not a child.
+        # Redirect to parent thread if someone asks for a child ID 
         if not mymessagedict['thread'] == mymessagedict['_id']:
             logging.warn('Request to discuss child message ID: '+str(messageid))
             self.redirect('/discuss/'+str(mymessagedict['thread']))
