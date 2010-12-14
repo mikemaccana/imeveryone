@@ -5,6 +5,13 @@
 		<h2><a href="/discuss/{{ message._id }}">{{ escape(message.headline)}}</a></h2>
 	</div>
 
+
+	{% if message.intro %}
+		<div class="text-box hyphenate">
+			<a href="{{ message.link }}">{{ escape (message.intro) }}</a>
+		</div>      
+	{% end %}
+
 	{% if message.embedcode is not None %}
 		{{ message.embedcode }}
 	{% end %}
@@ -16,15 +23,14 @@
 	{% end %}
 
 	<div class="read-more">
-	    <a href='{{ message.link }}' class="more"> 
+	    <a href='{{ message.link }}' class="more smallcaps"> 
+			Read more
 			{% if len(message.comments) > 1 %}
-				{{ message.treecount }} comments...
+				({{ message.treecount }} comments)
 			{% elif len(message.comments) == 1 %}
-				1 comment...
-			{% else %}
-				Read more 
+				(1 comment)
 			{% end %}
-			<img src="/static/images/hand.png"/>
+			&raquo;
 		</a>
 		
 	    <div class="rightalign">
