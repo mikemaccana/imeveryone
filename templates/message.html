@@ -7,12 +7,10 @@
 
 
 	{% if message.intro %}
-		<div class="text-box hyphenate">
-			{% for para in message.intro.split('NEWLINE') %}
-				<p><a href="{{ message.link }}">
-					{{ escape (para) }}
-				</a></p>
-			{% end %}
+		<div class="text-box hyphenate lefttext">
+			<p><a href="{{ message.link }}">
+				{{ message.intro.split('NEWLINE')[0] }}
+			</a></p>
 		</div>      
 	{% end %}
 

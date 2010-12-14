@@ -6,7 +6,7 @@
 	<h2>{{ escape(message.headline)}}</h2>
 
 	{% if message.intro %}
-	    <div class="text-box hyphenate">
+	    <div class="text-box hyphenate lefttext">
 			{% for para in message.intro.split('NEWLINE') %}
 				<p>
 					{{ escape (para) }}
