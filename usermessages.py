@@ -385,7 +385,7 @@ class Message(object):
         
     def makeintro(self,postingconfig):
         '''Reduce the headline text in very long posts if needed'''
-        postwords = self.posttext.split()
+        postwords = self.posttext.replace('\n',' NEWLINE ').split()
         leeway = postingconfig.as_int('leeway')
         choplen = postingconfig.as_int('choplen')
         longpost = postingconfig.as_int('longpost')

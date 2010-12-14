@@ -7,7 +7,12 @@
 
 	{% if message.intro %}
 	    <div class="text-box hyphenate">
-			{{escape (message.intro)}} <img src="/static/images/endsign.gif"/>
+			{% for para in message.intro.split('NEWLINE') %}
+				<p>
+					{{ escape (para) }}
+				</p>
+			{% end %}
+			<img src="/static/images/endsign.gif"/>
 		</div>	    
 	{% end %}
 </div>
