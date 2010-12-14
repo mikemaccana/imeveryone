@@ -392,7 +392,7 @@ class Message(object):
         if len(postwords) < leeway:
             self.headline = self.posttext
         else:
-            self.headline = ' '.join(postwords[:choplen])+'...'
+            self.headline = ' '.join(postwords[:choplen]).replace('NEWLINE','')+'...'
             self.intro = '...'+' '.join(postwords[choplen:longpost])
         return
             
