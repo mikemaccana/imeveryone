@@ -3,12 +3,6 @@
 		
 	<div class="posttext">
 		<h2><a href="/discuss/{{ message._id }}">{{ escape(message.headline)}}</a></h2>
-
-		{% if message.intro %}
-		    <div class="text-box hyphenate">
-				<a href="{{ message.link }}">{{ escape (message.intro) }}</a>
-			</div>	    
-		{% end %}
 	</div>
 
 	{% if message.embedcode is not None %}
