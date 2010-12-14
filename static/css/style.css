@@ -388,6 +388,11 @@ hr {
     text-align: center;
 }
 
+.lefttext {
+    text-align: left;
+}
+
+
 #heading {
     width: 750px;
 }
