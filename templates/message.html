@@ -10,8 +10,12 @@
 		<div class="text-box hyphenate">
 			<p><a href="{{ message.link }}">
 				{{ message.intro.split('NEWLINE')[0] }}
+				{% if len(message.intro.split('NEWLINE')) > 1 %}
+					<em><span class="smallcaps" style="font-size: 10px;">MORE</span><span style="font-size: 14px;"> &raquo;</span></em>
+				{% end %}
 			</a></p>
-		</div>      
+			
+		</div>
 	{% end %}
 
 	{% if message.embedcode is not None %}
