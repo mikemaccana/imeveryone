@@ -392,7 +392,6 @@ hr {
     text-align: left;
 }
 
-
 #heading {
     width: 750px;
 }
@@ -513,13 +512,22 @@ hr {
 	width:289px;
 	border:1px solid #b1a57d;
 }
+
 #somethingtosay .info {
 	display:block;
 	padding:6px 0 2px 30px;
 	font-size:10px;
 	line-height:13px;
 	color:#464641;
+	font-style: italic;
+	letter-spacing: 0.1em;
 }
+
+.important {
+    font-style: normal;
+    text-transform: uppercase;
+}
+
 /* captcha width */
 
 #recaptcha_indent {
