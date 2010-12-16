@@ -317,6 +317,8 @@ hr {
 
 .date, .date a {
     color:#d30011;
+    font-size: 10px;
+    letter-spacing: 0.1em;
 }
 
 /* block post */
@@ -513,7 +515,7 @@ hr {
 	border:1px solid #b1a57d;
 }
 
-#somethingtosay .info {
+.info {
 	display:block;
 	padding:6px 0 2px 30px;
 	font-size:10px;
