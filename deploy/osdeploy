@@ -6,7 +6,8 @@ mkdir -p /var/virtualenvs
 export WORKON_HOME=/var/virtualenvs
 echo 'export WORKON_HOME=/var/virtualenvs' >> /root/.bashrc
 echo 'export PS1="PRODUCTION \w$ "' >> /root/.bashrc
-
+echo workon imeveryone >> /root/.bashrc
+echo cdvirtualenv >> /root/.bashrc
 
 Add ssh keys
 scp -rv -p 443 .ssh/id_rsa* root@imeveryone.com:.ssh
