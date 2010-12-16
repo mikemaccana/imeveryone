@@ -7,12 +7,17 @@
 
 	{% if message.intro %}
 	    <div class="text-box hyphenate lefttext">
-			{% for para in message.intro.split('NEWLINE') %}
-				<p>
-					{{ escape (para) }}
-				</p>
+			{% set count = 0 %}
+			{% set paras = message.intro.split('NEWLINE') %}
+			
+			{% for (index, para) in enumerate(paras) %}
+			    {{ escape(para) }}
+
+			    {% if index == len(paras) - 1 %}
+			        <img src="/static/images/endsign.gif"/>
+			    {% end %}
 			{% end %}
-			<img src="/static/images/endsign.gif"/>
+			
 		</div>	    
 	{% end %}
 </div>
@@ -35,10 +40,17 @@
             Be the first to comment
         {% end %}  
     </a>
+
     <div class="rightalign">
 		<fb:like href="http://imeveryone.com{{ message.link }}" show_faces="false" width="450" font="lucida grande"></fb:like>
         <em>{{ message._id }}</em>
     </div>
+
+	{% if sessionid == message.sessionid %}
+		<a href='{{ message.link }}' class="editcomment">
+			Edit post
+		</a>
+	{% end %}
 </div>
 
 
