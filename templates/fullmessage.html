@@ -11,11 +11,13 @@
 			{% set paras = message.intro.split('NEWLINE') %}
 			
 			{% for (index, para) in enumerate(paras) %}
+				<p>
 			    {{ escape(para) }}
 
 			    {% if index == len(paras) - 1 %}
 			        <img src="/static/images/endsign.gif"/>
 			    {% end %}
+				</p>
 			{% end %}
 			
 		</div>	    
