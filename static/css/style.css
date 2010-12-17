@@ -17,7 +17,7 @@ body {
 	margin:0;
 	display:table-cell;
 	vertical-align:middle;
-	color:#000;
+	color: #343642;
 	font:18px Georgia, "Times New Roman", Times, sans-serif;
 	background:#000;
 }
@@ -204,6 +204,7 @@ form, fieldset {
     margin-left: auto;
     margin-right: auto;
     display: table;
+    margin-top: 10px;
 }
 
 .ribbontitletext {
@@ -214,7 +215,7 @@ form, fieldset {
 .ribbonback {
     border-style:solid;
     border-width: 1em;
-    width: 30px;
+    width: 32px;
     height: 0;
 }
 

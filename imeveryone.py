@@ -314,7 +314,7 @@ class DiscussHandler(BaseHandler):
             readmore = True,
             avatars = True,
             witticism = self.pick_one(self.application.config['presentation']['witticism']),
-            instructions = '''Discuss the post. Each animal is unique to the poster. Click the picture for a full version.''',
+            instructions = '''Discuss the post. Each animal is unique to the individual. Click the picture for a full version.''',
             sessionid = sessionid,
         )
             
