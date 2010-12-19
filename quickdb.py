@@ -28,8 +28,8 @@ def getmessage(id):
     return usermessages.Message(dehydrated=dbdict)
 
 def savemessage(mymessage):
-    '''Save a message object to DB'''
-    quickdb.db.connection.messages.save(mymessage.__dict__)
+    '''Save a message object to DB, return the message ID'''
+    return db.connection.messages.save(mymessage.__dict__)
 
 def getscore(id):
     item = db.connection.messages.find_one({'_id':id})
