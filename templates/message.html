@@ -31,9 +31,9 @@
 	<div class="read-more">
 	    <a href='{{ message.link }}' class="more smallcaps"> 
 			Read more
-			{% if len(message.comments) > 1 %}
+			{% if message.treecount > 1 %}
 				({{ message.treecount }} comments)
-			{% elif len(message.comments) == 1 %}
+			{% elif message.treecount == 1 %}
 				(1 comment)
 			{% end %}
 			&raquo;

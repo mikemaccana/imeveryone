@@ -426,7 +426,7 @@ class Message(object):
 
     def updatetreecount(self,db):
         '''Get total of children and grandchildren'''
-        
+        logging.info('Updating tree count on '+str(self._id))
         
         def addchildrentototal(item):
             '''Add children of a post recursively'''
@@ -445,5 +445,6 @@ class Message(object):
     
         self.treecount = 0
         addchildrentototal(self)
+        db.messages.save(self.__dict__)
         
 
