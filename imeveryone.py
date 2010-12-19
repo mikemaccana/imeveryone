@@ -133,11 +133,11 @@ class BaseHandler(tornado.web.RequestHandler):
         '''Get a request, return a message (used for both new posts and comments)'''
         _id = self.application.getnextid()
         message = usermessages.Message(
-            config=self.application.config,
-            antispam=antispam,
-            _id=_id,
-            handler=self,
-            parentid=parentid
+            config = self.application.config,
+            antispam = antispam,
+            _id = _id,
+            handler = self,
+            parentid = parentid
         )
         return message           
     def gettextprefill(self):
@@ -158,7 +158,7 @@ class BaseHandler(tornado.web.RequestHandler):
     def updatetreecounts(self,messages,db):
         '''Update the 'replies' count on a list of messageids'''
         for message in messages:
-            message.updatetreecount(db)     
+            message.updatetreecount(db)   
 
     def getrankedmessages(self,limit,itemsperpage,page):
         '''Get messages sorted by interaction'''
@@ -319,7 +319,7 @@ class DiscussHandler(BaseHandler):
         )
             
     def post(self,parentid):
-        '''Add a new child comment'''
+        '''Add a new response to the discussion'''
         logging.info('New comment request')
       
         # Clear alerts from previous posts
@@ -392,7 +392,7 @@ class CatchAllHandler(BaseHandler):
 
 
 class LiveHandler(BaseHandler):
-    '''Handle request for our front page'''
+    '''Handle request for our live page'''
     def get(self):
         # Always set a sessionID for first time visitors
         sessionid = self.getorsetsessionid()
@@ -434,7 +434,8 @@ class LiveHandler(BaseHandler):
         self.clearalerts() 
 
 class MessageMixin(object):
-    '''This is where the magic of tornado happens - we add clients to a waiters list, and when new messages arrive, we run send_messages() '''
+    '''This is where the magic of tornado happens - we add clients to a waiters list, 
+    and when new messages arrive, we run send_messages() '''
     waiters = []
     # Amount of messages to keep around for new connections
     cache = []
@@ -627,8 +628,10 @@ def main():
         # Start web app
         app = Application(config,database=database,stage=stage)
         http_server = tornado.httpserver.HTTPServer(app)
-        http_server.listen(config['server'].as_int('port'))
-        print '_'*80        
+        port, ip = config['application'][stage].as_int('port'),config['application'][stage]['ip']
+        http_server.listen(port,address=ip)
+        print('_'*80) 
+        print('Web server running on '+str(ip)+' on port '+str(port)) 
         # Advertising content getter
         if config['injectors']['advertising'].as_bool('enabled'):
             advertising.ContentGetter(messageQueue,config).start()        
