@@ -55,11 +55,12 @@ class Application(tornado.web.Application):
             (r"/(.*)", CatchAllHandler),
         ]
         self.stage = stage
-                 
         self.config = config
-        self.useralerts = {}
-        self.textprefill = {}
+        self.useralerts,self.textprefill,self.channels = [{}]*3
         settings = config['application'][stage]
+        
+        self.cache_size = config['posting'].as_int('cachesize')
+        
         tornado.web.Application.__init__(self, handlers, **settings)
         self.dbconnect = database.connection
         def getstartid():
