@@ -443,7 +443,7 @@ class MessageMixin(object):
     # FIXME - should be from global config
     # cache_size = self.application.config['newclients'].as_int('cachesize')
     
-    def wait_for_messages(self, callback, cursor=None):
+    def wait_for_messages(self, callback, channel, cursor=None):
         '''Add new clients to waiters list'''
         if cursor:
             index = 0
@@ -546,9 +546,8 @@ class UpdateHandler(BaseHandler, MessageMixin):
         channel = page.split('/')[-1] 
         logging.info('Update request for channel: '+channel)
         cursor = self.get_argument("cursor", None)
-        
-        
-        self.wait_for_messages(self.async_callback(self.on_send_messages),cursor=cursor)
+        # Now wait for messages from that channel that are newer than our cursor
+        self.wait_for_messages(self.async_callback(self.on_send_messages),channel,cursor=cursor)
     def on_send_messages(self, newmessages):
         # Finishes this response, ending the HTTP request.
         # Check for closed client connection
