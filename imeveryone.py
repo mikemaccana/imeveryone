@@ -147,6 +147,9 @@ class BaseHandler(tornado.web.RequestHandler):
         if sessionid in self.application.textprefill:
             textprefill = self.application.textprefill[sessionid]
             self.application.textprefill[sessionid] = ''
+            # FIXME. Bizzare case where str in dict becomes empty list 
+            if len(textprefill) is 0:
+                textprefill = ''
             return textprefill
         else:
             return ''
@@ -414,6 +417,8 @@ class LiveHandler(BaseHandler):
         
         # Show the messages and any alerts
         alerts = self.showalerts()
+        
+        
         
         self.render(
             "live.html",
