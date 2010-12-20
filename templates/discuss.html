@@ -60,7 +60,7 @@
 							<li>
 								<div class="comment">
 									<div class="commentheading">
-										{{ comment['prettydate'] }}
+										<a name="{{ comment['_id'] }}"> {{ comment['prettydate'] }} </a>	
 									</div>
 									<div class='message'>
 										<img class='floatleft' src=
@@ -73,7 +73,7 @@
 										<div class="commenttext">
 											<p class="hyphenate">{{escape (comment['posttext'])}}</p>
 										</div>	
-										<a href='/discuss/{{comment['_id']}}' class="addcomment">Reply</a>
+										<a href='/discuss/{{ comment['_id'] }}' class="addcomment">Reply</a>
 										<div class='rightalign'><em>{{ comment['_id'] }}</em></div>
 									</div>
 								</div>	
@@ -92,5 +92,5 @@
 {% end %}	
 
 {% block endofbody %}	
-	<script src="{{ static_url("js/chat.js") }}" type="text/javascript"></script>
+	<script src="{{ static_url("js/update.js") }}" type="text/javascript"></script>
 {% end %}

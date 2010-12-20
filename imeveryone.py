@@ -42,13 +42,12 @@ class Application(tornado.web.Application):
         # These handlers always get provided with the application, request and any transforms by Tornado
         handlers = [
             (r"/(page/[1-5])?", TopHandler),
+            (r"/(.*)/update", UpdateHandler),
             (r"/auth/login", AuthLoginHandler),
             (r"/auth/logout", AuthLogoutHandler),
             (r"/message/new", NewPostHandler),
-            (r"/discuss/([0-9\-]+)/update", DiscussUpdateHandler),
             (r"/discuss/([0-9\-]+)", DiscussHandler),
             (r"/about", AboutHandler),
-            (r"/live/update", LiveUpdateHandler),
             (r"/live", LiveHandler),
             (r"/store", StoreHandler),
             #(r"/admin", AdminHandler),
@@ -540,40 +539,15 @@ class QueueToWaitingClients(MessageMixin, threading.Thread):
             message.html = render_template('message.html', message=message)
             self.send_messages([message])
 
-class LiveUpdateHandler(BaseHandler, MessageMixin):
-    '''Update live view. All clients continually send posts, which we only respond to when where there are new messages (where we run on_send_messages() )'''
+class UpdateHandler(BaseHandler, MessageMixin):
+    '''Request updates to current page'''
     @tornado.web.asynchronous
-    def post(self):
-        logging.info('Update request')
+    def post(self,page):
+        channel = page.split('/')[-1] 
+        logging.info('Update request for channel: '+channel)
         cursor = self.get_argument("cursor", None)
-        self.wait_for_messages(self.async_callback(self.on_send_messages),cursor=cursor)
-    def on_send_messages(self, newmessages):
-        # Finishes this response, ending the HTTP request.
-        # Check for closed client connection
-        if self.request.connection.stream.closed():
-            return
-        # Need to make a dict of our message objects k/v pairs so we can send it as JSON
-        jsonmessages = []
-        for newmessage in newmessages:
-            jsonmessages.append({
-                'link':newmessage.link,
-                'posttime':newmessage.posttime,
-                'posttext':newmessage.posttext,
-                'intro':newmessage.intro,
-                'embedcode':newmessage.embedcode,
-                'preview':newmessage.preview,
-                'id':newmessage._id,
-                'html':newmessage.html,
-            })  
-        # We send a dict with one key, 'messages', which is the jsonmessages list
-        self.finish(dict(messages=jsonmessages))
-
-class DiscussUpdateHandler(BaseHandler, MessageMixin):
-    '''Do updates. All clients continually send posts, which we only respond to when where there are new messages (where we run on_send_messages() )'''
-    @tornado.web.asynchronous
-    def post(self,thread):
-        logging.info('Update request for thread '+str(thread))
-        cursor = self.get_argument("cursor", None)
+        
+        
         self.wait_for_messages(self.async_callback(self.on_send_messages),cursor=cursor)
     def on_send_messages(self, newmessages):
         # Finishes this response, ending the HTTP request.
