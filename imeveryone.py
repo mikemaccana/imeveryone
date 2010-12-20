@@ -449,15 +449,15 @@ class MessageMixin(object):
         if cursor:
             index = 0
             # Loops each numbered message in the cache
-            for num in xrange(len(MessageMixin.cache)):
-                index = len(MessageMixin.cache) - num - 1
+            for num in xrange(len(self.cache)):
+                index = len(self.cache) - num - 1
                 logging.info('Cache index is %s', index)
                 # Note cursor is unicode not int
                 # Converting unicode to int seems to mysteriously break comparison!
-                if str(MessageMixin.cache[index]._id) == str(cursor):
+                if str(self.cache[index]._id) == str(cursor):
                     # Client is up to date now
                     break
-            recent = MessageMixin.cache[index + 1:]
+            recent = self.cache[index + 1:]
             if recent:
                 callback(recent)
                 return
@@ -474,9 +474,9 @@ class MessageMixin(object):
         logging.info('Done sending messages, setting waiters back to 0')
         MessageMixin.waiters = []
         logging.info('Adding messages to cache')
-        MessageMixin.cache.extend(messages)
-        if len(MessageMixin.cache) > self.cache_size:
-            MessageMixin.cache = MessageMixin.cache[-self.cache_size:]
+        self.cache.extend(messages)
+        if len(self.cache) > self.cache_size:
+            self.cache = self.cache[-self.cache_size:]
     
 
 class NewPostHandler(BaseHandler, MessageMixin):
