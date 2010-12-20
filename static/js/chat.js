@@ -17,15 +17,18 @@ $(document).ready(function() {
     if (!window.console.log) window.console.log = function() {};
 
     $("#messageform").live("submit", function() {
-	newMessage($(this));
-	return false;
+    	newMessage($(this));
+    	return false;
     });
+    
     $("#messageform").live("keypress", function(e) {
-	if (e.keyCode == 13) {
-	    newMessage($(this));
-	    return false;
-	}
+    	if (e.keyCode == 13) {
+    	    newMessage($(this));
+    	    return false;
+    	}
     });
+    
+    // Start updater polling for new updates on page load
     $("#message").select();
     updater.poll();
 });
@@ -91,7 +94,7 @@ var updater = {
     poll: function() {
     	var args = {"_xsrf": getCookie("_xsrf")};
     	if (updater.cursor) args.cursor = updater.cursor;
-        	$.ajax({url: "/message/updates", 
+        	$.ajax({url: window.location.pathname+"/update", 
         	    type: "POST", 
         	    dataType: "text",
         		data: $.param(args), 
