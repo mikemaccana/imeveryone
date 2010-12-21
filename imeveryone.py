@@ -239,7 +239,7 @@ class StoreHandler(BaseHandler):
             heading = self.pick_one(self.application.config['presentation']['heading']),
             witticism = self.pick_one(self.application.config['presentation']['witticism']),
             instructions = '''Items to help you contemplate and celebrate.''',
-            pagetitle = '''I'm Everyone Store''',
+            pagetitle = self.application.config['presentation']['store'],
             sidebar=False,
         )
         
@@ -300,7 +300,7 @@ class DiscussHandler(BaseHandler):
         # Create message objects from our dictionary
         mymessage = usermessages.Message(dehydrated=mymessagedict)
         
-        pagetitle = '''I'm Everyone - '''+' '.join(mymessage.posttext.split()[0:15])+'...'
+        pagetitle = ' '.join(mymessage.posttext.split()[0:15])+'...'
         
         self.render(
             "discuss.html",
@@ -366,7 +366,7 @@ class AboutHandler(BaseHandler):
             heading = self.pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
-            pagetitle = '''Who Is Responsible for this Mess? - I'm Everyone''',
+            pagetitle = self.application.config['presentation']['about'],
             captcha = self.application.config['captcha'].as_bool('enabled'),
             sidebar=True,
             textprefill = self.gettextprefill(),
@@ -381,7 +381,7 @@ class CatchAllHandler(BaseHandler):
         '''404'''
         logging.warn('Bad URL: '+url)
         self.render('notfound.html',
-            pagetitle='Not Found!',
+            pagetitle = self.application.config['presentation']['notfound'],
             heading='Oops',
             prompt1='Doesnt Exist Heh?',
             prompt2='Make It',
@@ -426,7 +426,7 @@ class LiveHandler(BaseHandler):
             heading = self.pick_one(self.application.config['presentation']['heading']),
             prompt1 = self.application.config['presentation']['prompt'].split()[0],
             prompt2 = ' '.join(self.application.config['presentation']['prompt'].split()[1:]),
-            pagetitle = '''Live - I'm Everyone''',
+            pagetitle = self.application.config['presentation']['latest'],
             captcha = self.application.config['captcha'].as_bool('enabled'),
             sidebar = True,
             readmore = True,
