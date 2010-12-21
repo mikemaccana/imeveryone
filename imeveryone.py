@@ -56,7 +56,9 @@ class Application(tornado.web.Application):
         ]
         self.stage = stage
         self.config = config
-        self.useralerts,self.textprefill,self.channels = [{}]*3
+        self.useralerts = {}
+        self.textprefill = {}
+        self.channels = {}
         settings = config['application'][stage]
         
         self.cache_size = config['posting'].as_int('cachesize')
@@ -147,9 +149,6 @@ class BaseHandler(tornado.web.RequestHandler):
         if sessionid in self.application.textprefill:
             textprefill = self.application.textprefill[sessionid]
             self.application.textprefill[sessionid] = ''
-            # FIXME. Bizzare case where str in dict becomes empty list 
-            if len(textprefill) is 0:
-                textprefill = ''
             return textprefill
         else:
             return ''
@@ -639,7 +638,7 @@ def main():
         port, ip = config['application'][stage].as_int('port'),config['application'][stage]['ip']
         http_server.listen(port,address=ip)
         print('_'*80) 
-        print('Web server running on '+str(ip)+' on port '+str(port)) 
+        print('Web server running on http://'+str(ip)+':'+str(port)+' .') 
         # Advertising content getter
         if config['injectors']['advertising'].as_bool('enabled'):
             advertising.ContentGetter(messageQueue,config).start()        

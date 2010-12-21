@@ -25,7 +25,7 @@
 						<span class="info">Be <span class="important">specific</span>. Posts can be up to <span class="important">2000 words</span> </span>
 						<div class="container">
 							<div class="text-field">
-								<textarea id="textarea"  name='posttext' cols="20" rows="10">{{ textprefill }}</textarea>
+								<textarea id="textarea"  name='posttext' cols="20" rows="10">{{ escape(textprefill) }}</textarea>
 							</div>
 						</div>
 					</li>
