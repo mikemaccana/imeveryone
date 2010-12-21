@@ -426,7 +426,7 @@ hr {
 
 .smallcaps {
     font-variant: small-caps;
-    letter-spacing: 2px;
+    letter-spacing: 0.1em;
 }
 
 .shadow {
