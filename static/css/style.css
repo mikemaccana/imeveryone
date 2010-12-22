@@ -21,10 +21,14 @@ body {
 	font:18px Georgia, "Times New Roman", Times, sans-serif;
 	background:#000;
 }
-img {border-style:none;}
+
+img {
+    border-style:none;
+}
+
 a {
 	text-decoration:none;
-	color:#000;
+	color:#343642;
 }
 
 
