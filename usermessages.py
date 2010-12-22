@@ -150,7 +150,7 @@ class Message(object):
             # We're a top-level article
             logging.info('Creating new article '+str(self._id))
             # Available avatars for sessions - copy of config.
-            self.availavatars = list(config['posting']['avatars'])
+            self.availavatars = config['posting']['avatars']
             random.shuffle(self.availavatars)
             # Create dict of session / avatar matchings
             self.sessionavatars = {}

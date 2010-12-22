@@ -632,6 +632,18 @@ def main():
         database = Database(config,stage)
         database.start()
         database.dbclient()
+        # Create our avatar list
+        def getavatars(config):
+            '''Return names of avatars to use'''
+            avatars = []
+            files = os.listdir(config['posting']['avatardir'])
+            for avoidavatar in config['posting']['avatarignore']:
+                if avoidavatar in files:
+                    files.remove(avoidavatar)
+            for file in files:
+                avatars.append(file.replace('.png',''))
+            return avatars
+        config['posting']['avatars'] = getavatars(config)
         # Start web app
         app = Application(config,database=database,stage=stage)
         http_server = tornado.httpserver.HTTPServer(app)
