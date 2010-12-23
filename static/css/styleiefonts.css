@@ -1,0 +1,6 @@
+/* IE specific font file. Required as local() bug workround breaks Android */
+
+@font-face {
+    font-family: 'LeagueGothicRegular';
+    src: url('/static/fonts/League_Gothic-webfont.eot');
+}

@@ -1,0 +1,10 @@
+/* Do not use IE local bug workaround and this triggers a bug in IE */
+
+@font-face {
+	font-family: 'LeagueGothicRegular';
+	src: url('/static/fonts/League_Gothic-webfont.woff') format('woff'), 
+	    url('/static/fonts/League_Gothic-webfont.ttf') format('truetype'), 
+	    url('/static/fonts/League_Gothic-webfont.svg#webfontOTINA1xY') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
