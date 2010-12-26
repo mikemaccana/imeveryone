@@ -188,7 +188,26 @@ class BaseHandler(tornado.web.RequestHandler):
         end = start + itemsperpage
         rankedmessages = rankedmessages[start:end]        
         return rankedmessages            
-            
+
+    def checkalertsandpushmessage(self,message):
+        '''Recieve a message, create some alerts if bad, add to channel queue if good'''
+        # Check for errors
+        if len(message.useralerts) > 0:
+            # Add an alert to show once redirected
+            logging.info('Bad post!: '+' '.join(message.useralerts))      
+            self.application.useralerts[sessionid].extend(message.useralerts)    
+            self.application.textprefill[sessionid] = message.posttext 
+        else:
+            # No errors, add to queue
+            logging.info('Good post.')
+            # Add alerts to dict and save dict to DB
+            # FIXME - imagedata not being set to zero in usermessages, non-encoded so screwing mongo up.
+            message.__dict__['imagedata'] = []
+            self.application.dbconnect.messages.save(message.__dict__)
+            if not message.parentid:
+                # Put top-level posts onto the live queue.
+                messageQueue.put(message)
+           
 class TopHandler(BaseHandler):
     '''Top handler''' 
     def get(self,page):
@@ -495,29 +514,11 @@ class NewPostHandler(BaseHandler, MessageMixin):
         # Make message
         message = self.messagemaker() 
     
-        # Check for errors
-        if len(message.useralerts) > 0:
-            # Add an alert to show once redirected
-            
-            logging.info('Bad post!: '+' '.join(message.useralerts))      
-            self.application.useralerts[sessionid].extend(message.useralerts)    
-            self.application.textprefill[sessionid] = message.posttext 
-        else:
-            # No errors, add to queue
-            logging.info('Good post.')
-            # Add alerts to dict and save dict to DB
-            # FIXME - imagedata not being set to zero in usermessages, non-encoded so screwing mongo up.
-            message.__dict__['imagedata'] = []
-            self.application.dbconnect.messages.save(message.__dict__)
-            if not message.parentid:
-                # Put top-level posts onto the live queue.
-                messageQueue.put(message)        
+        # Check it, add it to queue if good, create error messages if bad
+        self.checkalertsandpushmessage(message)     
         
         # We're done - sent the user back to wherever 'next' input pointed to.
-        if self.get_argument("next", None):
-            self.redirect(self.get_argument("next"))
-        else:
-            self.redirect('/live')    
+        self.redirect(self.get_argument("next",'/live'))
         
     # Just in case someone tries to access this URL via a GET
     def get(self):
