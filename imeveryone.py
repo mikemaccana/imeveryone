@@ -58,7 +58,9 @@ class Application(tornado.web.Application):
         self.config = config
         self.useralerts = {}
         self.textprefill = {}
-        self.channels = {}
+        self.channels = {
+            'live':Queue.Queue(0),
+        }
         settings = config['application'][stage]
         
         self.cache_size = config['posting'].as_int('cachesize')
@@ -189,9 +191,13 @@ class BaseHandler(tornado.web.RequestHandler):
         rankedmessages = rankedmessages[start:end]        
         return rankedmessages            
 
-    def checkalertsandpushmessage(self,message):
+    def checkalertsandpushmessage(self,message,sessionid):
         '''Recieve a message, create some alerts if bad, add to channel queue if good'''
         # Check for errors
+        if message.istop(): 
+            channel = message.thread
+        else:
+            channel = 'live'    
         if len(message.useralerts) > 0:
             # Add an alert to show once redirected
             logging.info('Bad post!: '+' '.join(message.useralerts))      
@@ -204,9 +210,14 @@ class BaseHandler(tornado.web.RequestHandler):
             # FIXME - imagedata not being set to zero in usermessages, non-encoded so screwing mongo up.
             message.__dict__['imagedata'] = []
             self.application.dbconnect.messages.save(message.__dict__)
-            if not message.parentid:
-                # Put top-level posts onto the live queue.
-                messageQueue.put(message)
+            # Put posts onto the appropriate queue
+            if channel not in self.application.channels:
+                self.application.channels[channel] = Queue.Queue(0)
+            self.application.channels[channel].put(message)        
+    
+    def getchannel(self,page):
+        '''Return channel message was posted to'''
+        return page.split('/')[-1]        
            
 class TopHandler(BaseHandler):
     '''Top handler''' 
@@ -342,7 +353,8 @@ class DiscussHandler(BaseHandler):
             
     def post(self,parentid):
         '''Add a new response to the discussion'''
-        logging.info('New comment request')
+        
+        logging.info('New posted comment under '+str(parentid))
       
         # Clear alerts from previous posts
         sessionid = self.getorsetsessionid()
@@ -351,19 +363,7 @@ class DiscussHandler(BaseHandler):
         # Make message
         message = self.messagemaker(parentid=parentid)       
     
-        # If there are errors, alert
-        if len(message.useralerts) > 0:
-            logging.info('Bad comment!: '+' '.join(message.useralerts))   
-            # Add the messages alerts to our session alerts
-            self.application.useralerts[sessionid] = message.useralerts
-        else:
-            # If there are no errors, add to queue
-            logging.info('Good comment.')
-        
-        # Add alerts to dict and save dict to DB
-        # FIXME - imagedata not being set to zero in usermessages, non-encoded so screwing mongo up.
-        message.__dict__['imagedata'] = []
-        self.application.dbconnect.messages.save(message.__dict__)
+        self.checkalertsandpushmessage(message,sessionid)
         
         # We're done - sent the user back to the comment
         self.redirect(self.get_argument('nexturl'))
@@ -505,7 +505,6 @@ class MessageMixin(object):
 class NewPostHandler(BaseHandler, MessageMixin):
     '''Recieve new original content from users and add them to our message queue'''
     def post(self):
-        global messageQueue
         logging.info("Post recieved from user!")        
         # Clear alerts from previous posts
         sessionid = self.getorsetsessionid()
@@ -515,7 +514,7 @@ class NewPostHandler(BaseHandler, MessageMixin):
         message = self.messagemaker() 
     
         # Check it, add it to queue if good, create error messages if bad
-        self.checkalertsandpushmessage(message)     
+        self.checkalertsandpushmessage(message,sessionid)     
         
         # We're done - sent the user back to wherever 'next' input pointed to.
         self.redirect(self.get_argument("next",'/live'))
@@ -532,8 +531,8 @@ def render_template(template_name, **kwargs):
 
 class QueueToWaitingClients(MessageMixin, threading.Thread):
     '''Take messages off the messageQueue, and send them to client'''
-    def __init__(self, queue, config):
-        self.queue = queue
+    def __init__(self, application, config):
+        self.queue = application.channels['live']
         # Change this to DB lookup of highest ID.
         threading.Thread.__init__(self)
         MessageMixin.__init__(self)
@@ -549,7 +548,7 @@ class UpdateHandler(BaseHandler, MessageMixin):
     '''Request updates to current page'''
     @tornado.web.asynchronous
     def post(self,page):
-        channel = page.split('/')[-1] 
+        channel = self.getchannel(page) 
         logging.info('Update request for channel: '+channel)
         cursor = self.get_argument("cursor", None)
         # Now wait for messages from that channel that are newer than our cursor
@@ -610,10 +609,7 @@ def dbclient(dbconfig):
     return messagecollect
 
 def main():
-    '''Separate main for unittesting and calling from other modules'''
-    # FIXME global should be app property
-    global messageQueue
-    
+    '''Separate main for unittesting and calling from other modules'''   
     def getstage():
         '''Determine whether prod or dev'''
         stage = 'dev'
@@ -625,7 +621,6 @@ def main():
     
     try:
         tornado.options.parse_command_line()
-        messageQueue = Queue.Queue(0)
         config = ConfigObj('imeveryone.conf')
         # Set up logging
         logging.basicConfig(level=logging.DEBUG, filename=config['application'][stage]['logfile'])
@@ -646,20 +641,14 @@ def main():
             return avatars
         config['posting']['avatars'] = getavatars(config)
         # Start web app
-        app = Application(config,database=database,stage=stage)
-        http_server = tornado.httpserver.HTTPServer(app)
+        application = Application(config,database=database,stage=stage)
+        http_server = tornado.httpserver.HTTPServer(application)
         port, ip = config['application'][stage].as_int('port'),config['application'][stage]['ip']
         http_server.listen(port,address=ip)
         print('_'*80) 
         print('Web server running on http://'+str(ip)+':'+str(port)+' .') 
-        # Advertising content getter
-        if config['injectors']['advertising'].as_bool('enabled'):
-            advertising.ContentGetter(messageQueue,config).start()        
-        # Test 4chan content getter to queue
-        if config['injectors']['fourchan'].as_bool('enabled'):
-            fourchan.ContentGetter(messageQueue,config,database=database, app=app).start()        
         # Take content from queue and send updates to waiting clients
-        mycontentprocessor = QueueToWaitingClients(messageQueue,config)
+        mycontentprocessor = QueueToWaitingClients(application,config)
         mycontentprocessor.start()        
         tornado.ioloop.IOLoop.instance().start()
     except KeyboardInterrupt:
