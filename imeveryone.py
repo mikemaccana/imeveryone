@@ -495,7 +495,7 @@ def render_template(template_name, **kwargs):
     t = loader.load(template_name)
     return t.generate(**kwargs)
 
-class QueueToWaitingClients(MessageMixin, threading.Thread, ):
+class QueueToWaitingClients(MessageMixin, threading.Thread):
     '''Take messages off the messageQueue, and send them to client'''
     def __init__(self, application, channel):
         logging.warn('Started queue to waiting clients thread for channel '+str(channel))
@@ -505,14 +505,18 @@ class QueueToWaitingClients(MessageMixin, threading.Thread, ):
         threading.Thread.__init__(self)
         MessageMixin.__init__(self)
     def run(self):
-        while True:            
-            # FIXME remove notes
-            # This runs
+        while True:     
+            # Continually get messages
             message = self.queue.get()
-            # this does not, as queue is empty
             logging.info('Preparing to push message ID: '+str(message._id)+' to clients.')
             prettydate = message.getprettydate()
-            message.html = render_template('message.html', message=message)
+            if message.istop():
+                message.html = render_template('topmessage.html', message=message)
+            else:
+                parentmessage = self.application.dbconnect.messages.find_one({'_id':message.thread})
+                avatar = parentmessage['sessionavatars'][message.sessionid]
+                message.html = render_template('comment.html', message=message, avatar=avatar)    
+                
             self.new_messages([message],self.channel)
 
 

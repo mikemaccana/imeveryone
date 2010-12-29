@@ -423,8 +423,6 @@ class Message(object):
         seconds =  time.mktime(self.getposttimedt().timetuple()) - 1134028003
         rank = round(order + sign * seconds / 45000, 7)
         return rank
-        
-        count = 0
 
     def updatetreecount(self,db):
         '''Get total of children and grandchildren'''

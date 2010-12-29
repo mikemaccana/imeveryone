@@ -1,0 +1,13 @@
+<div class="comment">
+	<div class="commentheading">
+		<a name="{{ message._id }}"> {{ message.prettydate }} </a>	
+	</div>
+	<div class='message'>
+		<img class='floatleft' src="/static/images/avatars/{{ avatar }}.png"/>
+		<div class="commenttext">
+			<p class="hyphenate">{{ escape (message.posttext) }}</p>
+		</div>	
+		<a href='/discuss/{{ message._id }}' class="addcomment">Reply</a>
+		<div class='rightalign'><em>{{ message._id }}</em></div>
+	</div>
+</div>
