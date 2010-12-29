@@ -195,7 +195,7 @@ class BaseHandler(tornado.web.RequestHandler):
         if message.istop(): 
             channel = 'live'
         else:
-            channel = message.thread
+            channel = str(message.thread)
         if len(message.useralerts) > 0:
             # Add an alert to show once redirected
             logging.info('Bad post!: '+' '.join(message.useralerts))      
