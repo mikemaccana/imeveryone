@@ -58,12 +58,10 @@ class Application(tornado.web.Application):
         self.config = config
         self.useralerts = {}
         self.textprefill = {}
-        self.channels = {
-            'live':Queue.Queue(0),
-        }
+        self.channels = {}
+
         settings = config['application'][stage]
-        
-        self.cache_size = config['posting'].as_int('cachesize')
+    
         
         tornado.web.Application.__init__(self, handlers, **settings)
         self.dbconnect = database.connection
@@ -89,7 +87,7 @@ class Application(tornado.web.Application):
         
     def getusercount(self):    
         '''Generate user count
-        In future: len(MessageMixin.waiters) provides an accurate measure'''
+        In future: len(channel[viewers]) provides an accurate measure'''
         hour = time.gmtime()[3]
         # change user count very 3 mins
         minutecache = time.gmtime()[4]/3
@@ -164,7 +162,7 @@ class BaseHandler(tornado.web.RequestHandler):
         '''Update the 'replies' count on a list of messageids'''
         for message in messages:
             message.updatetreecount(db)   
-
+            
     def getrankedmessages(self,limit,itemsperpage,page):
         '''Get messages sorted by interaction'''
         descending = -1
@@ -175,50 +173,51 @@ class BaseHandler(tornado.web.RequestHandler):
         # Turn the Mongo docs back into Message objects
         for messagedict in messagedicts:
             topmessages.append(usermessages.Message(dehydrated=messagedict))
-
+            
         # Now get ranks, and make a ranked list of messages
         for topmessage in topmessages:
             topmessage.rank = topmessage.getrank()
             rankedmessages.append(topmessage)
         rankedmessages.sort(key=lambda x: x.rank, reverse=True)
-
+        
         # Update the treecount for all the messages
-        self.updatetreecounts(rankedmessages,self.application.dbconnect)
-
+        #self.updatetreecounts(rankedmessages,self.application.dbconnect)
+        
         # Show subset of rankedmessages for page
         start = (page-1)*itemsperpage  
         end = start + itemsperpage
         rankedmessages = rankedmessages[start:end]        
         return rankedmessages            
-
+        
     def checkalertsandpushmessage(self,message,sessionid):
         '''Recieve a message, create some alerts if bad, add to channel queue if good'''
         # Check for errors
         if message.istop(): 
-            channel = message.thread
+            channel = 'live'
         else:
-            channel = 'live'    
+            channel = message.thread
         if len(message.useralerts) > 0:
             # Add an alert to show once redirected
             logging.info('Bad post!: '+' '.join(message.useralerts))      
             self.application.useralerts[sessionid].extend(message.useralerts)    
             self.application.textprefill[sessionid] = message.posttext 
         else:
-            # No errors, add to queue
+            # No errors
             logging.info('Good post.')
             # Add alerts to dict and save dict to DB
             # FIXME - imagedata not being set to zero in usermessages, non-encoded so screwing mongo up.
             message.__dict__['imagedata'] = []
             self.application.dbconnect.messages.save(message.__dict__)
-            # Put posts onto the appropriate queue
-            if channel not in self.application.channels:
-                self.application.channels[channel] = Queue.Queue(0)
-            self.application.channels[channel].put(message)        
-    
+            # Add to the queue if it exists (ie, someone has asked for updates)
+            if channel in self.application.channels:
+                # Add to queue    
+                self.application.channels[channel]['queue'].put(message)     
+                 
+        
     def getchannel(self,page):
         '''Return channel message was posted to'''
         return page.split('/')[-1]        
-           
+  
 class TopHandler(BaseHandler):
     '''Top handler''' 
     def get(self,page):
@@ -263,7 +262,6 @@ class StoreHandler(BaseHandler):
     def get(self):
         # Always set a sessionID for first time visitors
         sessionid = self.getorsetsessionid()
-
         self.render(
             "store.html",
             heading = self.pick_one(self.application.config['presentation']['heading']),
@@ -373,11 +371,8 @@ class AboutHandler(BaseHandler):
     def get(self):
         # Always set a sessionID for first time visitors
         self.getorsetsessionid()
-
-        captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])     
-        
-        alerts = self.showalerts()
-          
+        captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])             
+        alerts = self.showalerts()          
         # Show the messages and any alerts
         self.render(
             "about.html",
@@ -431,7 +426,7 @@ class LiveHandler(BaseHandler):
         captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])
         
         # Update the treecount for all the messages
-        self.updatetreecounts(sortedmessages,self.application.dbconnect)
+        #self.updatetreecounts(sortedmessages,self.application.dbconnect)
         
         # Show the messages and any alerts
         alerts = self.showalerts()
@@ -458,48 +453,25 @@ class LiveHandler(BaseHandler):
         self.clearalerts() 
 
 class MessageMixin(object):
-    '''This is where the magic of tornado happens - we add clients to a waiters list, 
-    and when new messages arrive, we run send_messages() '''
-    waiters = []
-    # Amount of messages to keep around for new connections
-    cache = []
-    cache_size = 10 
-    # FIXME - should be from global config
-    # cache_size = self.application.config['newclients'].as_int('cachesize')
-    
+    '''This is where the magic of tornado happens - we add clients to a viewer list, 
+    and when new messages arrive, we run new_messages() '''
     def wait_for_messages(self, callback, channel, cursor=None):
-        '''Add new clients to waiters list'''
-        if cursor:
-            index = 0
-            # Loops each numbered message in the cache
-            for num in xrange(len(self.cache)):
-                index = len(self.cache) - num - 1
-                logging.info('Cache index is %s', index)
-                # Note cursor is unicode not int
-                # Converting unicode to int seems to mysteriously break comparison!
-                if str(self.cache[index]._id) == str(cursor):
-                    # Client is up to date now
-                    break
-            recent = self.cache[index + 1:]
-            if recent:
-                callback(recent)
-                return
-        MessageMixin.waiters.append(callback)
+        '''Add new clients to viewers list'''
+        logging.info('Waiting for messages from '+str(channel))
+        self.application.channels[channel]['viewers'].append(callback)
     
-    def send_messages(self, messages):
+    def new_messages(self, messages, channel):
         '''Send messages to connected clients!'''
-        logging.info("Sending new message to %r viewers", len(MessageMixin.waiters))
-        for callback in MessageMixin.waiters:
+        logging.info('Running new_messages callback for '+str(channel))
+        viewers = self.application.channels[channel]['viewers']
+        logging.info("Sending new message to %r viewers", len(viewers))
+        for callback in viewers:
             try:
                 callback(messages)
             except:
-                logging.error("Error in waiter callback", exc_info=True)
-        logging.info('Done sending messages, setting waiters back to 0')
-        MessageMixin.waiters = []
-        logging.info('Adding messages to cache')
-        self.cache.extend(messages)
-        if len(self.cache) > self.cache_size:
-            self.cache = self.cache[-self.cache_size:]
+                logging.error("Error in viewer callback", exc_info=True)
+        logging.info('Done sending messages, setting viewers back to empty list')
+        viewers = []
     
 
 class NewPostHandler(BaseHandler, MessageMixin):
@@ -518,10 +490,6 @@ class NewPostHandler(BaseHandler, MessageMixin):
         
         # We're done - sent the user back to wherever 'next' input pointed to.
         self.redirect(self.get_argument("next",'/live'))
-        
-    # Just in case someone tries to access this URL via a GET
-    def get(self):
-        self.redirect('/live')
   
 def render_template(template_name, **kwargs):
     '''Render a template (independent of requests)'''
@@ -529,31 +497,46 @@ def render_template(template_name, **kwargs):
     t = loader.load(template_name)
     return t.generate(**kwargs)
 
-class QueueToWaitingClients(MessageMixin, threading.Thread):
+class QueueToWaitingClients(MessageMixin, threading.Thread, ):
     '''Take messages off the messageQueue, and send them to client'''
-    def __init__(self, application, config):
-        self.queue = application.channels['live']
-        # Change this to DB lookup of highest ID.
+    def __init__(self, application, channel):
+        logging.warn('Started queue to waiting clients thread for channel '+str(channel))
+        self.application = application
+        self.queue = application.channels[channel]['queue']
+        self.channel = channel
         threading.Thread.__init__(self)
         MessageMixin.__init__(self)
     def run(self):
-        while True:
+        while True:            
+            # FIXME remove notes
+            # This runs
             message = self.queue.get()
-            logging.info('Preparing to send message ID: '+str(message._id)+' to clients.')
+            # this does not, as queue is empty
+            logging.info('Preparing to push message ID: '+str(message._id)+' to clients.')
             prettydate = message.getprettydate()
             message.html = render_template('message.html', message=message)
-            self.send_messages([message])
+            self.new_messages([message],self.channel)
+
 
 class UpdateHandler(BaseHandler, MessageMixin):
-    '''Request updates to current page'''
+    '''Handle update requests to current page'''
     @tornado.web.asynchronous
     def post(self,page):
         channel = self.getchannel(page) 
-        logging.info('Update request for channel: '+channel)
         cursor = self.get_argument("cursor", None)
+        logging.info('Update request for channel: '+channel)
+        # Start a thread for the channel
+        if channel not in self.application.channels:
+            self.application.channels[channel] = {
+                'queue':Queue.Queue(0),
+                'viewers':[],
+            }
+            self.application.channels[channel]['updater'] = QueueToWaitingClients(self.application,channel)
+            self.application.channels[channel]['updater'].start()
         # Now wait for messages from that channel that are newer than our cursor
-        self.wait_for_messages(self.async_callback(self.on_send_messages),channel,cursor=cursor)
-    def on_send_messages(self, newmessages):
+        self.wait_for_messages(self.async_callback(self.on_new_messages),channel,cursor=cursor)
+        
+    def on_new_messages(self, newmessages):
         # Finishes this response, ending the HTTP request.
         # Check for closed client connection
         if self.request.connection.stream.closed():
@@ -647,9 +630,6 @@ def main():
         http_server.listen(port,address=ip)
         print('_'*80) 
         print('Web server running on http://'+str(ip)+':'+str(port)+' .') 
-        # Take content from queue and send updates to waiting clients
-        mycontentprocessor = QueueToWaitingClients(application,config)
-        mycontentprocessor.start()        
         tornado.ioloop.IOLoop.instance().start()
     except KeyboardInterrupt:
         print 'Server cancelled'
