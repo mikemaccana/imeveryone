@@ -542,6 +542,7 @@ class UpdateHandler(BaseHandler, MessageMixin):
         # Need to make a dict of our message objects k/v pairs so we can send it as JSON
         jsonmessages = []
         for newmessage in newmessages:
+            # Encode a smaller subset (we don't wanna give away all out secrets) to send to client
             jsonmessages.append({
                 'link':newmessage.link,
                 'posttime':newmessage.posttime,
@@ -551,6 +552,8 @@ class UpdateHandler(BaseHandler, MessageMixin):
                 'preview':newmessage.preview,
                 'id':newmessage._id,
                 'html':newmessage.html,
+                'parentid':newmessage.parentid,
+                'thread':newmessage.thread,
             })  
         # We send a dict with one key, 'messages', which is the jsonmessages list
         self.finish(dict(messages=jsonmessages))

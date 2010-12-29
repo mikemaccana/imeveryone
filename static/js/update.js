@@ -1,16 +1,5 @@
+// Copyright 2009-2011 I'm Everyone
 // Copyright 2009 FriendFeed
-//
-// Licensed under the Apache License, Version 2.0 (the "License"); you may
-// not use this file except in compliance with the License. You may obtain
-// a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-// License for the specific language governing permissions and limitations
-// under the License.
 
 $(document).ready(function() {
     if (!window.console) window.console = {};
@@ -34,6 +23,7 @@ $(document).ready(function() {
 });
 
 function newMessage(form) {
+    // Post top-level messages
     var message = form.formToDict();
     var disabled = form.find("input[type=submit]");
     disabled.disable();
@@ -131,12 +121,30 @@ var updater = {
         	}
     },
 
+    // Append message to page
     showMessage: function(message) {
-    	var existing = $("#m" + message.id);
-    	if (existing.length > 0) return;
-    	var node = $(message.html);
-    	node.hide();
-    	$("#messages").prepend(node);
-    	node.slideDown();
+        
+        // Create newmessage
+    	var newmessage = $(message.html);
+        newmessage.hide();
+    	
+    	// Add newmessages
+    	if ( message.parentid == null ) {
+    	    // Top level comment
+    	    $("#messages").prepend(newmessage);
+        	newmessage.slideDown();
+    	} else if ( message.parentid == message.thread ) {
+    	    window.alert('Looking for element with ID: ' + message.parentid);
+    	    var parent = $("#commenttree");
+    	    window.alert('Elements found:' +parent.length);
+    	    parent.append(newmessage);
+    	    newmessage.slideDown();
+    	} else {
+    	    window.alert('Looking for element with ID: ' + message.parentid);
+    	    var parent = $("#" + message.parentid);
+    	    window.alert('Elements found:' +parent.length);
+    	    parent.append(newmessage);
+    	    newmessage.slideDown();
+    	}
     }
 };
