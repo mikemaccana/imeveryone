@@ -15,6 +15,7 @@ from datetime import datetime
 import urllib
 import simplejson as json
 from math import log
+import rest
 
 def startakismet(akismetcfg):
     return Akismet(key=akismetcfg['apikey'], agent=akismetcfg['clientname'])
@@ -99,7 +100,7 @@ class Message(object):
         
         self._id = _id        
         self.localfile = localfile
-        self.preview, self.embedcode, self.headline, self.intro, self.thread, self.availavatars, self.treecount = None, None, None, None, None, None, None
+        self.preview, self.embedcode, self.headline, self.intro, self.thread, self.availavatars, self.treecount, self.likecount = None, None, None, None, None, None, None, None
         self.useralerts, self.comments = [], []
         self.score = 1
         
@@ -445,6 +446,23 @@ class Message(object):
     
         self.treecount = 0
         addchildrentototal(self)
-        db.messages.save(self.__dict__)
-        
+        return
+    
+    def getlikecount(self):
+        '''Return count of Facebook likes for a target URL'''
+        targeturl = 'http://imeveryone.com/discuss/'+str(self._id)
+        endpoint = 'https://api.facebook.com'
+        page = '/method/fql.query'
+        querydict = {
+            'query':'''SELECT total_count FROM link_stat WHERE url="'''+targeturl+'''"''',
+            'format':'json',
+        }
 
+        fqlhelper = rest.RESTHelper(endpoint='https://api.facebook.com')
+        queryresult = fqlhelper.get(page,querydict=querydict,usejson=True)
+        self.likecount = queryresult[0]['total_count']
+        return
+    
+    def istop(self):
+        '''Check if message is toplevel'''
+        return not self.parentid
