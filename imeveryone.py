@@ -205,8 +205,6 @@ class BaseHandler(tornado.web.RequestHandler):
             # No errors
             logging.info('Good post.')
             # Add alerts to dict and save dict to DB
-            # FIXME - imagedata not being set to zero in usermessages, non-encoded so screwing mongo up.
-            message.__dict__['imagedata'] = []
             self.application.dbconnect.messages.save(message.__dict__)
             # Add to the queue if it exists (ie, someone has asked for updates)
             if channel in self.application.channels:

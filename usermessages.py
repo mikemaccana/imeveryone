@@ -241,6 +241,7 @@ class Message(object):
                 self.localfile = config['images']['cachedir']+str(self._id)+'.'+imagefile['filename'].split('.')[-1]
                 open(self.localfile,'wb').write(imagefile['body'])
                 # Set self.imagedata to None now we've saved our image data to a file.
+                # We need this as leaving the unencoded messagedata around will screw mongo up.
                 self.imagedata = None
             else:
                 # We have no image data as we're an embed only post
