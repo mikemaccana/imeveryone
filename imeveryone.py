@@ -181,7 +181,8 @@ class BaseHandler(tornado.web.RequestHandler):
         rankedmessages.sort(key=lambda x: x.rank, reverse=True)
         
         # Update the treecount for all the messages
-        #self.updatetreecounts(rankedmessages,self.application.dbconnect)
+        # FIXME: whis is a workaround
+        self.updatetreecounts(rankedmessages,self.application.dbconnect)
         
         # Show subset of rankedmessages for page
         start = (page-1)*itemsperpage  
@@ -418,13 +419,14 @@ class LiveHandler(BaseHandler):
         # should become a DB query
         sortedmessages = []
         descending = -1
-        for sortedmessage in self.application.dbconnect.messages.find({'parentid':None},limit=50).sort('_id', descending):
+        for sortedmessage in self.application.dbconnect.messages.find({'parentid':None},limit=20).sort('_id', descending):
             sortedmessages.append(usermessages.Message(dehydrated=sortedmessage))
         
         captchahtml = usermessages.captcha.displayhtml(self.application.config['captcha']['pubkey'])
         
-        # Update the treecount for all the messages
-        #self.updatetreecounts(sortedmessages,self.application.dbconnect)
+        # FIXME: Update the treecount for all the messages
+        # (workaround for ancestors not being updated when comments created)
+        self.updatetreecounts(sortedmessages,self.application.dbconnect)
         
         # Show the messages and any alerts
         alerts = self.showalerts()
