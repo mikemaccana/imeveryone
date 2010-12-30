@@ -100,7 +100,8 @@ class Message(object):
         
         self._id = _id        
         self.localfile = localfile
-        self.preview, self.embedcode, self.headline, self.intro, self.thread, self.availavatars, self.treecount, self.likecount = None, None, None, None, None, None, None, None
+        self.preview, self.embedcode, self.headline, self.intro, self.thread, self.availavatars, self.likecount = None, None, None, None, None, None, None
+        self.treecount = 0
         self.useralerts, self.comments = [], []
         self.score = 1
         
@@ -147,7 +148,7 @@ class Message(object):
         
         # Are we an article or a reply
         self.parentid = parentid
-        if not parentid:
+        if self.istop():
             # We're a top-level article
             logging.info('Creating new article '+str(self._id))
             # Available avatars for sessions - copy of config.
@@ -204,10 +205,11 @@ class Message(object):
                 ancestor = handler.application.dbconnect.messages.find_one({'_id':int(self.thread)})
                 if self.sessionid not in ancestor['sessionavatars']:
                     # This is the first time this sessionid has commented
-                    # Grab and available avatar from the ancestor to use for this sessionid
+                    # Grab an available avatar from the ancestor to use for this sessionid
                     myavatar = ancestor['availavatars'].pop()
                     ancestor['sessionavatars'][self.sessionid] = myavatar
                     logging.info('Sessionid '+self.sessionid+' has commented in this thread for the first time. Assigned '+myavatar+' for message '+str(self._id))
+                    ancestor['treecount'] += 1
                     handler.application.dbconnect.messages.save(ancestor)
                     # Here ancestor is saved to db with correct info, but it gets overridden later                    
                 else: 
