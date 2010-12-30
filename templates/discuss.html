@@ -29,6 +29,29 @@
 			    };
 			});
 			
+			/*
+
+			// The 'editcomment' box
+			// replace class posttext with an edit box. save edits.
+			$('.editcomment').live('click', function(event) {
+				if ($(this).text() == 'Edit post') {
+					action = $(this).attr("href");
+					content = $('<div class="editpostbox floatright" style="width: 600px;"><form action="'+action+'" method="post"><textarea class="commentinput" name="posttext">{{ message.posttext }}</textarea>{{ xsrf_form_html() }}<input type="hidden" value="{{ nexturl }}" name="nexturl"><input type="submit" value="Modify comment" id="opener" class="button" /></form></div>')
+					$('.posttext').after(content);
+					
+					$(this).text('Cancel edits');
+					event.preventDefault();
+				} else {
+					$(this).text('Edit post');
+					window.alert($('.editpostbox').length);
+					$('.editpostbox').delete();
+					event.preventDefault();
+				}	
+			});
+			*/
+			
+			
+			
 			// Create offset, collapsed comments	
 		    $('#commenttree').collapsible({xoffset:'-7',yoffset:'5',defaulthide: false});
 		});
