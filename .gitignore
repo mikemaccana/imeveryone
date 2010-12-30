@@ -9,7 +9,7 @@ static/cache
 static/thumbs
 db
 temp/tesseract.log
-tornado-0.2
+tornado-*
 dnsimple.pyc
 fourchan.pyc
 pifilter.pyc
