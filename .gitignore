@@ -25,3 +25,5 @@ tests/.coverage
 static/ixedit
 quickdb.pyc
 advertising.pyc
+rest.pyc
+static/fonttest.html

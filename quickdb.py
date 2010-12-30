@@ -53,7 +53,7 @@ def updatetreecount(id):
     db.connection.messages.find_one(id).treecount
     return
 
-def updateallitems():
+def updatealldates():
     '''Update dates and remove old avatar variable'''
     for doc in db.connection.messages.find():
         message = usermessages.Message(dehydrated=doc)
@@ -64,4 +64,10 @@ def updateallitems():
         except:
             pass
         db.connection.messages.save(doc)
-        
+
+def updatetreecounts():
+    '''Update comment counts on messages'''
+    for doc in db.connection.messages.find():
+        message = usermessages.Message(dehydrated=doc)
+        message.updatetreecount(db.connection)
+        savemessage(message)
