@@ -128,49 +128,36 @@ var updater = {
     	var newmessage = $(message.html);
         newmessage.hide();
     	
-    	// Add new lis underneath a parent element
-    	function addli(parent, newmessage) {
-    	    
-    	    parent.effect("highlight", {}, 3000);
-            parent.append(newmessage);
-    	    newmessage.slideDown(); 
+    	// Slide down and add newelement underneath parent
+    	function addcomment(parent, newmessage) {
+    	    parent.append(newmessage);
+    	    newmessage.slideDown();
+    	    newmessage.effect("highlight", {}, 3000);
         }
     	
-    	// Add newmessages
+    	// Add new comments and messages apropriately
     	if ( message.parentid == null ) {
     	    // Top level post
     	    $("#messages").prepend(newmessage);
         	newmessage.slideDown();
     	} else if ( message.parentid == message.thread ) {
     	    // Top level comment, added to top level of tree WORKS    
-    	    window.alert('TOP LEVEL COMMENT');
-    	    window.alert('Looking for element with ID: ' + message.parentid);
     	    var parent = $("#commenttree");
-    	    parent.effect("highlight", {}, 3000);
-            parent.append(newmessage);
-    	    newmessage.slideDown();
+    	    addcomment(parent, newmessage);
     	} else {
     	    // Downlevel comment, added beneath parent NO WORK
-    	    window.alert('DOWNLEVEL COMMENT');
-    	    window.alert('Looking for element with ID: ' + message.parentid);
     	    var parent = $("#" + message.parentid);
     	    parent.effect("highlight", {}, 3000);
-    	    window.alert('Checking for existing ULs');
     	    // Now: find out of there's an existing ul or we need to make one
     	    if (parent.find("ul").length == 0) {
     	        // Add our element directly inside parents own ul 
-    	        window.alert('Creating new UL inside parents:' +newmessage);
     	        newmessage = $("<ul>"+message.html+"</ul>");
     	    } else {
                 // Add our element underneath the existing ul
-                window.alert('Creating element inside existing ul (ie,. parent should already have replies).'); 
-    	        parent = parent.children("ul").first();
-    	           	        
+                parent = parent.children("ul").first();
     	    }
-    	    // addli(parent,newmessage);
-    	    parent.effect("highlight", {}, 3000);
-            parent.append(newmessage);
-    	    newmessage.slideDown();
+    	    addcomment(parent, newmessage);
+    	    
     	}
     }
 };
