@@ -9,7 +9,6 @@ body {
 	margin:0;
 	display:table-cell;
 	vertical-align:middle;
-	color: #0f0f13;
 	font:18px Georgia, "Times New Roman", Times, sans-serif;
 	background: #0f0f13;
 }
@@ -624,7 +623,7 @@ hr {
 /* footer */
 #footer {
 	text-align:center;
-	background:#000;
+	background:#0F0F13;
 	color:#d8d8d8;
 	font-size:13px;
 	padding:19px 0 18px 16px;
