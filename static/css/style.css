@@ -9,7 +9,7 @@ body {
 	margin:0;
 	display:table-cell;
 	vertical-align:middle;
-	font:18px "BellMTRegular", Georgia, "Times New Roman", Times, sans-serif;
+	font:18px "MPlantinRegular", Georgia, "Times New Roman", Times, sans-serif;
 	background: #0f0f13;
 }
 
@@ -28,7 +28,7 @@ a {
 } */
 
 input, textarea {
-	font:100% "BellMTRegular", Georgia, "Times New Roman", Times, sans-serif;
+	font:100% "MPlantinRegular", Georgia, "Times New Roman", Times, sans-serif;
 	vertical-align:middle;
 	color:#000;
 }
@@ -86,7 +86,7 @@ form, fieldset {
 #header a {color:#F9F8F3;}
 #header a:hover {text-decoration:none;}
 #header strong {
-	font: 14px/17px "BellMTRegular", Georgia, Helvetica, Verdana, sans-serif;
+	font: 14px/17px "MPlantinRegular", Georgia, Helvetica, Verdana, sans-serif;
 	color:#ddc;
 	font-size: 24px;
 	font-style: italic; 
@@ -146,7 +146,7 @@ form, fieldset {
     border-style:solid;
     border-width:1px;
     cursor:pointer;
-    font: 16px/20px "BellMTRegular", Georgia,"Times New Roman",Times,sans-serif;
+    font: 16px/20px "MPlantinRegular", Georgia,"Times New Roman",Times,sans-serif;
     margin: 1px 12px 1px 1px;
     overflow:hidden;
     padding: 3px 12px;
@@ -171,7 +171,7 @@ form, fieldset {
     border-style:solid;
     border-width:1px;
     cursor:pointer;
-    font: 16px/20px "BellMTRegular", Georgia,"Times New Roman",Times,sans-serif;
+    font: 16px/20px "MPlantinRegular", Georgia,"Times New Roman",Times,sans-serif;
     margin: 1px 12px 1px 1px;
     overflow:hidden;
     padding: 3px 12px;
@@ -180,7 +180,7 @@ form, fieldset {
 }
 
 #commentarea {
-    font: 14px/17px "BellMTRegular", Georgia,"Times New Roman",Times,sans-serif;
+    font: 14px/17px "MPlantinRegular", Georgia,"Times New Roman",Times,sans-serif;
     text-align: left;  
     line-height:25px;    
 }
@@ -303,9 +303,11 @@ input {
     font-weight:bold;    
 }
 
+
+
 /* about section */
 .about {
-    font: 14px "BellMTRegular", Georgia,"Times New Roman",Times,sans-serif;
+    font: 14px "MPlantinRegular", Georgia,"Times New Roman",Times,sans-serif;
     margin: 10px;
 }
 
@@ -488,19 +490,20 @@ hr {
 #sidebar h3 {
 	margin:0 0 18px;
 	width: 100%;
-	font-size:30px;
-	line-height:33px;
 	font-weight:normal;
 	text-align:center;
 	text-transform: uppercase;
-	font-style: italic;
+	font-style: ;
+	font: italic 30px/33px "BellMTRegular",Georgia,"Times New Roman",Times,sans-serif;
 }
+
 #sidebar h3 span {
 	display:block;
 	font-size:46px;
 	line-height:50px;
 	padding-top:2px;
 }
+
 /* form form-write-us */
 #somethingtosay ul {
 	list-style:none;
