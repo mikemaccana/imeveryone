@@ -60,6 +60,7 @@ form, fieldset {
     font-style: italic;
     text-align: center;
     padding: 5px;
+    display: none;
 }
 
 #header {
