@@ -53,6 +53,15 @@ form, fieldset {
 }
 
 /* header */
+
+#inbox {
+    background: white;
+    color: black;
+    font-style: italic;
+    text-align: center;
+    padding: 5px;
+}
+
 #header {
     padding:7px 0 13px 20px;
     text-align:center;
