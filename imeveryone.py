@@ -27,7 +27,7 @@ from subprocess import Popen
 from pymongo import Connection
 from database import Database
 import random
-import ipdb
+#import ipdb
 
 antispam = usermessages.startakismet(ConfigObj('imeveryone.conf')['posting']['akismet'])
 
@@ -251,7 +251,7 @@ class TopHandler(BaseHandler):
             emptydb = self.application.config['alerts']['emptydb'],
             usercount = self.application.getusercount(),
             witticism = self.pick_one(self.application.config['presentation']['witticism']),
-            instructions = '''Top views and comments.''',
+            instructions = '''Top views and comments''',
             page = page,
         )
 

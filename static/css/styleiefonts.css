@@ -4,3 +4,13 @@
     font-family: 'LeagueGothicRegular';
     src: url('/static/fonts/League_Gothic-webfont.eot');
 }
+
+@font-face {
+    font-family: 'BellMTRegular';
+    src: url('/static/fonts/bell-webfont.eot');
+}
+
+@font-face {
+    font-family: 'BellMTItalic';
+    src: url('/static/fonts/belli-webfont.eot');
+}
