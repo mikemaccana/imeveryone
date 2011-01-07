@@ -10,7 +10,7 @@ body {
 	display:table-cell;
 	vertical-align:middle;
 	font:18px "MPlantinRegular", Georgia, "Times New Roman", Times, sans-serif;
-	background: #0f0f13;
+	background: #222;
 }
 
 img {
@@ -19,7 +19,7 @@ img {
 
 a {
 	text-decoration:none;
-	color:#0f0f13;
+	color:#222;
 }
 
 
@@ -34,7 +34,7 @@ input, textarea {
 }
 form, fieldset {
 	margin:0;
-	padding:0;
+	padding:0px;
 	border-style:none;
 }
 #wrapper {
@@ -429,9 +429,9 @@ hr {
 
 /* sidebar */
 #sidebar {
-	width:378px;
+	width:330px;
 	float:right;
-	padding:21px 0 9999px 11px;
+	padding: 20px 20px 9999px 20px;
 	margin:0 7px -9999px 0;
 	background: #222;
 	overflow:hidden;
@@ -512,10 +512,7 @@ hr {
 }
 #somethingtosay label {display:block;}
 #somethingtosay li {padding-bottom:14px;}
-#somethingtosay .container {
-	width:297px;
-	padding:15px 0 0 19px;
-}
+
 #somethingtosay .text-field {
 	width:320px;
 	height:206px;
@@ -587,24 +584,16 @@ hr {
 }
 
 .info {
-	display:block;
-	padding:6px 0 2px 30px;
-	font-size:10px;
-	line-height:13px;
-	font-style: italic;
-	letter-spacing: 0.1em;
+	font-size:12px;
+	line-height:16px;
 }
 
-.important {
-    font-style: normal;
-    text-transform: uppercase;
+.info a {
+    color: white;
+    text-decoration: underline;
 }
 
 /* captcha width */
-
-#recaptcha_indent {
-    margin: 1px 1px 1px 20px;
-}
 
 #captchabuttons
 {
@@ -628,7 +617,6 @@ hr {
 }
 
 .btn-submit {
-    width:365px;
     text-align: center;
 }
 .btn-submit input {
@@ -638,12 +626,11 @@ hr {
 #somethingtosay em {
 	display:block;
 	padding:10px 19px 0 0;
-	text-align:center;
 }
 /* footer */
 #footer {
 	text-align:center;
-	background:#0F0F13;
+	background:#222;
 	color:#d8d8d8;
 	font-size:13px;
 	padding:19px 0 18px 16px;

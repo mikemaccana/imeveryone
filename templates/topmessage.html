@@ -7,7 +7,7 @@
 
 
 	{% if message.intro %}
-		<div class="text-box hyphenate">
+		<div class="text-box hyphenate lefttext">
 			<p><a href="{{ message.link }}">
 				{{ message.intro.split('NEWLINE')[0] }}
 				{% if len(message.intro.split('NEWLINE')) > 1 %}

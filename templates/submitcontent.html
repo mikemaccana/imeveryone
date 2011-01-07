@@ -1,5 +1,4 @@
-<div id="sidebar">
-	<div id="sidebarcontents">	
+<div id="sidebar">	
 		<div id="commenttitle">
 			<h3>{{ prompt1 }}<span>{{ prompt2 }}</span></h3>
 		</div>	
@@ -10,23 +9,21 @@
 		<!-- form form-write-us -->
 		<form enctype='multipart/form-data' method='post' action='/message/new' id="somethingtosay">
 			<!-- alerts if any -->
-			<div alerts>
+			<div id='alerts' class='hyphenate lefttext'>
 				{% if len(alerts) %}
-					<div id='alerts'>
-						<p><em>{{ alerts[0] }}</em></p>
-					</div>	
+					<p class='centertext'><em>{{ alerts[0] }}</em></p>
+				{% else %}	
+					<p class="info">Express your worries, desires, fears, and joys in seconds. Get advice about your self, relationship, friendship, work, or family. </p>
 				{% end %}
-			</div>
+			</div>		
 			<!-- end alerts-->
 			<fieldset>
 				<ul>
 					<li>
 						<label for="textarea">1. Write it here</label>
-						<span class="info">Be <span class="important">specific</span>. Posts can be up to <span class="important">2000 words</span> </span>
-						<div class="container">
-							<div class="text-field">
-								<textarea id="textarea"  name='posttext' cols="20" rows="10">{{ escape(textprefill) }}</textarea>
-							</div>
+						<p class="info">Be specific - tell us not just how you feel, but why you feel that way. Posts can be up to 2000 words. </p>
+						<div class="text-field">
+							<textarea id="textarea"  name='posttext' cols="20" rows="10">{{ escape(textprefill) }}</textarea>
 						</div>
 					</li>
 					<li>
@@ -38,7 +35,7 @@
 							</div>
 							<input type="text" value="" class="browse" />
 						</div>
-						<span class="info">Find an <span class="important">image</span> that describes <span class="important">how you feel</span>. Or include a <span class="important">video link</span> in your text above</span>
+						<p class="info">Find an image that describes how you feel. Check <a href="http://vi.sualize.us/">here</a> or <a href="http://vi.sualize.us/">here</a> for image searches. Or  include a video link in your text instead.</p>
 					</li>
 					<li>
 						<!-- start captcha areas -->
@@ -47,42 +44,41 @@
 								<span class="recaptcha_only_if_image">3. Type these words</span>
 								<span class="recaptcha_only_if_audio">3. Type the numbers you hear</span>
 							</label>
-							<div id="recaptcha_indent">
-								<div id="recaptcha_image"></div>
-								<div class="recaptcha_only_if_incorrect_sol" style="color:red">Incorrect please try again</div>
-							
-								<div id="captchabuttons">
-									<div>
-										<a href="javascript:Recaptcha.reload()">
-											<img src="/static/images/recreload.gif" alt="Get another CAPTCHA"/>
-										</a>
-									</div>
-							
-									<div class="recaptcha_only_if_image">
-										<a href="javascript:Recaptcha.switch_type('audio')">
-											<img src="/static/images/recaudio.gif" alt="Get an audio CAPTCHA"/>
-										</a>
-									</div>
-									<div class="recaptcha_only_if_audio">
-										<a href="javascript:Recaptcha.switch_type('image')">
-											<img src="/static/images/rectext.gif" alt="Get an image CAPTCHA"/>
-										</a>
-									</div>
-									<div>
-										<a href="javascript:Recaptcha.showhelp()">
-											<img src="/static/images/rechelp.gif" alt="Help"/>
-										</a>
-									</div>
+							<div id="recaptcha_image"></div>
+							<div class="recaptcha_only_if_incorrect_sol" style="color:red">Incorrect please try again</div>
+						
+							<div id="captchabuttons">
+								<div>
+									<a href="javascript:Recaptcha.reload()">
+										<img src="/static/images/recreload.gif" alt="Get another CAPTCHA"/>
+									</a>
 								</div>
-							
-								<input type="text" id="recaptcha_response_field" name="recaptcha_response_field" />
+						
+								<div class="recaptcha_only_if_image">
+									<a href="javascript:Recaptcha.switch_type('audio')">
+										<img src="/static/images/recaudio.gif" alt="Get an audio CAPTCHA"/>
+									</a>
+								</div>
+								<div class="recaptcha_only_if_audio">
+									<a href="javascript:Recaptcha.switch_type('image')">
+										<img src="/static/images/rectext.gif" alt="Get an image CAPTCHA"/>
+									</a>
+								</div>
+								<div>
+									<a href="javascript:Recaptcha.showhelp()">
+										<img src="/static/images/rechelp.gif" alt="Help"/>
+									</a>
+								</div>
 							</div>
+						
+							<input type="text" id="recaptcha_response_field" name="recaptcha_response_field" />
 						</div>
 						<!-- end captcha areas -->
 						{% include 'captcha.html' %}
 					</li>
 				</ul>
 				<div class="btn-submit">
+					<p class="info">Hit the button and your post is immediately published to the the 'Live' section. You can then discuss the matter anonymously with other users.</p>
 					<input class="redbutton" type="submit" value="SAY IT." />
 				</div>
 				<input type="hidden" name="next" value="{{ request.path }}"/>
@@ -90,5 +86,4 @@
 			</fieldset>
 		</form>
 		{% include 'webstore.html' %}
-	</div>
 </div>
