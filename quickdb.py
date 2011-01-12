@@ -6,6 +6,7 @@ import usermessages
 import time
 import sys
 import pickle
+import os
 
 config = ConfigObj('imeveryone.conf')
 stage = 'dev'#sys.argv[1]
@@ -88,3 +89,22 @@ def getbackup(filename):
     '''Open and read picked data'''
     dumpfile = open(filename, 'rb')
     return pickle.load(dumpfile)
+    
+def changeid(message,newid):
+    '''ChangeID of a top-level message'''    
+    oldid = message._id
+    try:
+        os.rename('static/cache/'+str(oldid)+'.jpeg', 'static/cache/'+str(newid)+'.jpeg')    
+        os.rename('static/thumbs/'+str(oldid)+'_preview.jpeg','static/thumbs/'+str(newid)+'_preview.jpeg')    
+    except:
+        pass    
+    message._id, message.thread = newid,newid
+    message.link = u'/discuss/'+str(message._id)
+    if message.localfile:
+        message.localfile = u'static/cache/'+str(message._id)+'.jpg'
+    if message.preview: 
+        message.preview = u'static/thumbs/'+str(message._id)+'_preview.jpg'
+    savemessage(message)
+    db.connection.messages.remove(oldid)
+    
+    
