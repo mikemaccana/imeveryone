@@ -94,8 +94,8 @@ def changeid(message,newid):
     '''ChangeID of a top-level message'''    
     oldid = message._id
     try:
-        os.rename('static/cache/'+str(oldid)+'.jpeg', 'static/cache/'+str(newid)+'.jpeg')    
-        os.rename('static/thumbs/'+str(oldid)+'_preview.jpeg','static/thumbs/'+str(newid)+'_preview.jpeg')    
+        os.rename('static/cache/'+str(oldid)+'.jpg', 'static/cache/'+str(newid)+'.jpg')    
+        os.rename('static/thumbs/'+str(oldid)+'_preview.jpg','static/thumbs/'+str(newid)+'_preview.jpg')    
     except:
         pass    
     message._id, message.thread = newid,newid
