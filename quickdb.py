@@ -90,8 +90,9 @@ def getbackup(filename):
     dumpfile = open(filename, 'rb')
     return pickle.load(dumpfile)
     
-def changeid(message,newid):
+def changeid(oldid,newid):
     '''ChangeID of a top-level message'''    
+    message = getmessage(oldid)
     oldid = message._id
     try:
         os.rename('static/cache/'+str(oldid)+'.jpg', 'static/cache/'+str(newid)+'.jpg')    
