@@ -5,6 +5,8 @@ from configobj import ConfigObj
 import usermessages
 import time
 import sys
+import pickle
+
 config = ConfigObj('imeveryone.conf')
 stage = 'dev'#sys.argv[1]
 db = Database(config,stage=stage)
@@ -71,3 +73,18 @@ def updatetreecounts():
         message = usermessages.Message(dehydrated=doc)
         message.updatetreecount(db.connection)
         savemessage(message)
+
+def backupdb(filename):
+    '''Backup DB to Python pickle format'''
+    messages = []
+    dumpfile = open(filename, 'wb')
+    for doc in db.connection.messages.find():
+        messages.append(doc)
+    pickle.dump(messages, dumpfile)
+    print('Saved to '+filename)
+    return
+    
+def getbackup(filename):
+    '''Open and read picked data'''
+    dumpfile = open(filename, 'rb')
+    return pickle.load(dumpfile)
