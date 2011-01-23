@@ -1,7 +1,7 @@
 // Copyright 2009-2011 I'm Everyone
 // Copyright 2009 FriendFeed
 
-$(document).ready(function() {
+$(function() {
     if (!window.console) window.console = {};
     if (!window.console.log) window.console.log = function() {};
 
@@ -19,7 +19,10 @@ $(document).ready(function() {
     
     // Start updater polling for new updates on page load
     $("#message").select();
-    updater.poll();
+    // 2 second delay for Google chrome so page stops loading - see 
+    // http://stackoverflow.com/questions/2703861
+    window.setTimeout("updater.poll()",1000);
+    // updater.poll();
 });
 
 function newMessage(form) {
