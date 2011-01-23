@@ -458,6 +458,7 @@ hr {
 	padding:0 10px 0 10px;
 	margin:0 auto 30px;
 }
+
 .visual {padding:0 0 12px 0;}
 .visual img {
 	margin:0 auto;
@@ -521,7 +522,11 @@ hr {
 }
 
 .lefttext {
-    text-align: left;
+    text-align: left;    
+}
+
+.justifytext {
+    text-align: justify;
 }
 
 #heading {
