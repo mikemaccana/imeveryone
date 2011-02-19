@@ -153,6 +153,7 @@ class Message(object):
             logging.info('Creating new article '+str(self._id))
             # Available avatars for sessions - copy of config.
             self.availavatars = config['posting']['avatars']
+            logging.info('DEBUG:'+str(len(self.availavatars))+' created in this article')
             random.shuffle(self.availavatars)
             # Create dict of session / avatar matchings
             self.sessionavatars = {}
@@ -162,6 +163,7 @@ class Message(object):
             
             # Grab an avatar from my own list!
             self.sessionavatars[self.sessionid] = self.availavatars.pop()
+            logging.info('DEBUG:'+str(len(self.availavatars))+' left in this article')
             
             # Currently only top level messages can have links, pictures or embeds
             # Process embeds (FIXME - must come before saveimages due to check for existing embeds in saveimages)
@@ -207,6 +209,7 @@ class Message(object):
                     # This is the first time this sessionid has commented
                     # Grab an available avatar from the ancestor to use for this sessionid
                     myavatar = ancestor['availavatars'].pop()
+                    logging.info('DEBUG:'+str(len(ancestor['availavatars']))+' left in the parent')
                     ancestor['sessionavatars'][self.sessionid] = myavatar
                     logging.info('Sessionid '+self.sessionid+' has commented in this thread for the first time. Assigned '+myavatar+' for message '+str(self._id))
                     ancestor['treecount'] += 1
@@ -428,7 +431,7 @@ class Message(object):
 
     def updatetreecount(self,db):
         '''Get total of children and grandchildren'''
-        logging.info('Updating tree count on '+str(self._id))
+        #logging.info('Updating tree count on '+str(self._id))
         
         def addchildrentototal(item):
             '''Add children of a post recursively'''
