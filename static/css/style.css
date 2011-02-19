@@ -525,7 +525,7 @@ hr {
     text-align: left;    
 }
 
-.justifytext {
+.justifytext .hyphenate {
     text-align: justify;
 }
 
